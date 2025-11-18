@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: identity-service
+
+  cloud:
+    discovery:
+      locator:
+        enabled: true
+        lower-case-service-id: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/identitydb
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+jwt:
+    secret: 8bda96991f096e760cff8b4352c75dad0e8cc58beecc9099f21223c585a61b9e
+    expiration: 3600000
+
+server:
+  port: 12001
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:12100/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+

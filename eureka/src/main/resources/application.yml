@@ -1,0 +1,10 @@
+server:
+  port: 12100
+
+eureka:
+  client:
+    register-with-eureka: false   # Serwer nie rejestruje się w sobie
+    fetch-registry: false          # Nie pobiera listy serwisów (jest sam serwerem)
+
+  server:
+    enable-self-preservation: false  # Opcjonalne uproszczenie działania serwera (brak self preservation)

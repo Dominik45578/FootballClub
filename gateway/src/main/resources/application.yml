@@ -1,0 +1,15 @@
+server:
+  port: 12002
+
+spring:
+  application:
+    name: gateway
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:12100/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:

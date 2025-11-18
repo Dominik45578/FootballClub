@@ -1,0 +1,34 @@
+type Query {
+    me: User
+}
+
+
+type RegisterResponse {
+    success: Boolean!
+    message: String!
+}
+
+type JwtResponse {
+    token: String!
+}
+
+type User {
+    id: ID!
+    username: String!
+    roles: [String!]!
+}
+
+input RegisterRequestInput {
+    username: String!
+    password: String!
+}
+
+input LoginRequestInput {
+    username: String!
+    password: String!
+}
+
+type Mutation {
+    register(request: RegisterRequestInput!): RegisterResponse
+    login(request: LoginRequestInput!): JwtResponse
+}
