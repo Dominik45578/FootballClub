@@ -3,7 +3,9 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+identify.iml
+mvnw
+mvnw.cmd
 ### STS ###
 .apt_generated
 .classpath
