@@ -22,6 +22,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="footballclub" target="21" />
       <module name="shared" target="21" />
     </bytecodeTargetLevel>
   </component>
@@ -30,6 +31,7 @@
       <module name="common" options="-parameters" />
       <module name="eureka" options="-parameters" />
       <module name="footballclub" options="-parameters" />
+      <module name="footballclub-parent" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="identify" options="-parameters" />
       <module name="shared" options="-parameters" />
