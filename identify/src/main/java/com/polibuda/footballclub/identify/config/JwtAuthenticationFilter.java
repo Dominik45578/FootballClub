@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.identify.config;
 
+import com.polibuda.footballclub.common.claims.TokenClaims;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,9 +24,9 @@ public class JwtAuthenticationFilter extends GenericFilter {
             throws IOException, ServletException {
 
         HttpServletRequest httpReq = (HttpServletRequest) request;
-        String header = httpReq.getHeader("Authorization");
+        String header = httpReq.getHeader(TokenClaims.AUTHORIZATION);
 
-        if (header != null && header.startsWith("Bearer ")) {
+        if (header != null && header.startsWith(TokenClaims.BEARER)) {
             String token = header.substring(7);
             String username = jwtService.extractUsername(token);
 
