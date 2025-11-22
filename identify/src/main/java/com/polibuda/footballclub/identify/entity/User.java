@@ -1,5 +1,7 @@
 package com.polibuda.footballclub.identify.entity;
 
+import com.polibuda.footballclub.common.database.UserRolesTable;
+import com.polibuda.footballclub.common.database.UserTable;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;
@@ -10,7 +12,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
+@Data
+@Table(name = UserTable.USERS_TABLE)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,9 +27,9 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+        name = UserRolesTable.USER_ROLES_TABLE,
+        joinColumns = @JoinColumn(name = UserRolesTable.USER_ID),
+        inverseJoinColumns = @JoinColumn(name = UserRolesTable.ROLE_ID)
     )
     private Set<Role> roles;
 }

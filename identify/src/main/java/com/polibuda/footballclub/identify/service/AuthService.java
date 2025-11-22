@@ -4,7 +4,6 @@ package com.polibuda.footballclub.identify.service;
 import com.polibuda.footballclub.common.dto.JwtResponse;
 import com.polibuda.footballclub.common.dto.LoginRequest;
 import com.polibuda.footballclub.common.dto.RegisterRequest;
-import com.polibuda.footballclub.identify.config.JwtService;
 import com.polibuda.footballclub.identify.entity.Role;
 import com.polibuda.footballclub.identify.entity.User;
 import com.polibuda.footballclub.identify.repository.RoleRepository;

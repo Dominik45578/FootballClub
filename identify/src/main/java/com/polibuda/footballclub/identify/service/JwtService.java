@@ -1,4 +1,4 @@
-package com.polibuda.footballclub.identify.config;
+package com.polibuda.footballclub.identify.service;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

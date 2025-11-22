@@ -1,9 +1,9 @@
 package com.polibuda.footballclub.identify.config;
 
 import com.polibuda.footballclub.common.claims.TokenClaims;
+import com.polibuda.footballclub.identify.service.JwtService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

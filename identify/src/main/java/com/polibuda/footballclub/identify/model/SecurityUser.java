@@ -1,11 +1,13 @@
 package com.polibuda.footballclub.identify.model;
 
 import com.polibuda.footballclub.identify.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+@Getter
 public class SecurityUser implements UserDetails {
 
     private final User user;
@@ -49,7 +51,4 @@ public class SecurityUser implements UserDetails {
         return true;
     }
 
-    public User getUser() {
-        return user;
-    }
 }

@@ -18,7 +18,7 @@ spring:
       ddl-auto: update
     show-sql: true
 jwt:
-    secret: 8bda96991f096e760cff8b4352c75dad0e8cc58beecc9099f21223c585a61b9e
+    secret: rcpc1UniSC86Oxjpaa94UqaSNvzGekLnOPhguY81VNS
     expiration: 3600000
 
 server:
@@ -27,10 +27,11 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:12100/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:12100/eureka/}
     register-with-eureka: true
     fetch-registry: true
   instance:
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
 
 

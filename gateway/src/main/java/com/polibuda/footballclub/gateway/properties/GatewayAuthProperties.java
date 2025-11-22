@@ -1,5 +1,5 @@
 // Package: com.polibuda.footballclub.gateway.config
-package com.polibuda.footballclub.gateway.config;
+package com.polibuda.footballclub.gateway.properties;
 
 
 import jakarta.validation.constraints.NotBlank;

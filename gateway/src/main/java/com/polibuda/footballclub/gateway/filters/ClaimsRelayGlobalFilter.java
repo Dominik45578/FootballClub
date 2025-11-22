@@ -1,4 +1,4 @@
-package com.polibuda.footballclub.gateway.config;
+package com.polibuda.footballclub.gateway.filters;
 
 
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;

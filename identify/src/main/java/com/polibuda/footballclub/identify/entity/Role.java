@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.identify.entity;
 
+import com.polibuda.footballclub.common.database.RoleTable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,14 +11,14 @@ import org.springframework.security.core.GrantedAuthority;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "roles")
+@Table(name = RoleTable.ROLE_TABLE)
 public class Role  implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = RoleTable.ROLE_ID)
     private Long id;
 
-    @Column(unique = true, name = "name")
+    @Column(unique = true, name = RoleTable.ROLE_NAME)
     private String name;
 
     @Override
