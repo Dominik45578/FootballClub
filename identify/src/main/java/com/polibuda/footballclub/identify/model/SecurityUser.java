@@ -6,17 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class SecurityUser implements UserDetails {
-
-    private final User user;
-
-    public SecurityUser(User user) {
-        this.user = user;
-    }
+public record SecurityUser(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles(); // już implementują GrantedAuthority
+        return user.getRoles();
     }
 
     @Override
@@ -26,30 +20,26 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return user.getEmail();
     }
-    
+
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return user.getAccountNonExpired();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.getAccountNonLocked();
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return user.getCredentialsNonExpired();
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
-    }
-
-    public User getUser() {
-        return user;
+        return user.getEnabled();
     }
 }

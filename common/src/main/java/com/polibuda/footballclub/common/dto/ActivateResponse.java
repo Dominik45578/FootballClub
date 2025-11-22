@@ -11,12 +11,12 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterResponse {
-
+public class ActivateResponse {
+    
     private boolean success;
-
+    
     private String message;
-
+    
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 }
