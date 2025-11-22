@@ -1,6 +1,8 @@
 package com.polibuda.footballclub.identify.service.user;
 
 import com.polibuda.footballclub.identify.entity.User;
+import com.polibuda.footballclub.identify.redis.RedisUser;
+import com.polibuda.footballclub.identify.repository.RedisUserRepository;
 import com.polibuda.footballclub.identify.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RedisUserRepository redisUserRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -29,6 +32,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
@@ -42,5 +52,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    @Override
+    public RedisUser save(RedisUser redisUser) {
+       return redisUserRepository.save(redisUser);
     }
 }

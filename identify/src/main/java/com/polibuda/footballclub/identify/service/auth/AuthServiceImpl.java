@@ -1,8 +1,10 @@
 package com.polibuda.footballclub.identify.service.auth;
 
 import com.polibuda.footballclub.common.dto.*;
+import com.polibuda.footballclub.identify.RegisterCodeGenerator;
 import com.polibuda.footballclub.identify.entity.Role;
 import com.polibuda.footballclub.identify.entity.User;
+import com.polibuda.footballclub.identify.redis.RedisUser;
 import com.polibuda.footballclub.identify.repository.RoleRepository;
 import com.polibuda.footballclub.identify.service.actiavte.ActivateService;
 import com.polibuda.footballclub.identify.service.token.JwtAccessService;
@@ -56,13 +58,11 @@ public class AuthServiceImpl implements AuthService {
                     .password(passwordEncoder.encode(request.getPassword()))
                     .roles(new HashSet<>(Set.of(userRole)))
                     .email(request.getEmail())
-                    .accountNonExpired(true)
-                    .credentialsNonExpired(true)
-                    .accountNonLocked(true)
-                    .enabled(true)
                     .build();
 
+
             userService.save(user);
+            activateService.generateCode(request.getEmail());
 
             log.info("User registered successfully: {}", user.getUsername());
             return RegisterResponse.builder()
@@ -94,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
 
-            User user = userService.findByUsername(request.getEmail());
+            User user = userService.findByEmail(request.getEmail());
             String token = jwtService.generateToken(user);
 
             log.info("User logged in successfully: {}", user.getUsername());
