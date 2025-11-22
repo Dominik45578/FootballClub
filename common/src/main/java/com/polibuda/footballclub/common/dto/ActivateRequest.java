@@ -2,6 +2,7 @@ package com.polibuda.footballclub.common.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,12 +12,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
-
-    @NotBlank(message = "email is required")
+public class ActivateRequest {
+    
+    @NotBlank(message = "Username is required")
     @Email
     private String email;
-
-    @NotBlank(message = "Password is required")
-    private String password;
+    
+    @NotBlank(message = "Activation code is required")
+    @Size(min = 6, max = 6, message = "Activation code must be 6 characters")
+    private String code;
 }

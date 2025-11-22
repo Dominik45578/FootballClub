@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterResponse {
+public class LoginResponse {
 
     private boolean success;
 
@@ -19,4 +19,6 @@ public class RegisterResponse {
 
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
+
+    private String token;
 }

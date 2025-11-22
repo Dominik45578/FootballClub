@@ -12,14 +12,18 @@ import org.springframework.security.core.GrantedAuthority;
 @AllArgsConstructor
 @Builder
 @Table(name = RoleTable.ROLE_TABLE)
-public class Role  implements GrantedAuthority {
+public class Role implements GrantedAuthority {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = RoleTable.ROLE_ID)
     private Long id;
 
-    @Column(unique = true, name = RoleTable.ROLE_NAME)
+    @Column(unique = true, nullable = false, name = RoleTable.ROLE_NAME)
     private String name;
+
+    @Column
+    private String description;
 
     @Override
     public String getAuthority() {
