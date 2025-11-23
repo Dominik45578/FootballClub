@@ -11,24 +11,31 @@ import java.util.*;
 @Component
 public class JwtClaimExtractor implements ClaimExtractor {
 
+    private String getStringClaim(String claimName, Jwt jwt) {
+        String subject = jwt.getClaimAsString(claimName);
+        return subject == null ? jwt.getSubject() : subject;
+    }
+
+    private boolean getBooleanClaims(String claimName, Jwt jwt) {
+        return   jwt.getClaimAsBoolean(claimName);
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public UserContext extract(Jwt jwt) {
         if (jwt == null) {
-            return new UserContext(null, null, Collections.emptySet(), Collections.emptySet());
+            return new UserContext(null, null,null, Collections.emptySet(), Collections.emptySet(), false , false);
         }
 
-        // Extract userId
-        String userId = jwt.getClaimAsString(TokenClaims.USER_ID);
-        if (userId == null) {
-            userId = jwt.getSubject();
-        }
 
-        // Extract username
-        String username = jwt.getClaimAsString(TokenClaims.USERNAME);
-        if (username == null) {
-            username = jwt.getSubject();
-        }
+        String userId = getStringClaim(TokenClaims.USER_ID, jwt);
+
+        String username = getStringClaim(TokenClaims.USERNAME, jwt);
+
+        String email = getStringClaim(TokenClaims.EMIL, jwt);
+
+        boolean blocked = getBooleanClaims(TokenClaims.BLOCKED, jwt);
+        boolean active = getBooleanClaims(TokenClaims.ACTIVE, jwt);
 
         // Extract roles
         Set<String> roles = new LinkedHashSet<>();
@@ -48,11 +55,15 @@ public class JwtClaimExtractor implements ClaimExtractor {
             c.forEach(o -> scopes.add(o.toString()));
         }
 
-        return new UserContext(
-                userId,
-                username,
-                Collections.unmodifiableSet(roles),
-                Collections.unmodifiableSet(scopes)
-        );
-    }
+        return UserContext.builder()
+                .userId(userId)
+                .username(username)
+                .email(email)
+                .roles(Collections.unmodifiableSet(roles))
+                .scopes(Collections.unmodifiableSet(scopes))
+                .blocked(blocked)
+                .activated(active)
+                .build();
+        }
 }
+
