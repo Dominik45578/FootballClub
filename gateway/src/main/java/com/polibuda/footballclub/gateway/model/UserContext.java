@@ -1,7 +1,9 @@
 package com.polibuda.footballclub.gateway.model;
 
 
+import lombok.Builder;
+
 import java.util.Set;
 
-
-public record UserContext(String userId, String username, Set<String> roles, Set<String> scopes) { }
+@Builder
+public record UserContext(String userId, String username, String email,Set<String> roles, Set<String> scopes, boolean activated, boolean blocked) { }

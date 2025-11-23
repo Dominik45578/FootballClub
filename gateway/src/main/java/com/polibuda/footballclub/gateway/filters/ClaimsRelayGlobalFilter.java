@@ -49,10 +49,11 @@ public class ClaimsRelayGlobalFilter implements GlobalFilter, Ordered {
 
 
                     ServerHttpRequest mutated = exchange.getRequest().mutate()
-                            .header(MutationHeaderClaims.X_User_Id, safe(ctx.userId()))
-                            .header(MutationHeaderClaims.X_USERNAME, safe(ctx.username()))
+                            .header(MutationHeaderClaims.X_EMAIL, safe(ctx.username()))
                             .header(MutationHeaderClaims.X_ROLES, join(ctx.roles()))
                             .header(MutationHeaderClaims.X_SCOPE, join(ctx.scopes()))
+                            .header(MutationHeaderClaims.X_ACTIVATED, safe(String.valueOf(ctx.activated())))
+                            .header(MutationHeaderClaims.X_BLOCKED, safe(String.valueOf(ctx.blocked())))
                             .build();
 
 

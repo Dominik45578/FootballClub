@@ -72,8 +72,10 @@ public class JwtAccessServiceImpl implements JwtAccessService {
 
     private Map<String, Object> buildClaims(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(TokenClaims.USER_ID, user.getId().toString());
         claims.put(TokenClaims.USERNAME, user.getUsername());
+        claims.put(TokenClaims.EMAIL, user.getEmail());
+        claims.put(TokenClaims.ACTIVE, user.getEnabled());
+        claims.put(TokenClaims.BLOCKED, user.getAccountNonLocked());
         claims.put(TokenClaims.ROLES, user.getRoles().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));

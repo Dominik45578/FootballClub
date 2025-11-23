@@ -1,6 +1,12 @@
 spring:
   application:
     name: identity-service
+  data:
+    redis:
+      host: localhost
+      port: 7890
+      password: ""      # jeśli nie masz hasła → zostaw puste lub usuń linię
+      timeout: 5000ms
 
   cloud:
     discovery:
@@ -47,7 +53,7 @@ spring:
 #      time-to-live: 900000
 
 jwt:
-  secret: rcpc1UniSC86Oxjpaa94UqaSNvzGekLnOPhguY81VNS
+  secret: lg8UfAf4xZ3y1NEREOl7FS6E4T72ZxWiVHXnpandIva8bpfCTlXZSWBMYHGhon3CMmkHTr9dAA1bYfditkYJ39
   access-token-expiration: 3600000
   refresh-secret: ${JWT_REFRESH_SECRET:different-refresh-secret-key-must-be-different-from-access-secret-at-least-512-bits}
   refresh-token-expiration: 86400000

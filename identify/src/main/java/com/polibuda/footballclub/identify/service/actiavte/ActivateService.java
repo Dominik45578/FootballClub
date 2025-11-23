@@ -5,5 +5,6 @@ import com.polibuda.footballclub.common.dto.ActivateResponse;
 
 public interface ActivateService {
     boolean activate(ActivateRequest request);
+    String generateCode(String email);
 
 }
