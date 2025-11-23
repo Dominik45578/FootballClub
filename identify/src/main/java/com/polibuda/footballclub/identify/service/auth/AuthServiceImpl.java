@@ -95,6 +95,7 @@ public class AuthServiceImpl implements AuthService {
             );
 
             User user = userService.findByEmail(request.getEmail());
+            log.debug("User login successfully: {}", user.getUsername());
             String token = jwtService.generateToken(user);
 
             log.info("User logged in successfully: {}", user.getUsername());

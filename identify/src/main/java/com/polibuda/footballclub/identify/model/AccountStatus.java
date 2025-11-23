@@ -1,4 +1,5 @@
 package com.polibuda.footballclub.identify.model;
 
-public enum Accountstatus {
+public enum AccountStatus {
+    DISABLED, BLOCKED,EXPIRED, ENABLED
 }

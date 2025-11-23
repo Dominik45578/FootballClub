@@ -32,7 +32,7 @@ public class JwtClaimExtractor implements ClaimExtractor {
 
         String username = getStringClaim(TokenClaims.USERNAME, jwt);
 
-        String email = getStringClaim(TokenClaims.EMIL, jwt);
+        String email = getStringClaim(TokenClaims.EMAIL, jwt);
 
         boolean blocked = getBooleanClaims(TokenClaims.BLOCKED, jwt);
         boolean active = getBooleanClaims(TokenClaims.ACTIVE, jwt);

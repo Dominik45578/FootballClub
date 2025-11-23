@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: notification-service
+  data:
+    redis:
+      host: localhost
+      port: 7890
+      password: ""      # je?li nie masz has?a ? zostaw puste lub usu? lini?
+      timeout: 5000ms
+
+#  data:
+#    redis:
+#      host: ${REDIS_HOST:localhost}
+#      port: ${REDIS_PORT:6379}
+#      password: ${REDIS_PASSWORD:}
+#      timeout: 2000ms
+#      jedis:
+#        pool:
+#          max-active: 8
+#          max-idle: 8
+#          min-idle: 0
+#          max-wait: -1ms
+#
+#  cache:
+#    type: redis
+#    redis:
+#      time-to-live: 900000
+
+server:
+  port: 12003
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:12100/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+logging:
+  level:
+    com.polibuda.footballclub.nofification: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.redis: INFO

@@ -42,8 +42,10 @@
     <modules>
         <module>common</module>
         <module>eureka</module>
-        <module>identify</module>
         <module>gateway</module>
+        <module>identify</module>
+        <module>notification</module>
+
     </modules>
 
     <dependencyManagement>

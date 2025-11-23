@@ -55,11 +55,12 @@ public class User {
     @Column(nullable = false, name = "credentials_non_expired")
     private Boolean credentialsNonExpired = true;
 
-    @Column(name = "created_at", nullable = true, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Builder.Default
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -76,6 +77,6 @@ public class User {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = Instant.now();
     }
 }
