@@ -5,8 +5,48 @@ spring:
     redis:
       host: localhost
       port: 7890
-      password: ""      # je?li nie masz has?a ? zostaw puste lub usu? lini?
+      password: ""
       timeout: 5000ms
+
+  rabbitmq:
+    host: localhost
+    port: 13001
+    username: guest
+    password: guest
+    listener:
+      simple:
+        # Automatic acknowledgment mode
+        acknowledge-mode: auto
+        # Number of concurrent consumers
+        concurrency: 1
+        max-concurrency: 5
+        # Retry configuration
+        retry:
+          enabled: true
+          initial-interval: 3000  # 3 seconds
+          max-attempts: 3
+          max-interval: 10000     # 10 seconds
+          multiplier: 2.0
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: dkkd3046@gmail.com
+    password: ipam wiqv tymf bwgo
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+        transport:
+          protocol: smtp
+    default-encoding: UTF-8
+
 
 #  data:
 #    redis:
@@ -44,3 +84,14 @@ logging:
     com.polibuda.footballclub.nofification: DEBUG
     org.springframework.security: DEBUG
     org.springframework.data.redis: INFO
+
+
+# Email Configuration (custom properties)
+email:
+  from: dkkd3046@gmail.com
+  from-name: Football Club System
+
+
+
+
+

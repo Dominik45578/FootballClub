@@ -1,4 +1,23 @@
 spring:
+  rabbitmq:
+    host: localhost
+    port: 13001
+    username: guest
+    password: guest
+    listener:
+      simple:
+        # Automatic acknowledgment mode
+        acknowledge-mode: auto
+        # Number of concurrent consumers
+        concurrency: 1
+        max-concurrency: 5
+        # Retry configuration
+        retry:
+          enabled: true
+          initial-interval: 3000  # 3 seconds
+          max-attempts: 3
+          max-interval: 10000     # 10 seconds
+          multiplier: 2.0
   application:
     name: identity-service
   data:
@@ -33,6 +52,8 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
     open-in-view: false
+
+
 
 #  data:
 #    redis:
@@ -79,3 +100,4 @@ logging:
     com.polibuda.footballclub.identify: DEBUG
     org.springframework.security: DEBUG
     org.springframework.data.redis: INFO
+

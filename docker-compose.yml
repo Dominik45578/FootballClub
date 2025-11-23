@@ -1,0 +1,77 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/eureka"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    depends_on:
+      eureka:
+        condition: service_healthy
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+    ports:
+      - "8080:8080"
+
+  # ========= IDENTIFY =========
+  identify:
+    build:
+      context: ./identify
+      dockerfile: Dockerfile
+    container_name: identify
+    depends_on:
+      eureka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      SPRING_REDIS_HOST: redis
+      SPRING_RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8081:8081"
+
+  # ========= NOTIFICATION =========
+  notification:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    container_name: notification
+    depends_on:
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      SPRING_RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8082:8082"
