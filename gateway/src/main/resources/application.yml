@@ -39,7 +39,7 @@ eureka:
 gateway:
   auth:
     # URL do Identity Service (OAuth2 Authorization Server)
-    identity-base-uri: ${GATEWAY_IDENTITY_BASE_URI:http://localhost:${IDENTIFY_PORT:12002}}
+    identity-base-uri: ${GATEWAY_IDENTITY_BASE_URI:http://${IDENTIFY_NAME:localhost}:${IDENTIFY_PORT:12002}}
     # identyfikator klienta (SPA / frontend)
     client-id: ${GATEWAY_IDENTITY_CLIENT_ID:web-client}
     # standardowe zakresy żądane podczas logowania

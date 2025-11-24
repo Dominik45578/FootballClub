@@ -8,7 +8,7 @@ services:
   # ==========================================
   # EUREKA SERVER
   # ==========================================
-  ${EUREKA_NAME}:
+  eureka:
     build:
       context: ./eureka
       dockerfile: Dockerfile
@@ -19,23 +19,23 @@ services:
       - "${EUREKA_PORT}:${EUREKA_PORT}"
     environment:
       EUREKA_PORT: ${EUREKA_PORT}
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8761/eureka"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#    healthcheck:
+#      test: ["CMD", "curl", "-f-", "http://localhost:8761/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
 
   # ==========================================
   # GATEWAY
   # ==========================================
-  ${GATEWAY_NAME}:
+  gateway:
     build:
       context: ./gateway
       dockerfile: Dockerfile
     container_name: ${GATEWAY_NAME}
     depends_on:
-      ${EUREKA_NAME}:
-        condition: service_healthy
+      eureka:
+        condition: service_started
     networks:
       - services-network
     ports:
@@ -47,20 +47,20 @@ services:
   # ==========================================
   # IDENTIFY SERVICE
   # ==========================================
-  ${IDENTIFY_NAME}:
+  identify:
     build:
       context: ./identify
       dockerfile: Dockerfile
     container_name: ${IDENTIFY_NAME}
     depends_on:
-      ${EUREKA_NAME}:
+      eureka:
+        condition: service_started
+      redis:
         condition: service_healthy
-      ${REDIS_CONTAINER}:
-        condition: service_started
-      ${RABBIT_CONTAINER}:
-        condition: service_started
-      ${DB_CONTAINER}:
-        condition: service_started
+      rabbit:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     networks:
       - services-network
     environment:
@@ -70,8 +70,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
 
-      SPRING_REDIS_HOST: ${REDIS_CONTAINER}
-      SPRING_REDIS_PORT: ${REDIS_PORT}
+      SPRING_DATA_REDIS_HOST: ${REDIS_CONTAINER}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
 
       SPRING_RABBITMQ_HOST: ${RABBIT_CONTAINER}
       SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -88,16 +88,16 @@ services:
   # ==========================================
   # NOTIFICATION SERVICE
   # ==========================================
-  ${NOTIFICATION_NAME}:
+  notification:
     build:
       context: ./notification
       dockerfile: Dockerfile
     container_name: ${NOTIFICATION_NAME}
     depends_on:
-      ${EUREKA_NAME}:
-        condition: service_healthy
-      ${RABBIT_CONTAINER}:
+      eureka:
         condition: service_started
+      rabbit:
+        condition: service_healthy
     networks:
       - services-network
     environment:
@@ -106,11 +106,14 @@ services:
       SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
       SPRING_RABBITMQ_USERNAME: ${RABBIT_USERNAME}
       SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
+      EMAIL_NAME: ${EMAIL_NAME}
+      EMAIL_PASS_CODE: ${EMAIL_PASS_CODE}
+
 
   # ==========================================
   # RABBITMQ
-  # ==========================================
-  ${RABBIT_CONTAINER}:
+# ==========================================
+  rabbit:
     image: rabbitmq:3-management
     container_name: ${RABBIT_CONTAINER}
     networks:
@@ -121,21 +124,31 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ==========================================
   # REDIS
   # ==========================================
-  ${REDIS_CONTAINER}:
+  redis:
     image: redis:7
     container_name: ${REDIS_CONTAINER}
     networks:
       - services-network
     ports: ["${REDIS_PORT}:6379"]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ==========================================
   # MYSQL
   # ==========================================
-  ${DB_CONTAINER}:
+  mysql:
     image: mysql:8
     container_name: ${DB_CONTAINER}
     networks:
@@ -149,6 +162,10 @@ services:
       MYSQL_DATABASE: ${DB_IDENTIFY_NAME}
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
 
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
-
-    command: --default-authentication-plugin=mysql_native_password

@@ -55,6 +55,7 @@ public class User {
     @Column(nullable = false, name = "credentials_non_expired")
     private Boolean credentialsNonExpired = true;
 
+    @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
