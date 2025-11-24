@@ -86,7 +86,10 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest request) {
         try {
             log.info("User login attempt: {}", request.getEmail());
-
+            User user = userService.findByEmail(request.getEmail());
+            if(user.getEnabled()==false){
+                activateService.sendMail(request);
+            }
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getEmail(),
@@ -94,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
 
-            User user = userService.findByEmail(request.getEmail());
+
             log.debug("User login successfully: {}", user.getUsername());
             String token = jwtService.generateToken(user);
 

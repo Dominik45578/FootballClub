@@ -1,5 +1,5 @@
 server:
-  port: 12002
+  port: ${GATEWAY_PORT:12001}
 
 spring:
   application:
@@ -24,12 +24,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${GATEWAY_JWT_ISSUER_URI:http://localhost:12001}
+          issuer-uri: ${GATEWAY_JWT_ISSUER_URI:http://${IDENTIFY_NAME:localhost}:${${IDENTIFY_PORT:12002}}}
 
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:12100/eureka/}
+      defaultZone: ${EUREKA_URL:http://${EUREKA_NAME:localhost}:${EUREKA_PORT:8761}/eureka/}
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -39,7 +39,7 @@ eureka:
 gateway:
   auth:
     # URL do Identity Service (OAuth2 Authorization Server)
-    identity-base-uri: ${GATEWAY_IDENTITY_BASE_URI:http://localhost:12001}
+    identity-base-uri: ${GATEWAY_IDENTITY_BASE_URI:http://${IDENTIFY_NAME:localhost}:${IDENTIFY_PORT:12002}}
     # identyfikator klienta (SPA / frontend)
     client-id: ${GATEWAY_IDENTITY_CLIENT_ID:web-client}
     # standardowe zakresy żądane podczas logowania

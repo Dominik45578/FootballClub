@@ -1,5 +1,5 @@
 server:
-  port: 12100
+  port: ${EUREKA_PORT:8761}
 
 eureka:
   client:
@@ -8,3 +8,7 @@ eureka:
 
   server:
     enable-self-preservation: false  # Opcjonalne uproszczenie działania serwera (brak self preservation)
+
+spring:
+  application:
+    name: ${EUREKA_NAME:eureka}

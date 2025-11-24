@@ -19,6 +19,6 @@ public class ActivateRequest {
     private String email;
     
     @NotBlank(message = "Activation code is required")
-    @Size(min = 6, max = 6, message = "Activation code must be 6 characters")
+    @Size(min = 6, max = 10, message = "Activation code must be al least characters and max 10")
     private String code;
 }
