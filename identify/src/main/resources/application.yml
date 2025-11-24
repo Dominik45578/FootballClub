@@ -1,9 +1,9 @@
 spring:
   rabbitmq:
-    host: localhost
-    port: 13001
-    username: guest
-    password: guest
+    host: ${RABBIT_CONTAINER:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
     listener:
       simple:
         # Automatic acknowledgment mode
@@ -22,9 +22,9 @@ spring:
     name: identity-service
   data:
     redis:
-      host: localhost
-      port: 7890
-      password: ""      # jeśli nie masz hasła → zostaw puste lub usuń linię
+      host: ${REDIS_CONTAINER:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}      # jeśli nie masz hasła → zostaw puste lub usuń linię
       timeout: 5000ms
 
   cloud:
@@ -34,10 +34,10 @@ spring:
         lower-case-service-id: true
 
   datasource:
-    url: jdbc:mysql://localhost:3306/identitydb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:${DB_CONTAINER:mysql}://${DB_CONTAINER:localhost}:${DB_PORT:3306}/${DB_IDENTIFY_NAME:identitydb}${DB_PARAMETERS:?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: ""
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -74,21 +74,21 @@ spring:
 #      time-to-live: 900000
 
 jwt:
-  secret: lg8UfAf4xZ3y1NEREOl7FS6E4T72ZxWiVHXnpandIva8bpfCTlXZSWBMYHGhon3CMmkHTr9dAA1bYfditkYJ39
-  access-token-expiration: 3600000
+  secret: ${JWT_SECRET:lg8UfAf4xZ3y1NEREOl7FS6E4T72ZxWiVHXnpandIva8bpfCTlXZSWBMYHGhon3CMmkHTr9dAA1bYfditkYJ39}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
   refresh-secret: ${JWT_REFRESH_SECRET:different-refresh-secret-key-must-be-different-from-access-secret-at-least-512-bits}
-  refresh-token-expiration: 86400000
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
 
 activation:
   code-ttl-minutes: 15
 
 server:
-  port: 12001
+  port: ${IDENTIFY_PORT:12002}
 
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:12100/eureka/}
+      defaultZone: ${EUREKA_URL:http://${EUREKA_NAME:localhost}:${EUREKA_PORT:8761}/eureka/}
     register-with-eureka: true
     fetch-registry: true
   instance:

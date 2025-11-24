@@ -30,7 +30,6 @@ public class ActivateServiceImpl implements ActivateService {
     @Override
     @Transactional
     public boolean activate(ActivateRequest request) {
-        String username;
         return redisUserRepository.findByEmail(request.getEmail())
                 .filter(ru -> ru.getVerificationCode().equals(request.getCode()))
                 .map(ru -> {

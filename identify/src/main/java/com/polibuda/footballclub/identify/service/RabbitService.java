@@ -29,6 +29,7 @@ public class RabbitService {
     }
 
     public void sendMessageWithVerificationCode(String recipient ,String content, String subject){
+        log.info("Sending rabbit message : \nEmail {} \nSubject {} \nContent {}",recipient,subject,content);
         if(!checkMessageData(recipient, content)){
             log.error("Invalid message data");
             return;

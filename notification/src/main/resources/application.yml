@@ -1,18 +1,18 @@
 spring:
   application:
     name: notification-service
-  data:
-    redis:
-      host: localhost
-      port: 7890
-      password: ""
-      timeout: 5000ms
+#  data:
+#    redis:
+#      host: ${REDIS_CONTAINER:localhost}
+#      port: ${REDIS_PORT:6379}
+#      password: ${REDIS_PASSWORD:}
+#      timeout: 5000ms
 
   rabbitmq:
-    host: localhost
-    port: 13001
-    username: guest
-    password: guest
+    host: ${RABBIT_CONTAINER:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
     listener:
       simple:
         # Automatic acknowledgment mode
@@ -31,8 +31,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: dkkd3046@gmail.com
-    password: ipam wiqv tymf bwgo
+    username: ${EMAIL_NAME:dkkd3046@gmail.com}
+    password: ${EMAIL_PASS_CODE:}#tu daj kod
     properties:
       mail:
         smtp:
@@ -40,39 +40,20 @@ spring:
           starttls:
             enable: true
             required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+          connectiontimeout: 15000
+          timeout: 15000
+          writetimeout: 15000
         transport:
           protocol: smtp
     default-encoding: UTF-8
 
-
-#  data:
-#    redis:
-#      host: ${REDIS_HOST:localhost}
-#      port: ${REDIS_PORT:6379}
-#      password: ${REDIS_PASSWORD:}
-#      timeout: 2000ms
-#      jedis:
-#        pool:
-#          max-active: 8
-#          max-idle: 8
-#          min-idle: 0
-#          max-wait: -1ms
-#
-#  cache:
-#    type: redis
-#    redis:
-#      time-to-live: 900000
-
 server:
-  port: 12003
+  port: ${NOTIFICATION_PORT:12003}
 
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:12100/eureka/}
+      defaultZone: ${EUREKA_URL:http://${EUREKA_NAME:localhost}:${EUREKA_PORT:8761}/eureka/}
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -81,14 +62,14 @@ eureka:
 
 logging:
   level:
-    com.polibuda.footballclub.nofification: DEBUG
+    com.polibuda.footballclub.notification: DEBUG
     org.springframework.security: DEBUG
     org.springframework.data.redis: INFO
 
 
 # Email Configuration (custom properties)
 email:
-  from: dkkd3046@gmail.com
+  from: ${EMAIL_NAME:dkkd3046@gmail.com}
   from-name: Football Club System
 
 

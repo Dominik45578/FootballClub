@@ -30,6 +30,7 @@ public class EmailService {
      */
     public void sendEmail(String to, String subject, String content) {
         try {
+            log.info("Sending email to {} with subject {} and content {} ", to, subject,content);
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(to);

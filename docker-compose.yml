@@ -1,77 +1,154 @@
 version: "3.9"
 
-services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+networks:
+  services-network:
 
-  redis:
-    image: redis:7
-    container_name: redis
-    ports:
-      - "6379:6379"
-  eureka:
+services:
+
+  # ==========================================
+  # EUREKA SERVER
+  # ==========================================
+  ${EUREKA_NAME}:
     build:
       context: ./eureka
       dockerfile: Dockerfile
-    container_name: eureka
+    container_name: ${EUREKA_NAME}
+    networks:
+      - services-network
     ports:
-      - "8761:8761"
+      - "${EUREKA_PORT}:${EUREKA_PORT}"
+    environment:
+      EUREKA_PORT: ${EUREKA_PORT}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8761/eureka"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  gateway:
+  # ==========================================
+  # GATEWAY
+  # ==========================================
+  ${GATEWAY_NAME}:
     build:
       context: ./gateway
       dockerfile: Dockerfile
-    container_name: gateway
+    container_name: ${GATEWAY_NAME}
     depends_on:
-      eureka:
+      ${EUREKA_NAME}:
         condition: service_healthy
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+    networks:
+      - services-network
     ports:
-      - "8080:8080"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+      SERVER_PORT: ${GATEWAY_PORT}
 
-  # ========= IDENTIFY =========
-  identify:
+  # ==========================================
+  # IDENTIFY SERVICE
+  # ==========================================
+  ${IDENTIFY_NAME}:
     build:
       context: ./identify
       dockerfile: Dockerfile
-    container_name: identify
+    container_name: ${IDENTIFY_NAME}
     depends_on:
-      eureka:
+      ${EUREKA_NAME}:
         condition: service_healthy
-      redis:
+      ${REDIS_CONTAINER}:
         condition: service_started
-      rabbitmq:
+      ${RABBIT_CONTAINER}:
         condition: service_started
+      ${DB_CONTAINER}:
+        condition: service_started
+    networks:
+      - services-network
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
-      SPRING_REDIS_HOST: redis
-      SPRING_RABBITMQ_HOST: rabbitmq
-    ports:
-      - "8081:8081"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
 
-  # ========= NOTIFICATION =========
-  notification:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://${DB_CONTAINER}:${DB_PORT}/${DB_IDENTIFY_NAME}${DB_PARAMETERS}"
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      SPRING_REDIS_HOST: ${REDIS_CONTAINER}
+      SPRING_REDIS_PORT: ${REDIS_PORT}
+
+      SPRING_RABBITMQ_HOST: ${RABBIT_CONTAINER}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBIT_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+
+      EMAIL_NAME: ${EMAIL_NAME}
+      EMAIL_PASS_CODE: ${EMAIL_PASS_CODE}
+
+  # ==========================================
+  # NOTIFICATION SERVICE
+  # ==========================================
+  ${NOTIFICATION_NAME}:
     build:
       context: ./notification
       dockerfile: Dockerfile
-    container_name: notification
+    container_name: ${NOTIFICATION_NAME}
     depends_on:
-      eureka:
+      ${EUREKA_NAME}:
         condition: service_healthy
-      rabbitmq:
+      ${RABBIT_CONTAINER}:
         condition: service_started
+    networks:
+      - services-network
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
-      SPRING_RABBITMQ_HOST: rabbitmq
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+      SPRING_RABBITMQ_HOST: ${RABBIT_CONTAINER}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBIT_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
+
+  # ==========================================
+  # RABBITMQ
+  # ==========================================
+  ${RABBIT_CONTAINER}:
+    image: rabbitmq:3-management
+    container_name: ${RABBIT_CONTAINER}
+    networks:
+      - services-network
     ports:
-      - "8082:8082"
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MGMT_PORT}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+
+  # ==========================================
+  # REDIS
+  # ==========================================
+  ${REDIS_CONTAINER}:
+    image: redis:7
+    container_name: ${REDIS_CONTAINER}
+    networks:
+      - services-network
+    ports: ["${REDIS_PORT}:6379"]
+
+  # ==========================================
+  # MYSQL
+  # ==========================================
+  ${DB_CONTAINER}:
+    image: mysql:8
+    container_name: ${DB_CONTAINER}
+    networks:
+      - services-network
+    # jeśli nie chcesz wystawiać MySQL poza dockera → usuń ports całkowicie
+    ports:
+      - "${DB_PORT}:3306"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_IDENTIFY_NAME}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+
+
+    command: --default-authentication-plugin=mysql_native_password
