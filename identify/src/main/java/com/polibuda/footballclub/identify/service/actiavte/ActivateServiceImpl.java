@@ -2,6 +2,8 @@ package com.polibuda.footballclub.identify.service.actiavte;
 
 import com.polibuda.footballclub.common.dto.ActivateRequest;
 import com.polibuda.footballclub.common.dto.ActivateResponse;
+import com.polibuda.footballclub.common.dto.LoginRequest;
+import com.polibuda.footballclub.identify.EmailTemplates;
 import com.polibuda.footballclub.identify.RegisterCodeGenerator;
 import com.polibuda.footballclub.identify.entity.User;
 import com.polibuda.footballclub.identify.redis.RedisUser;
@@ -41,8 +43,9 @@ public class ActivateServiceImpl implements ActivateService {
                             });
                     redisUserRepository.delete(ru);
                     log.info("RedisUser deleted: {}", ru);
+                    String temp = EmailTemplates.generateAccountActivatedEmail(request.getEmail());
                     rabbitService.sendMessageWithVerificationCode(
-                            ru.getEmail(),"Hi, your account was verified","Account verified successfully!"
+                            ru.getEmail(),temp,"Account verified successfully!"
                     );
                     return true;
                 })
@@ -63,9 +66,18 @@ public class ActivateServiceImpl implements ActivateService {
                             .build();
                     redisUserRepository.save(ru);
                     log.info("New code generated for user: {}", ru.getEmail());
-                    rabbitService.sendMessageWithVerificationCode(ru.getEmail(), ru.getVerificationCode(), subject);
+                    String temp = EmailTemplates.generateWelcomeEmail(ru.getEmail(), ru.getVerificationCode());
+                    rabbitService.sendMessageWithVerificationCode(ru.getEmail(), temp, subject);
                     return ru.getVerificationCode();
                 })
                 .orElseThrow(() -> new RuntimeException("Account already verified"));
+    }
+
+    @Override
+    public void sendMail(LoginRequest request) {
+        String temp = EmailTemplates.generateAccountNotActiveEmail(request.getEmail());
+        rabbitService.sendMessageWithVerificationCode(
+                request.getEmail(),temp,"Account not active"
+        );
     }
 }
