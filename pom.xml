@@ -44,6 +44,7 @@
         <module>eureka</module>
         <module>gateway</module>
         <module>identify</module>
+        <module>user-service</module>
         <module>notification</module>
 
     </modules>
