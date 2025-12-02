@@ -213,13 +213,37 @@ services:
     image: redis/redisinsight:latest
     container_name: redis-insight
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - services-network
     ports:
       - "5540:5540"
     volumes:
       - redisinsight-data:/data
+
+  # ==========================================
+  # MYSQL GUI — phpMyAdmin
+  # ==========================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - services-network
+    ports:
+      - "13306:80"
+    environment:
+
+      PMA_HOST: ${DB_CONTAINER}
+      PMA_PORT: ${DB_PORT}
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+
+      UPLOAD_LIMIT: 1024M
+
 
 volumes:
   redisinsight-data:

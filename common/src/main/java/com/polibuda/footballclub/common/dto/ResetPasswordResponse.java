@@ -9,7 +9,10 @@ import java.time.Instant;
 @AllArgsConstructor
 @Data
 public class ResetPasswordResponse {
-    private boolean status;
-    private String message;
-    private Instant timestamp;
+    @Builder.Default
+    private boolean status = true;
+    @Builder.Default
+    private String message ="If this account exist, you will receive email with password reset code";
+    @Builder.Default
+    private Instant timestamp = Instant.now();
 }

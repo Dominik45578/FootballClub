@@ -1,14 +1,12 @@
 package com.polibuda.footballclub.identify.service.auth;
 
 import com.polibuda.footballclub.common.dto.*;
-import com.polibuda.footballclub.identify.RegisterCodeGenerator;
 import com.polibuda.footballclub.identify.entity.Role;
 import com.polibuda.footballclub.identify.entity.User;
-import com.polibuda.footballclub.identify.redis.RedisUser;
 import com.polibuda.footballclub.identify.repository.RoleRepository;
+import com.polibuda.footballclub.identify.repository.UserRepository;
 import com.polibuda.footballclub.identify.service.actiavte.ActivateService;
 import com.polibuda.footballclub.identify.service.token.JwtAccessService;
-import com.polibuda.footballclub.identify.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,12 +25,12 @@ import java.util.Set;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtAccessService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final ActivateService activateService;
+    private final ActivateService activateService; // Wstrzykujemy interfejs
 
     private static final String DEFAULT_ROLE = "ROLE_USER";
 
@@ -40,14 +38,8 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
         try {
-            log.info("Registering new user: {}", request.getUsername());
-
-            if (userService.existsByUsername(request.getUsername())) {
-                return RegisterResponse.builder()
-                        .success(false)
-                        .message("Username already exists")
-                        .timestamp(LocalDateTime.now())
-                        .build();
+            if (userRepository.existsByUsername(request.getUsername())) {
+                return RegisterResponse.builder().success(false).message("Username already exists").timestamp(LocalDateTime.now()).build();
             }
 
             Role userRole = roleRepository.findByName(DEFAULT_ROLE)
@@ -58,26 +50,19 @@ public class AuthServiceImpl implements AuthService {
                     .password(passwordEncoder.encode(request.getPassword()))
                     .roles(new HashSet<>(Set.of(userRole)))
                     .email(request.getEmail())
+                    .enabled(false)
                     .build();
 
+            userRepository.save(user);
 
-            userService.save(user);
-            activateService.generateCode(request.getEmail());
+            // Delegacja wysyłki kodu
+            activateService.sendActivationCode(user.getEmail(), user.getUsername());
 
-            log.info("User registered successfully: {}", user.getUsername());
-            return RegisterResponse.builder()
-                    .success(true)
-                    .message("User registered successfully")
-                    .timestamp(LocalDateTime.now())
-                    .build();
+            return RegisterResponse.builder().success(true).message("User registered successfully").timestamp(LocalDateTime.now()).build();
 
         } catch (Exception e) {
-            log.error("Registration error for user: {}", request.getUsername(), e);
-            return RegisterResponse.builder()
-                    .success(false)
-                    .message("Registration failed: " + e.getMessage())
-                    .timestamp(LocalDateTime.now())
-                    .build();
+            log.error("Registration error", e);
+            return RegisterResponse.builder().success(false).message("Registration failed: " + e.getMessage()).timestamp(LocalDateTime.now()).build();
         }
     }
 
@@ -85,103 +70,46 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         try {
-            log.info("User login attempt: {}", request.getEmail());
-            User user = userService.findByEmail(request.getEmail());
-            if(user.getEnabled()==false){
-                activateService.sendMail(request);
+            // Sprawdzenie stanu konta przed autentykacją springową
+            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+
+            if (user != null && !user.getEnabled()) {
+                activateService.sendAccountNotVerifiedReminder(user.getEmail(), user.getUsername());
+                return LoginResponse.builder().success(false).message("Account not activated. Check email.").timestamp(LocalDateTime.now()).build();
             }
+
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
+            // Pobieramy usera ponownie (lub używamy tego z góry, jeśli jesteśmy pewni) by mieć pewność co do ról
+            User authenticatedUser = userRepository.findByEmail(request.getEmail()).orElseThrow();
+            String token = jwtService.generateToken(authenticatedUser);
 
-            log.debug("User login successfully: {}", user.getUsername());
-            String token = jwtService.generateToken(user);
-
-            log.info("User logged in successfully: {}", user.getUsername());
-            return LoginResponse.builder()
-                    .success(true)
-                    .message("Login successful")
-                    .timestamp(LocalDateTime.now())
-                    .token(token)
-                    .build();
+            return LoginResponse.builder().success(true).message("Login successful").token(token).timestamp(LocalDateTime.now()).build();
 
         } catch (BadCredentialsException e) {
-            log.error("Invalid credentials for user: {}", request.getEmail());
-            return LoginResponse.builder()
-                    .success(false)
-                    .message("Invalid username or password")
-                    .timestamp(LocalDateTime.now())
-                    .token(null)
-                    .build();
+            return LoginResponse.builder().success(false).message("Invalid credentials").timestamp(LocalDateTime.now()).build();
         } catch (Exception e) {
-            log.error("Login error for user: {}", request.getEmail(), e);
-            return LoginResponse.builder()
-                    .success(false)
-                    .message("Login failed: " + e.getMessage())
-                    .timestamp(LocalDateTime.now())
-                    .token(null)
-                    .build();
+            log.error("Login error", e);
+            return LoginResponse.builder().success(false).message("Login failed").timestamp(LocalDateTime.now()).build();
         }
     }
 
     @Override
-    @Transactional(readOnly = true)
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
+        // ... (Twoja logika bez zmian)
         try {
-            log.info("Refreshing token");
-
             if (!jwtService.validateToken(request.getRefreshToken())) {
-                return RefreshTokenResponse.builder()
-                        .success(false)
-                        .message("Invalid or expired refresh token")
-                        .timestamp(LocalDateTime.now())
-                        .token(null)
-                        .build();
+                return RefreshTokenResponse.builder().success(false).message("Invalid token").build();
             }
-
             String username = jwtService.extractUsername(request.getRefreshToken());
-            User user = userService.findByUsername(username);
+            User user = userRepository.findByUsername(username).orElseThrow();
             String newToken = jwtService.generateToken(user);
 
-            log.info("Token refreshed successfully for user: {}", username);
-            return RefreshTokenResponse.builder()
-                    .success(true)
-                    .message("Token refreshed successfully")
-                    .timestamp(LocalDateTime.now())
-                    .token(newToken)
-                    .build();
-
+            return RefreshTokenResponse.builder().success(true).token(newToken).timestamp(LocalDateTime.now()).build();
         } catch (Exception e) {
-            log.error("Token refresh error", e);
-            return RefreshTokenResponse.builder()
-                    .success(false)
-                    .message("Token refresh failed: " + e.getMessage())
-                    .timestamp(LocalDateTime.now())
-                    .token(null)
-                    .build();
+            return RefreshTokenResponse.builder().success(false).message(e.getMessage()).build();
         }
-    }
-
-    @Override
-    public ActivateResponse activate(ActivateRequest request) {
-        log.info("Activating user account: {}", request.getEmail());
-        if(!activateService.activate(request)) {
-            log.error("Activation failed for user: {}", request.getEmail());
-            return ActivateResponse.builder()
-                    .success(false)
-                    .message("Invalid creditionals")
-                    .timestamp(LocalDateTime.now())
-                    .build();
-        }
-        log.info("Activated user account: {}", request.getEmail());
-        return ActivateResponse.builder()
-                .success(true)
-                .message("Activated successfully")
-                .timestamp(LocalDateTime.now())
-                .build();
     }
 }

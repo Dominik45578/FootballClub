@@ -3,85 +3,84 @@ package com.polibuda.footballclub.identify.service.actiavte;
 import com.polibuda.footballclub.common.actions.NotificationAction;
 import com.polibuda.footballclub.common.dto.ActivateRequest;
 import com.polibuda.footballclub.common.dto.ActivateResponse;
-import com.polibuda.footballclub.common.dto.LoginRequest;
 import com.polibuda.footballclub.identify.EmailTemplates;
 import com.polibuda.footballclub.identify.RegisterCodeGenerator;
-import com.polibuda.footballclub.identify.entity.User;
-import com.polibuda.footballclub.identify.redis.RedisUser;
-import com.polibuda.footballclub.identify.repository.RedisUserRepository;
 import com.polibuda.footballclub.identify.repository.UserRepository;
 import com.polibuda.footballclub.identify.service.RabbitService;
-import com.polibuda.footballclub.identify.service.user.UserService;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import com.polibuda.footballclub.identify.service.redis.RedisService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ActivateServiceImpl implements ActivateService {
 
     private final UserRepository userRepository;
-    private final RedisUserRepository redisUserRepository;
+    private final RedisService redisService;
     private final RabbitService rabbitService;
-    private final String subject = "Verify your account";
 
     @Override
     @Transactional
-    public boolean activate(ActivateRequest request) {
-        String id = RedisUser.generateId(request.getEmail(), NotificationAction.VERIFY_USER_ACCOUNT);
-        return redisUserRepository.findById(id)
-                .filter(ru -> ru.getVerificationCode().equals(request.getCode()))
-                .map(ru -> {
-                    userRepository.findByEmail(request.getEmail())
-                            .ifPresent(user -> {
-                                user.setEnabled(true);
-                                user.setAccountNonLocked(true);
-                                log.info("User account enabled and unlocked: {}", user);
-                            });
-                    redisUserRepository.delete(ru);
-                    log.info("RedisUser deleted: {}", ru);
-                    String temp = EmailTemplates.generateAccountActivatedEmail(request.getEmail());
-                    rabbitService.sendMessageWithVerificationCode(
-                            ru.getEmail(),temp,"Account verified successfully!"
-                    );
-                    return true;
-                })
-                .orElseGet(() -> {
-                    log.warn("Activation failed for email: {}", request.getEmail());
-                    return false;
-                });
-    }
+    public ActivateResponse activateAccount(ActivateRequest request) {
+        boolean isValid = redisService.validateCode(request.getEmail(), request.getCode(), NotificationAction.VERIFY_USER_ACCOUNT);
 
-    @Override
-    public String generateCode(String email) {
-        String id = RedisUser.generateId(email, NotificationAction.VERIFY_USER_ACCOUNT);
-        return userRepository.findByEmail(email)
-                .filter(u -> !u.getEnabled())
-                .map(u -> {
-                    RedisUser ru = RedisUser.builder()
-                            .id(id)
-                            .email(email)
-                            .verificationCode(RegisterCodeGenerator.generateUrlSafeToken())
+        if (!isValid) {
+            log.warn("Invalid activation code for: {}", request.getEmail());
+            return ActivateResponse.builder()
+                    .success(false)
+                    .message("Invalid code or email")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        }
+
+        return userRepository.findByEmail(request.getEmail())
+                .map(user -> {
+                    user.setEnabled(true);
+                    user.setAccountNonLocked(true);
+                    userRepository.save(user);
+
+                    redisService.deleteCode(request.getEmail(), NotificationAction.VERIFY_USER_ACCOUNT);
+
+                    String emailContent = EmailTemplates.generateAccountActivatedEmail(user.getUsername());
+                    rabbitService.sendMessageWithVerificationCode(user.getEmail(), emailContent, "Account verified successfully!");
+
+                    log.info("User activated successfully: {}", user.getEmail());
+                    return ActivateResponse.builder()
+                            .success(true)
+                            .message("Account activated successfully")
+                            .timestamp(LocalDateTime.now())
                             .build();
-                    redisUserRepository.save(ru);
-                    log.info("New code generated for user: {}", ru.getEmail());
-                    String temp = EmailTemplates.generateWelcomeEmail(ru.getEmail(), ru.getVerificationCode());
-                    rabbitService.sendMessageWithVerificationCode(ru.getEmail(), temp, subject);
-                    return ru.getVerificationCode();
                 })
-                .orElseThrow(() -> new RuntimeException("Account already verified"));
+                .orElseGet(() -> ActivateResponse.builder()
+                        .success(false)
+                        .message("User not found")
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @Override
-    public void sendMail(LoginRequest request) {
-        String temp = EmailTemplates.generateAccountNotActiveEmail(request.getEmail());
-        rabbitService.sendMessageWithVerificationCode(
-                request.getEmail(),temp,"Account not active"
-        );
+    public boolean sendActivationCode(String email, String username) {
+        try {
+            String code = RegisterCodeGenerator.generateUrlSafeToken();
+            redisService.saveCode(email, code, NotificationAction.VERIFY_USER_ACCOUNT);
+
+            String content = EmailTemplates.generateEmailWithActivationCode(username, code);
+            rabbitService.sendMessageWithVerificationCode(email, content, "Verify your account");
+            return true;
+        } catch (Exception e) {
+            log.error("Error sending activation code to: {}", email, e);
+            return false;
+        }
+    }
+
+    @Override
+    public void sendAccountNotVerifiedReminder(String email, String username) {
+        String content = EmailTemplates.generateAccountNotActiveEmail(username);
+        rabbitService.sendMessageWithVerificationCode(email, content, "Action Required: Verify Account");
     }
 }

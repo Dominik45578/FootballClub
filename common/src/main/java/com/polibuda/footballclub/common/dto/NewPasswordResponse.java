@@ -10,7 +10,10 @@ import java.time.Instant;
 @AllArgsConstructor
 @Data
 public class NewPasswordResponse {
-    private boolean status;
-    private String message;
-    private Instant timestamp;
+    @Builder.Default
+    private boolean status = false;
+    @Builder.Default
+    private String message = "Problem with your password";
+    @Builder.Default
+    private Instant timestamp = Instant.now();
 }
