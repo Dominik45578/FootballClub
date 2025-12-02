@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.identify.service.actiavte;
 
+import com.polibuda.footballclub.common.actions.NotificationAction;
 import com.polibuda.footballclub.common.dto.ActivateRequest;
 import com.polibuda.footballclub.common.dto.ActivateResponse;
 import com.polibuda.footballclub.common.dto.LoginRequest;
@@ -32,7 +33,8 @@ public class ActivateServiceImpl implements ActivateService {
     @Override
     @Transactional
     public boolean activate(ActivateRequest request) {
-        return redisUserRepository.findByEmail(request.getEmail())
+        String id = RedisUser.generateId(request.getEmail(), NotificationAction.VERIFY_USER_ACCOUNT);
+        return redisUserRepository.findById(id)
                 .filter(ru -> ru.getVerificationCode().equals(request.getCode()))
                 .map(ru -> {
                     userRepository.findByEmail(request.getEmail())
@@ -57,10 +59,12 @@ public class ActivateServiceImpl implements ActivateService {
 
     @Override
     public String generateCode(String email) {
+        String id = RedisUser.generateId(email, NotificationAction.VERIFY_USER_ACCOUNT);
         return userRepository.findByEmail(email)
                 .filter(u -> !u.getEnabled())
                 .map(u -> {
                     RedisUser ru = RedisUser.builder()
+                            .id(id)
                             .email(email)
                             .verificationCode(RegisterCodeGenerator.generateUrlSafeToken())
                             .build();
