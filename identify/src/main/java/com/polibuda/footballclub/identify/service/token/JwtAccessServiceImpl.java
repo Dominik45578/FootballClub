@@ -33,6 +33,7 @@ public class JwtAccessServiceImpl implements JwtAccessService {
     @Override
     public String generateToken(User user) {
         Map<String, Object> claims = buildClaims(user);
+        log.info(claims.toString());
         return buildToken(claims, user.getUsername());
     }
 
@@ -75,7 +76,7 @@ public class JwtAccessServiceImpl implements JwtAccessService {
         claims.put(TokenClaims.USERNAME, user.getUsername());
         claims.put(TokenClaims.EMAIL, user.getEmail());
         claims.put(TokenClaims.ACTIVE, user.getEnabled());
-        claims.put(TokenClaims.BLOCKED, user.getAccountNonLocked());
+        claims.put(TokenClaims.NON_BLOCKED, user.getAccountNonLocked());
         claims.put(TokenClaims.ROLES, user.getRoles().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));

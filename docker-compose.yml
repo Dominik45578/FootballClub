@@ -43,6 +43,8 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
       SERVER_PORT: ${GATEWAY_PORT}
+      GATEWAY_IDENTITY_BASE_URI: "http://localhost:${GATEWAY_PORT}/api/auth"
+      GATEWAY_IDENTITY_CLIENT_ID: web-client
 
   # ==========================================
   # IDENTIFY SERVICE
@@ -84,6 +86,41 @@ services:
 
       EMAIL_NAME: ${EMAIL_NAME}
       EMAIL_PASS_CODE: ${EMAIL_PASS_CODE}
+
+  # ==========================================
+  # USER SERVICE
+  # ==========================================
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: ${USER_SERVICE_NAME}
+    depends_on:
+      eureka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - services-network
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+
+      SPRING_DATASOURCE_URL: "jdbc:mysql://${DB_CONTAINER}:${DB_PORT}/${DB_IDENTIFY_NAME}${DB_PARAMETERS}"
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      SPRING_DATA_REDIS_HOST: ${REDIS_CONTAINER}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+
+      SPRING_RABBITMQ_HOST: ${RABBIT_CONTAINER}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBIT_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
 
   # ==========================================
   # NOTIFICATION SERVICE
@@ -169,3 +206,46 @@ services:
       retries: 10
       start_period: 10s
 
+
+################################gui
+  # ==========================================
+  # REDIS GUI — RedisInsight
+  # ==========================================
+  redis-gui:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - services-network
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight-data:/data
+
+  # ==========================================
+  # MYSQL GUI — phpMyAdmin
+  # ==========================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - services-network
+    ports:
+      - "13306:80"
+    environment:
+
+      PMA_HOST: ${DB_CONTAINER}
+      PMA_PORT: ${DB_PORT}
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+
+      UPLOAD_LIMIT: 1024M
+
+
+volumes:
+  redisinsight-data:

@@ -10,7 +10,7 @@ public class EmailTemplates {
     /**
      * Szablon powitalny z kodem weryfikacyjnym
      */
-    public static String generateWelcomeEmail(String username, String code) {
+    public static String generateEmailWithActivationCode(String username, String code) {
         String title = "Witaj w Football Club System!";
         String content = """
             <p>Cześć <strong>{{USERNAME}}</strong>,</p>
@@ -63,6 +63,57 @@ public class EmailTemplates {
             </div>
             <p>Aby uzyskać dostęp do systemu, musisz najpierw potwierdzić swój adres email wpisując kod, który wysłaliśmy w poprzedniej wiadomości.</p>
             <p>Jeśli nie możesz znaleźć kodu, w aplikacji możesz poprosić o jego ponowne wysłanie.</p>
+            """
+                .replace("{{USERNAME}}", username);
+
+        return wrapHtml(title, content);
+    }
+
+    /**
+     * Szablon maila z kodem do resetowania hasła
+     */
+    public static String generatePasswordResetEmail(String username, String code) {
+        String title = "Resetowanie hasła";
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <p>Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta w Football Club System.</p>
+            <p>Aby nadać nowe hasło, wprowadź poniższy kod weryfikacyjny:</p>
+            
+            <div style="background-color: #e9ecef; border-left: 5px solid {{COLOR}}; padding: 20px; text-align: center; margin: 20px 0;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333;">{{CODE}}</span>
+            </div>
+            
+            <p>Kod jest ważny przez 10 minut.</p>
+            
+            <div style="font-size: 13px; color: #666; margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                <strong>To nie Ty?</strong> Jeśli nie prosiłeś o zmianę hasła, zignoruj tę wiadomość i nie udostępniaj nikomu powyższego kodu. Twoje konto pozostaje bezpieczne.
+            </div>
+            """
+                .replace("{{USERNAME}}", username)
+                .replace("{{CODE}}", code)
+                .replace("{{COLOR}}", COLOR_PRIMARY); // Użycie głównego koloru systemu
+
+        return wrapHtml(title, content);
+    }
+
+    /**
+     * Szablon alertu bezpieczeństwa po zmianie hasła
+     */
+    public static String generatePasswordChangedAlertEmail(String username) {
+        String title = "Hasło zostało zmienione";
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <p>Informujemy, że hasło do Twojego konta w Football Club System zostało pomyślnie zmienione.</p>
+            
+            <div style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 20px; border-radius: 5px; margin: 25px 0;">
+                <strong style="font-size: 16px;">⚠️ To nie Ty?</strong>
+                <p style="margin: 10px 0 0 0; color: #721c24;">
+                    Jeśli nie dokonywałeś tej zmiany, Twoje konto może być zagrożone. 
+                    Skontaktuj się z administratorem systemu natychmiast.
+                </p>
+            </div>
+            
+            <p>Jeśli to Ty zmieniłeś hasło, możesz zignorować tę wiadomość.</p>
             """
                 .replace("{{USERNAME}}", username);
 

@@ -1,0 +1,16 @@
+server:
+  port: ${USER_SERVICE_PORT:12004}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${EUREKA_NAME:localhost}:${EUREKA_PORT:8761}/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+spring:
+  application:
+    name: ${USER_SERVICE_NAME:user-service}

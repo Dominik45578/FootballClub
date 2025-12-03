@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface RedisUserRepository extends CrudRepository<RedisUser, String> {
     Optional<RedisUser> findByEmail(String email);
+    Optional<RedisUser> findById(String id);
 }
