@@ -1,18 +1,21 @@
 package com.polibuda.footballclub.gateway.model;
 
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Builder
-@Data
-@AllArgsConstructor
-public class ErrorResponse {
-    private final Instant timestamp = Instant.now();
-    private final int status;
-    private final String error;
-    private final String message;
+public record ErrorResponse(
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime timestamp,
+        int status,
+        String error,
+        String message,
+        String path
+) {
+    public static ErrorResponse of(int status, String error, String message, String path) {
+        return new ErrorResponse(LocalDateTime.now(), status, error, message, path);
+    }
 }

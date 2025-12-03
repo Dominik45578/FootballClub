@@ -7,11 +7,12 @@ spring:
 
   cloud:
     gateway:
-      gateway:
-        grpc:
-          enabled: false
       server:
         webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
           routes:
             - id: identity-service
               uri: lb://identity-service
@@ -19,19 +20,13 @@ spring:
                 - Path=/api/auth/**
               filters:
                 - StripPrefix=1
+
             - id: user-service
               uri: lb://user-service
               predicates:
                 - Path=/api/user/**
               filters:
                 - StripPrefix=1
-
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${GATEWAY_JWT_ISSUER_URI:http://${IDENTIFY_NAME:localhost}:${${IDENTIFY_PORT:12002}}}
 
 eureka:
   client:
@@ -45,32 +40,37 @@ eureka:
 
 gateway:
   auth:
-    # URL do Identity Service (OAuth2 Authorization Server)
-    identity-base-uri: ${GATEWAY_IDENTITY_BASE_URI:http://${IDENTIFY_NAME:localhost}:${IDENTIFY_PORT:12002}}
-    # identyfikator klienta (SPA / frontend)
-    client-id: ${GATEWAY_IDENTITY_CLIENT_ID:web-client}
-    # standardowe zakresy żądane podczas logowania
-    default-scopes: openid profile email
-    # jeśli brak tokena -> 302 redirect do Identity; jeśli false -> 401 Unauthorized
+
+    identity-base-uri: ${GATEWAY_IDENTITY_BASE_URI:http://localhost:${GATEWAY_PORT:12001}/api/auth}
+
+    jwt-secret: ${JWT_SECRET:lg8UfAf4xZ3y1NEREOl7FS6E4T72ZxWiVHXnpandIva8bpfCTlXZSWBMYHGhon3CMmkHTr9dAA1bYfditkYJ39}
+
     redirect-on-unauthenticated: true
-    # endpointy publiczne
+
     public-paths:
       - /api/auth/**
       - /actuator/**
       - /health
       - /ready
+      - /favicon.ico
+      - /error
+
+    cors-allowed-origins:
+      - "http://localhost:4200"
+      - "http://localhost:3000"
+      - "https://twoja-domena.pl"
+      - "http://localhost:${GATEWAY_PORT:12001}"
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
 
 logging:
   level:
+    root: INFO
     org.springframework.cloud.gateway: INFO
     org.springframework.security: INFO
-
-jwt:
-  secret: rcpc1UniSC86Oxjpaa94UqaSNvzGekLnOPhguY81VNS
-  expiration: 3600000
+    org.springframework.web.reactive: INFO
+    com.polibuda.footballclub.gateway: DEBUG

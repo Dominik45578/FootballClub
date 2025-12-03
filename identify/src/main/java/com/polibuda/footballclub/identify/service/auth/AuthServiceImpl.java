@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest request) {
         try {
             // Sprawdzenie stanu konta przed autentykacją springową
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
 
             if (user != null && !user.getEnabled()) {
                 activateService.sendAccountNotVerifiedReminder(user.getEmail(), user.getUsername());
@@ -82,9 +82,7 @@ public class AuthServiceImpl implements AuthService {
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
-            // Pobieramy usera ponownie (lub używamy tego z góry, jeśli jesteśmy pewni) by mieć pewność co do ról
-            User authenticatedUser = userRepository.findByEmail(request.getEmail()).orElseThrow();
-            String token = jwtService.generateToken(authenticatedUser);
+            String token = jwtService.generateToken(user);
 
             return LoginResponse.builder().success(true).message("Login successful").token(token).timestamp(LocalDateTime.now()).build();
 

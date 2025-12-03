@@ -43,6 +43,8 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
       SERVER_PORT: ${GATEWAY_PORT}
+      GATEWAY_IDENTITY_BASE_URI: "http://localhost:${GATEWAY_PORT}/api/auth"
+      GATEWAY_IDENTITY_CLIENT_ID: web-client
 
   # ==========================================
   # IDENTIFY SERVICE
