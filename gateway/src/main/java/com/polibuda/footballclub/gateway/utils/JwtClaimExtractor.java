@@ -17,7 +17,7 @@ public class JwtClaimExtractor {
         if (jwt == null) return null;
 
         return UserContext.builder()
-                .userId(getString(jwt, TokenClaims.USER_ID))
+                .userId(jwt.getSubject())
                 .username(getString(jwt, TokenClaims.USERNAME)) // fallback to subject handled in helper
                 .email(getString(jwt, TokenClaims.EMAIL))
                 .activated(getBoolean(jwt, TokenClaims.ACTIVE))

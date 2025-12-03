@@ -2,6 +2,8 @@ package com.polibuda.footballclub.gateway.filters;
 
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.gateway.model.UserContext;
+import com.polibuda.footballclub.gateway.properties.GatewayAuthProperties;
+import com.polibuda.footballclub.gateway.service.RedisTokenService;
 import com.polibuda.footballclub.gateway.utils.JwtClaimExtractor;
 import com.polibuda.footballclub.gateway.utils.WebFluxResponseHelper;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
 
     private final JwtClaimExtractor claimExtractor;
     private final WebFluxResponseHelper responseHelper;
+    private final RedisTokenService redisTokenService;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -39,14 +42,19 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Void> processAuthenticatedUser(ServerWebExchange exchange, GatewayFilterChain chain, JwtAuthenticationToken token) {
-        UserContext user = claimExtractor.extract(token.getToken());
-
-        if (user == null) {
-            log.error("Token valid signature but failed to extract claims.");
-            return responseHelper.writeError(exchange, HttpStatus.INTERNAL_SERVER_ERROR, "Token Error", "Invalid token claims structure.");
+        if(redisTokenService.isTokenBlocked(token.getToken())){
+            log.error("Token is blocked!");
+            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "This token is blocked!");
         }
 
-        // --- 1. Walidacja Blokady/Aktywacji ---
+
+        UserContext user = claimExtractor.extract(token.getToken());
+
+        if (user == null || user.userId() == null || Long.parseLong(user.userId()) < 0) {
+            log.error("Token valid signature but failed to extract claims.");
+            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "Invalid token claims structure.");
+        }
+
         if (!user.nonBlocked()) {
             log.warn("Blocked user attempt: {}", user.username());
             return responseHelper.writeError(exchange, HttpStatus.FORBIDDEN, "Account Blocked", "Your account is suspended. Contact support.");

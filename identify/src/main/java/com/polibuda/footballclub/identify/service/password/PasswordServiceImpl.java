@@ -1,6 +1,6 @@
 package com.polibuda.footballclub.identify.service.password;
 
-import com.polibuda.footballclub.common.actions.NotificationAction;
+import com.polibuda.footballclub.common.actions.UserAccountAction;
 import com.polibuda.footballclub.common.dto.*;
 import com.polibuda.footballclub.identify.EmailTemplates;
 import com.polibuda.footballclub.identify.RegisterCodeGenerator;
@@ -31,7 +31,7 @@ public class PasswordServiceImpl implements PasswordService {
             // Security: Nie rzucamy błędu jeśli user nie istnieje, by nie zdradzać bazy (User Enumeration Attack prevention)
             if (user != null) {
                 String code = RegisterCodeGenerator.generateUrlSafeToken();
-                redisService.saveCode(user.getEmail(), code, NotificationAction.PASSWORD_RESET);
+                redisService.saveCode(user.getEmail(), code, UserAccountAction.PASSWORD_RESET);
 
                 String content = EmailTemplates.generatePasswordResetEmail(user.getUsername(), code);
                 rabbitService.sendMessageWithVerificationCode(user.getEmail(), content, "Reset your password");
@@ -54,7 +54,7 @@ public class PasswordServiceImpl implements PasswordService {
             }
 
             // 2. Walidacja kodu z Redisa
-            if (!redisService.validateCode(request.getEmail(), request.getCode(), NotificationAction.PASSWORD_RESET)) {
+            if (!redisService.validateCode(request.getEmail(), request.getCode(), UserAccountAction.PASSWORD_RESET)) {
                 return NewPasswordResponse.builder().status(false).message("Invalid or expired code").build();
             }
 
@@ -74,7 +74,7 @@ public class PasswordServiceImpl implements PasswordService {
             userRepository.save(user);
 
             // 6. Usunięcie kodu z Redisa
-            redisService.deleteCode(request.getEmail(), NotificationAction.PASSWORD_RESET);
+            redisService.deleteCode(request.getEmail(), UserAccountAction.PASSWORD_RESET);
 
             // 7. Wysyłka alertu bezpieczeństwa
             sendSecurityAlert(user);
