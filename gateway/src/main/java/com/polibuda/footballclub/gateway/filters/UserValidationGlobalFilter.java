@@ -1,8 +1,10 @@
 package com.polibuda.footballclub.gateway.filters;
 
+import com.polibuda.footballclub.common.actions.UserTokenActions;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.gateway.model.UserContext;
 import com.polibuda.footballclub.gateway.properties.GatewayAuthProperties;
+import com.polibuda.footballclub.gateway.redis.RedisToken;
 import com.polibuda.footballclub.gateway.service.RedisRequestCounterService;
 import com.polibuda.footballclub.gateway.service.RedisTokenService;
 import com.polibuda.footballclub.gateway.utils.JwtClaimExtractor;
@@ -52,25 +54,34 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
      * Główny łańcuch przetwarzania użytkownika zalogowanego.
      */
     private Mono<Void> processAuthenticatedUser(ServerWebExchange exchange, GatewayFilterChain chain, JwtAuthenticationToken token) {
-        // 1. Pobieramy obiekt JWT (nie String)
         Jwt jwt = token.getToken();
         String userId = jwt.getSubject();
+        String rawToken = jwt.getTokenValue();
 
-        return redisTokenService.isTokenBlocked(jwt)
-                .flatMap(isBlocked -> {
-                    if (isBlocked) {
-                        log.warn("Token is blocked for user: {}", userId);
-                        return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "This token is blocked!")
-                                .then(Mono.empty());
+        // 1. Próbujemy pobrać zablokowany token z Redisa
+        return redisTokenService.findBlockedToken(rawToken)
+                .flatMap(blockedToken -> {
+                    if (UserTokenActions.TOKEN_BLOCKED_BY_LOGOUT.equals(blockedToken.getReason())) {
+                        log.warn("User tried to use logged-out token: {}", userId);
+                        return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED,
+                                "Session Expired", "You must log in again.");
                     }
-                    return checkRateLimitAndIncrement(exchange, userId);
+
+                    // Każdy inny powód (np. ban administracyjny)
+                    log.warn("Token blocked for user: {}. Reason: {}", userId, blockedToken.getReason());
+                    return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED,
+                            "Token Error", "This token is blocked!");
                 })
-                .flatMap(rateLimitPassed -> {
-                    if (!Boolean.TRUE.equals(rateLimitPassed)) {
-                        return Mono.empty();
-                    }
-                    return validateAndMutateRequest(exchange, chain, token);
-                });
+                .switchIfEmpty(Mono.defer(() -> {
+
+                    return checkRateLimitAndIncrement(exchange, userId)
+                            .flatMap(rateLimitPassed -> {
+                                if (!Boolean.TRUE.equals(rateLimitPassed)) {
+                                    return Mono.empty();
+                                }
+                                return validateAndMutateRequest(exchange, chain, token);
+                            });
+                }));
     }
 
     /**

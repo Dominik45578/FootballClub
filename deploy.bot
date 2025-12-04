@@ -1,0 +1,33 @@
+@echo off
+echo ==========================================
+echo 1. Budowanie aplikacji (Maven)...
+echo ==========================================
+:: Używamy call, aby skrypt nie przerywał działania po mvn
+:: -DskipTests przyspiesza proces (zakładam, że testy puszczasz osobno)
+call mvn clean package -DskipTests
+
+:: Sprawdzenie czy maven zakończył się sukcesem
+if %errorlevel% neq 0 (
+    echo [BLAD] Budowanie Maven nie powiodlo sie!
+    exit /b %errorlevel%
+)
+
+echo ==========================================
+echo 2. Budowanie obrazow Docker...
+echo ==========================================
+docker-compose build
+
+if %errorlevel% neq 0 (
+    echo [BLAD] Docker build nie powiodl sie!
+    exit /b %errorlevel%
+)
+
+echo ==========================================
+echo 3. Uruchamianie kontenerow...
+echo ==========================================
+docker-compose up -d
+
+echo ==========================================
+echo SUKCES! System wstal.
+echo ==========================================
+pause

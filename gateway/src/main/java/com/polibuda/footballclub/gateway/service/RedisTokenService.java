@@ -1,17 +1,11 @@
 package com.polibuda.footballclub.gateway.service;
 
-import com.polibuda.footballclub.common.actions.UserTokenActions;
-import org.springframework.security.oauth2.jwt.Jwt;
-import reactor.core.publisher.Mono; // Ważny import
+import com.polibuda.footballclub.gateway.redis.RedisToken;
+import reactor.core.publisher.Mono;
 
 public interface RedisTokenService {
-
-    // Zmiana z boolean na Mono<Boolean> jest KONIECZNA w Gateway
-    Mono<Boolean> isTokenBlocked(Jwt jwt);
-
-    // To może zostać void, jeśli jest "fire-and-forget",
-    // ale lepiej Mono<Void> żeby wiedzieć czy zapis się udał
-    Mono<Void> blockToken(Jwt jwt, UserTokenActions reason);
-
+    Mono<Void> blockToken(RedisToken redisToken); // Zmiana sygnatury!
+    Mono<Boolean> isTokenBlocked(String tokenValue); // String, a nie Jwt
     Mono<Void> unblockAllTokensForUser(String userId);
+    Mono<RedisToken> findBlockedToken(String token);
 }

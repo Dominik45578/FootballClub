@@ -22,7 +22,7 @@ public class RedisRequestCounter implements Serializable {
     @Id
     private String id;
 
-    // Usunięte @NotBlank - to jest int
+
     @Builder.Default
     private int requestCount = 0;
 

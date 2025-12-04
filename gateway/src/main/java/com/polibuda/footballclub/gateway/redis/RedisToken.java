@@ -1,42 +1,31 @@
 package com.polibuda.footballclub.gateway.redis;
 
 import com.polibuda.footballclub.common.actions.UserTokenActions;
-import org.springframework.data.annotation.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.TimeToLive;
-import org.springframework.data.redis.core.index.Indexed;
-import org.springframework.security.oauth2.jwt.Jwt;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 @Data
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("Token")
-public class RedisToken {
-
-    @Id
-    @NotNull
-    private String token;
-
-    @Indexed
+public class RedisToken implements Serializable {
+    @NotBlank
+    private String token;            // ID (klucz)
     @NotBlank
     private String userId;
-
-    @NotNull
-    private UserTokenActions userTokenActions;
-
-    @TimeToLive(unit = TimeUnit.SECONDS)
+    private UserTokenActions reason = UserTokenActions.TOKEN_BLOCKED_BY_LOGOUT;
     @Builder.Default
-    private Long timeToLive = 3600L;
-
+    private Long timeToLive = 3600L;        // TTL w sekundach
+    @Builder.Default
+    private Long blockedAt = Instant.now().getEpochSecond();
 
     public static long calcTtl(@NotNull Instant expiresAt) {
         if (expiresAt == null) {

@@ -4,71 +4,100 @@ import com.polibuda.footballclub.common.actions.UserTokenActions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
-@Repository // Spring wykryje to jako bean
+@Repository
 @RequiredArgsConstructor
 public class RedisTokenRepositoryImpl implements RedisTokenRepository {
 
-    private final ReactiveRedisTemplate<String, RedisToken> redisTemplate;
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
 
-    private static final String TOKEN_KEY_PREFIX = "blocked_token:";
+    private static final String TOKEN_PREFIX = "blocked_token:";
     private static final String USER_IDX_PREFIX = "user_blocked_idx:";
 
     @Override
-    public Mono<Void> saveToken(Jwt jwt, UserTokenActions reason) {
-        String tokenValue = jwt.getTokenValue();
-        String userId = jwt.getSubject();
-        long ttlSeconds = RedisToken.calcTtl(jwt.getExpiresAt());
+    public Mono<Void> save(RedisToken token) {
+        String tokenKey = TOKEN_PREFIX + token.getToken();
+        String userIndexKey = USER_IDX_PREFIX + token.getUserId();
+        Duration ttl = Duration.ofSeconds(token.getTimeToLive());
 
-        RedisToken redisToken = RedisToken.builder()
-                .token(tokenValue)
-                .userId(userId)
-                .userTokenActions(reason)
-                .timeToLive(ttlSeconds)
-                .build();
+        // 1. Mapowanie Obiekt -> Hash Map
+        Map<String, String> hashData = new HashMap<>();
+        hashData.put("userId", token.getUserId());
+        hashData.put("reason", token.getReason().name());
+        hashData.put("blockedAt", String.valueOf(token.getBlockedAt()));
+        // Możemy dodać więcej pól, jeśli chcemy
 
-        String tokenKey = TOKEN_KEY_PREFIX + tokenValue;
-        String userIndexKey = USER_IDX_PREFIX + userId;
+        // 2. Operacje na Tokenie (Zapis Hasha + TTL)
+        Mono<Boolean> tokenOps = redisTemplate.opsForHash().putAll(tokenKey, hashData)
+                .then(redisTemplate.expire(tokenKey, ttl));
 
-        // 1. Zapisz Token
-        Mono<Boolean> saveOp = redisTemplate.opsForValue()
-                .set(tokenKey, redisToken, Duration.ofSeconds(ttlSeconds));
-
-        // 2. Zaktualizuj Indeks Usera (dodaj token do setu)
-        Mono<Long> indexOp = redisTemplate.opsForSet().add(userIndexKey, redisToken)
+        // 3. Operacje na Indeksie (Zapis do Setu + TTL)
+        Mono<Long> indexOps = redisTemplate.opsForSet().add(userIndexKey, token.getToken())
                 .flatMap(success -> redisTemplate.expire(userIndexKey, Duration.ofDays(7)).thenReturn(success));
 
-        return Mono.when(saveOp, indexOp).then();
+        // Wykonaj równolegle
+        return Mono.when(tokenOps, indexOps).then();
     }
 
     @Override
-    public Mono<Boolean> isTokenBlocked(String tokenValue) {
-        return redisTemplate.hasKey(TOKEN_KEY_PREFIX + tokenValue);
+    public Mono<Boolean> existsByToken(String tokenValue) {
+        return redisTemplate.hasKey(TOKEN_PREFIX + tokenValue);
     }
 
     @Override
-    public Flux<String> findTokensByUserId(String userId) {
-        // Zwraca klucze tokenów (np. "blocked_token:eyJ...")
+    public Flux<String> findTokenKeysByUserId(String userId) {
         return redisTemplate.opsForSet().members(USER_IDX_PREFIX + userId)
-                .map(token -> TOKEN_KEY_PREFIX + token.getToken());
+                .map(tokenVal -> TOKEN_PREFIX + tokenVal);
+    }
+
+    @Override
+    public Mono<RedisToken> findBlockedToken(String tokenValue) {
+        String key = TOKEN_PREFIX + tokenValue;
+
+        // opsForHash().entries(key) zwraca Flux<Map.Entry<K, V>> (strumień pól)
+        // Musimy to zebrać do jednej Mapy, a potem zamienić na obiekt
+        return redisTemplate.opsForHash().entries(key)
+                .collectMap(e -> (String) e.getKey(), e -> (String) e.getValue())
+                .flatMap(map -> {
+                    if (map.isEmpty()) {
+                        return Mono.empty();
+                    }
+
+                    // Ręczne mapowanie z Map<String, String> na obiekt RedisToken
+                    try {
+                        RedisToken redisToken = RedisToken.builder()
+                                .token(tokenValue) // Tokena nie ma w środku hasha (jest w kluczu), więc bierzemy z argumentu
+                                .userId(map.get("userId"))
+                                .reason(UserTokenActions.valueOf(map.get("reason"))) // Parsowanie Enuma
+                                .blockedAt(Long.parseLong(map.get("blockedAt")))     // Parsowanie Longa
+                                // TTL nie jest przechowywany w Hashu (jest metadaną klucza),
+                                // opcjonalnie można go pobrać osobno przez redisTemplate.getExpire(key),
+                                // ale zazwyczaj w obiekcie zwracanym nie jest kluczowy.
+                                .build();
+
+                        return Mono.just(redisToken);
+                    } catch (Exception e) {
+                        log.error("Błąd mapowania tokena z Redis: {}", tokenValue, e);
+                        return Mono.empty();
+                    }
+                });
     }
 
     @Override
     public Mono<Void> deleteTokensAndIndex(String userId, Flux<String> tokenKeys) {
-        // 1. Usuń tokeny fizycznie
         Mono<Long> deleteTokens = tokenKeys.collectList()
-                .flatMap(keys -> keys.isEmpty() 
-                        ? Mono.just(0L) 
+                .flatMap(keys -> keys.isEmpty()
+                        ? Mono.just(0L)
                         : redisTemplate.delete(Flux.fromIterable(keys)));
 
-        // 2. Usuń indeks użytkownika
         Mono<Long> deleteIndex = redisTemplate.delete(USER_IDX_PREFIX + userId);
 
         return Mono.when(deleteTokens, deleteIndex).then();
