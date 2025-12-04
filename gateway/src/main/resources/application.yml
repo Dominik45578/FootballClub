@@ -60,6 +60,7 @@ gateway:
       - "http://localhost:3000"
       - "https://twoja-domena.pl"
       - "http://localhost:${GATEWAY_PORT:12001}"
+    max-allowed-request-per-route: 5
 
 management:
   endpoints:

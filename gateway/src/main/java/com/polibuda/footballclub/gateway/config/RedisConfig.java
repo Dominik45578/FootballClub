@@ -1,35 +1,44 @@
 package com.polibuda.footballclub.gateway.config;
 
+import com.polibuda.footballclub.gateway.redis.RedisToken;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-@EnableRedisRepositories
 @Configuration
 public class RedisConfig {
 
+    /**
+     * Szablon do obsługi tokenów (zapisuje obiekty RedisToken jako JSON).
+     */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
+    public ReactiveRedisTemplate<String, RedisToken> redisTokenTemplate(ReactiveRedisConnectionFactory factory) {
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        // Dedykowany serializer dla Twojej klasy RedisToken
+        Jackson2JsonRedisSerializer<RedisToken> valueSerializer = new Jackson2JsonRedisSerializer<>(RedisToken.class);
 
-        // Serializacja kluczy
-        template.setKeySerializer(new StringRedisSerializer());
+        RedisSerializationContext.RedisSerializationContextBuilder<String, RedisToken> builder =
+                RedisSerializationContext.newSerializationContext(keySerializer);
 
-        // Serializacja wartości (JSON)
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        RedisSerializationContext<String, RedisToken> context = builder
+                .value(valueSerializer)
+                .build();
 
-        // Serializacja hashy
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-
-        template.afterPropertiesSet();
-        return template;
+        return new ReactiveRedisTemplate<>(factory, context);
     }
 
-
+    /**
+     * Szablon ogólny (do liczników requestów itp.), operujący na Stringach.
+     * Spring Boot często tworzy go automatycznie, ale warto mieć jawną definicję.
+     */
+    @Bean
+    @Primary
+    public ReactiveRedisTemplate<String, String> reactiveRedisTemplate(ReactiveRedisConnectionFactory factory) {
+        return new ReactiveRedisTemplate<>(factory, RedisSerializationContext.string());
+    }
 }

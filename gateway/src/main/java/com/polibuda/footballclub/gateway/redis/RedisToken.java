@@ -1,8 +1,9 @@
 package com.polibuda.footballclub.gateway.redis;
 
 import com.polibuda.footballclub.common.actions.UserTokenActions;
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,14 +23,14 @@ import java.util.concurrent.TimeUnit;
 public class RedisToken {
 
     @Id
-    @NotBlank
-    private Jwt token;
+    @NotNull
+    private String token;
 
     @Indexed
     @NotBlank
     private String userId;
 
-    @NotBlank
+    @NotNull
     private UserTokenActions userTokenActions;
 
     @TimeToLive(unit = TimeUnit.SECONDS)
@@ -37,7 +38,7 @@ public class RedisToken {
     private Long timeToLive = 3600L;
 
 
-    public static long CalcTtl(@NotBlank Instant expiresAt) {
+    public static long calcTtl(@NotNull Instant expiresAt) {
         if (expiresAt == null) {
             return 3600; // Domyślnie 1h jeśli brak daty (zabezpieczenie)
         }

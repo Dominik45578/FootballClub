@@ -3,6 +3,7 @@ package com.polibuda.footballclub.gateway.filters;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.gateway.model.UserContext;
 import com.polibuda.footballclub.gateway.properties.GatewayAuthProperties;
+import com.polibuda.footballclub.gateway.service.RedisRequestCounterService;
 import com.polibuda.footballclub.gateway.service.RedisTokenService;
 import com.polibuda.footballclub.gateway.utils.JwtClaimExtractor;
 import com.polibuda.footballclub.gateway.utils.WebFluxResponseHelper;
@@ -13,6 +14,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -26,48 +28,102 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
     private final JwtClaimExtractor claimExtractor;
     private final WebFluxResponseHelper responseHelper;
     private final RedisTokenService redisTokenService;
+    private final RedisRequestCounterService requestCounterService;
+    private final GatewayAuthProperties gatewayAuthProperties;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return exchange.getPrincipal()
-                // Jeśli brak principala (np. endpoint publiczny), idź dalej
                 .switchIfEmpty(Mono.just(new UnauthenticatedPrincipal()))
                 .flatMap(principal -> {
                     if (principal instanceof JwtAuthenticationToken jwtToken) {
                         return processAuthenticatedUser(exchange, chain, jwtToken);
                     }
-                    // Anonymous user -> forward request
+                    // Użytkownik anonimowy - przepuszczamy dalej
                     return chain.filter(exchange);
                 });
     }
 
+    /**
+     * Główny łańcuch przetwarzania użytkownika zalogowanego.
+     * Każdy krok musi być asynchroniczny (Mono).
+     */
+    /**
+     * Główny łańcuch przetwarzania użytkownika zalogowanego.
+     */
     private Mono<Void> processAuthenticatedUser(ServerWebExchange exchange, GatewayFilterChain chain, JwtAuthenticationToken token) {
-        if(redisTokenService.isTokenBlocked(token.getToken())){
-            log.error("Token is blocked!");
-            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "This token is blocked!");
+        // 1. Pobieramy obiekt JWT (nie String)
+        Jwt jwt = token.getToken();
+        String userId = jwt.getSubject();
+
+        return redisTokenService.isTokenBlocked(jwt)
+                .flatMap(isBlocked -> {
+                    if (isBlocked) {
+                        log.warn("Token is blocked for user: {}", userId);
+                        return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "This token is blocked!")
+                                .then(Mono.empty());
+                    }
+                    return checkRateLimitAndIncrement(exchange, userId);
+                })
+                .flatMap(rateLimitPassed -> {
+                    if (!Boolean.TRUE.equals(rateLimitPassed)) {
+                        return Mono.empty();
+                    }
+                    return validateAndMutateRequest(exchange, chain, token);
+                });
+    }
+
+    /**
+     * Atomowe sprawdzenie i inkrementacja licznika.
+     * Zwraca Mono<Boolean> - true jeśli OK, błąd HTTP jeśli limit przekroczony.
+     */
+    private Mono<Boolean> checkRateLimitAndIncrement(ServerWebExchange exchange, String userId) {
+        // Zamiast get() + increment(), robimy tylko increment().
+        // Redis zwróci nową wartość. Jeśli > limit, to błąd.
+        return requestCounterService.incrementRequestCounter(userId)
+                .flatMap(currentCount -> {
+                    if (currentCount > gatewayAuthProperties.getMaxAllowedRequestPerRoute()) {
+                        log.warn("Rate limit exceeded for user: {}. Count: {}", userId, currentCount);
+                        // Zwracamy Mono.error lub obsługujemy błąd od razu, przerywając łańcuch
+                        return responseHelper.writeError(exchange, HttpStatus.FORBIDDEN, "Rate Limit", "Too many requests!")
+                                .then(Mono.empty()); // Przerywamy łańcuch zwracając puste Mono<Boolean> (którego nikt nie obsłuży, bo chain się urwie)
+                    }
+                    return Mono.just(true);
+                })
+                // Ważne: switchIfEmpty tutaj nie jest potrzebny, bo increment zawsze coś zwróci
+                // Ale musimy obsłużyć sytuację, gdy writeError zwrócił Mono<Void> (czyli błąd)
+                .hasElement(); // Triki Reactorowe: konwersja na Boolean, ale jeśli writeError poszło, to sterowanie tam ucieknie
+    }
+
+    /**
+     * Walidacja biznesowa (zablokowany, nieaktywny) i mutacja nagłówków.
+     */
+    private Mono<Void> validateAndMutateRequest(ServerWebExchange exchange, GatewayFilterChain chain, JwtAuthenticationToken token) {
+        UserContext user;
+        try {
+            user = claimExtractor.extract(token.getToken());
+        } catch (Exception e) {
+            log.error("Failed to extract claims for token: {}", token.getToken().getSubject(), e);
+            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "Invalid token claims structure.");
         }
 
-
-        UserContext user = claimExtractor.extract(token.getToken());
-
-        if (user == null || user.userId() == null || Long.parseLong(user.userId()) < 0) {
-            log.error("Token valid signature but failed to extract claims.");
-            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "Invalid token claims structure.");
+        if (user == null || user.userId() == null) {
+            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "User context missing.");
         }
 
         if (!user.nonBlocked()) {
             log.warn("Blocked user attempt: {}", user.username());
-            return responseHelper.writeError(exchange, HttpStatus.FORBIDDEN, "Account Blocked", "Your account is suspended. Contact support.");
+            return responseHelper.writeError(exchange, HttpStatus.FORBIDDEN, "Account Blocked", "Your account is suspended.");
         }
 
         if (!user.activated()) {
             log.warn("Inactive user attempt: {}", user.username());
-            return responseHelper.writeError(exchange, HttpStatus.FORBIDDEN, "Account Inactive", "Please activate your account via email link.");
+            return responseHelper.writeError(exchange, HttpStatus.FORBIDDEN, "Account Inactive", "Please activate your account.");
         }
 
-        // --- 2. Propagacja Nagłówków (Mutation) ---
+        // KROK 4: Propagacja nagłówków (Request Mutation)
         if (log.isDebugEnabled()) {
-            log.debug("Forwarding request for user: {} [{}]", user.username(), user.roles());
+            log.debug("Forwarding request for user: {}", user.username());
         }
 
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
@@ -85,7 +141,6 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        // Kolejność: Musi być PO filtrach Security (Authentication), ale PRZED routingiem
         return 1;
     }
 
@@ -93,7 +148,6 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
         return s == null ? "" : s;
     }
 
-    // Klasa markerowa do obsługi switchIfEmpty
     private static class UnauthenticatedPrincipal implements java.security.Principal {
         @Override public String getName() { return "anonymous"; }
     }

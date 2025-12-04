@@ -25,5 +25,7 @@ public class GatewayAuthProperties {
 
     private List<String> publicPaths = new ArrayList<>();
 
+    private int maxAllowedRequestPerRoute ;
+
     private List<String> corsAllowedOrigins = List.of("http://localhost:4200");
 }
