@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/actions/TeamFetchMode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/actions/TeamMemberStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/claims/TeamType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamCategory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamRole.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamTable.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/GlobalExceptionHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/UserAuthenticationFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/MemberController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamManagementController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/JoinTeamRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManageTeamMemberRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManualAddMemberRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/UpdateMemberProfileRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/MemberProfileResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamDetailsResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/AbstractSummaryResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/MemberSummaryResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/TeamSummaryResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/AbstractSearchResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/MemberSearchResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/TeamSearchResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/AbstractAuditableEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Member.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Team.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/TeamMember.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/InsufficientPermissionsException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/BusinessLogicException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/InvalidTeamCodeException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/UserAlreadyInTeamException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/UserAlreadyVerified.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/FootballClubException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/MemberNotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/ResourceNotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/TeamMemberNotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/TeamNotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/model/ApiErrorResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/MemberRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamMemberRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/RedisConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/RedisConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/RabbitService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/RabbitService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/PasswordService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/PasswordService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/TempController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="GraphQL File" />
+        <option value="Dockerfile" />
+        <option value="Enum" />
+        <option value="Interface" />
+        <option value="Class" />
+        <option value="Exception" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Dominik45578&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Dominik45578/FootballClub&quot;,
+    &quot;accountId&quot;: &quot;6333b2a0-0847-4ccb-9335-a438f23cc5b3&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3-sources.jar!/org/apache/http/conn/HttpHostConnectException.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/glassfish/jersey/core/jersey-client/3.1.11/jersey-client-3.1.11-sources.jar!/org/glassfish/jersey/client/ClientRuntime.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-core/6.5.6/spring-security-core-6.5.6-sources.jar!/org/springframework/security/core/userdetails/UserDetailsService.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-oauth2-jose/6.5.6/spring-security-oauth2-jose-6.5.6-sources.jar!/org/springframework/security/oauth2/jwt/Jwt.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-web/6.5.6/spring-security-web-6.5.6-sources.jar!/org/springframework/security/web/server/ServerAuthenticationEntryPoint.java" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="HttpClientOnboardingState">{
+  &quot;isOnboardingCommentShown&quot;: true
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="MavenRunner">
+    <option name="skipTests" value="true" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="34kAux05zauqycdTYtOAjv3yG79" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.GatewayApplication.executor": "Run",
+    "Docker.Docker.executor": "Run",
+    "Docker.Docker_standalone.executor": "Run",
+    "HTTP Request.generated-requests | #2.executor": "Run",
+    "HTTP Request.generated-requests | #3.executor": "Run",
+    "HTTP Request.generated-requests | #4.executor": "Run",
+    "HTTP Request.generated-requests | #5.executor": "Run",
+    "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
+    "Maven.common [clean].executor": "Run",
+    "Maven.common [install].executor": "Run",
+    "Maven.footballclub [clean].executor": "Run",
+    "Maven.footballclub-parent [clean,package...].executor": "Run",
+    "Maven.footballclub-parent [clean].executor": "Run",
+    "Maven.footballclub-parent [compile].executor": "Run",
+    "Maven.footballclub-parent [install].executor": "Run",
+    "Maven.footballclub-parent [package].executor": "Run",
+    "Maven.footballclub-parent [site].executor": "Run",
+    "Maven.footballclub-parent [validate].executor": "Run",
+    "Maven.gateway [install].executor": "Run",
+    "Maven.gateway [package].executor": "Run",
+    "Maven.identify [clean].executor": "Run",
+    "Maven.identify [compile].executor": "Run",
+    "Maven.identify [install].executor": "Run",
+    "Maven.notification [install].executor": "Run",
+    "Maven.shared [clean].executor": "Run",
+    "Maven.shared [install].executor": "Run",
+    "Maven.user-service [clean].executor": "Run",
+    "Maven.user-service [compile].executor": "Run",
+    "Maven.user-service [install].executor": "Run",
+    "Maven.user-service [package].executor": "Run",
+    "Maven.user-service [site].executor": "Run",
+    "Maven.user-service [validate].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found": "New/updated database configurations found",
+    "Notification.DoNotAsk-DatabaseConfigFileWatcher.found": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.Eureka-service.executor": "Run",
+    "Spring Boot.EurekaApplication.executor": "Run",
+    "Spring Boot.FootballClubSystemApplication.executor": "Run",
+    "Spring Boot.Gateway-service.executor": "Run",
+    "Spring Boot.GatewayApplication.executor": "Run",
+    "Spring Boot.Identify-service.executor": "Run",
+    "Spring Boot.IdentifyApplication.executor": "Run",
+    "Spring Boot.Notification-service.executor": "Run",
+    "Spring Boot.NotificationApplication.executor": "Run",
+    "Spring Boot.User-service.executor": "Run",
+    "git-widget-placeholder": "user-service",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Dominik/IdeaProjects/FootballClubSystem/user-service",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "spring",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "redis",
+      "mysql"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.polibuda.footballclub.user.dto.request." />
+      <recent name="com.polibuda.footballclub.user.dto.response.summary" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\user-service" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\notification" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\gateway" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\gateway\src\main" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify\src\main\resources" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.polibuda.footballclub.gateway.config" />
+      <recent name="com.polibuda.footballclub.common.redis" />
+    </key>
+  </component>
+  <component name="RunAnythingCache">
+    <myKeys>
+      <visibility group="Gradle Tasks" flag="true" />
+      <visibility group="Grunt" flag="true" />
+      <visibility group="Gulp" flag="true" />
+      <visibility group="HTTP Requests" flag="true" />
+      <visibility group="Maven Goals" flag="true" />
+      <visibility group="Node.js" flag="true" />
+      <visibility group="Recent projects" flag="true" />
+      <visibility group="Run configurations" flag="true" />
+      <visibility group="com.intellij.httpClient.http.request.run.HttpRequestRunAnythingProvider" flag="true" />
+      <visibility group="com.intellij.ide.actions.runAnything.RunAnythingRunConfigurationProvider" flag="true" />
+      <visibility group="com.intellij.ide.actions.runAnything.activity.RunAnythingRecentProjectProvider" flag="true" />
+      <visibility group="com.intellij.lang.javascript.buildTools.grunt.GruntRunAnythingProvider" flag="true" />
+      <visibility group="com.intellij.lang.javascript.buildTools.gulp.GulpRunAnythingProvider" flag="true" />
+      <visibility group="com.intellij.lang.javascript.buildTools.npm.NpmRunAnythingProvider.Npm" flag="true" />
+      <visibility group="com.intellij.lang.javascript.buildTools.npm.NpmRunAnythingProvider.Pnpm" flag="true" />
+      <visibility group="com.intellij.lang.javascript.buildTools.npm.NpmRunAnythingProvider.Yarn" flag="true" />
+      <visibility group="com.jetbrains.nodejs.execution.NodeRunAnythingProvider" flag="true" />
+      <visibility group="npm" flag="true" />
+      <visibility group="org.jetbrains.idea.maven.execution.MavenRunAnythingProvider" flag="true" />
+      <visibility group="org.jetbrains.plugins.gradle.execution.GradleRunAnythingProvider" flag="true" />
+      <visibility group="pnpm" flag="true" />
+      <visibility group="yarn" flag="true" />
+    </myKeys>
+    <option name="myCommands">
+      <command value="sdfsdfsdf" />
+    </option>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="KtorApplicationConfigurationType" />
+        <option value="MicronautRunConfigurationType" />
+        <option value="QuarkusRunConfigurationType" />
+        <option value="SpringBootApplicationConfigurationType" />
+      </set>
+    </option>
+    <option name="configurationStatuses">
+      <map>
+        <entry key="HttpClient.HttpRequestRunConfigurationType">
+          <value>
+            <map>
+              <entry key="generated-requests | #2" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+        <entry key="SpringBootApplicationConfigurationType">
+          <value>
+            <map>
+              <entry key="Eureka-service" value="STOPPED" />
+              <entry key="Gateway-service" value="STOPPED" />
+              <entry key="Identify-service" value="STOPPED" />
+              <entry key="Notification-service" value="STOPPED" />
+              <entry key="User-service" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="RunManager" selected="Docker.Docker_standalone">
+    <configuration name="generated-requests | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#2" index="2" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #3" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#3" index="3" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #4" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#4" index="4" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #5" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#5" index="5" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="FootballClubSystem" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="footballclub" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Eureka-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="eureka" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.eureka.EurekaApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Gateway-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="gateway" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.gateway.GatewayApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Identify-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="identify" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.identify.IdentifyApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Notification-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="notification" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.nofification.NotificationApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="User-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="user-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.user.UserServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Docker" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="commandLineOptions" value="--build" />
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2">
+        <option name="Maven.BeforeRunTask" enabled="true" file="$PROJECT_DIR$/pom.xml" goal="clean package  -DskipTests" />
+      </method>
+    </configuration>
+    <configuration name="Docker_standalone" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="commandLineOptions" value="--build" />
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Docker.Docker" />
+      <item itemvalue="Docker.Docker_standalone" />
+      <item itemvalue="HTTP Request.generated-requests | #2" />
+      <item itemvalue="HTTP Request.generated-requests | #3" />
+      <item itemvalue="HTTP Request.generated-requests | #4" />
+      <item itemvalue="HTTP Request.generated-requests | #5" />
+      <item itemvalue="Spring Boot.Eureka-service" />
+      <item itemvalue="Spring Boot.Gateway-service" />
+      <item itemvalue="Spring Boot.Identify-service" />
+      <item itemvalue="Spring Boot.Notification-service" />
+      <item itemvalue="Spring Boot.User-service" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="HTTP Request.generated-requests | #2" />
+        <item itemvalue="HTTP Request.generated-requests | #5" />
+        <item itemvalue="HTTP Request.generated-requests | #4" />
+        <item itemvalue="HTTP Request.generated-requests | #3" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26199.169" />
+        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-IU-252.26199.169" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="" />
+      <created>1761747423632</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761747423632</updated>
+      <workItem from="1761747424973" duration="5504000" />
+      <workItem from="1761753368030" duration="270000" />
+      <workItem from="1761775397352" duration="576000" />
+      <workItem from="1761813042319" duration="51000" />
+      <workItem from="1762274335131" duration="15801000" />
+      <workItem from="1762376013181" duration="595000" />
+      <workItem from="1762897275493" duration="4405000" />
+      <workItem from="1762903180556" duration="1501000" />
+      <workItem from="1763022635369" duration="15000" />
+      <workItem from="1763419157484" duration="16431000" />
+      <workItem from="1763481582444" duration="10831000" />
+      <workItem from="1763581587621" duration="4431000" />
+      <workItem from="1763683051245" duration="81324000" />
+      <workItem from="1763954267039" duration="68000" />
+      <workItem from="1763987018360" duration="330000" />
+      <workItem from="1763991521838" duration="63000" />
+      <workItem from="1764013877178" duration="101000" />
+      <workItem from="1764074619263" duration="3057000" />
+      <workItem from="1764261521321" duration="339000" />
+      <workItem from="1764269991198" duration="1006000" />
+      <workItem from="1764275455723" duration="358000" />
+      <workItem from="1764337303591" duration="7307000" />
+      <workItem from="1764360148452" duration="1913000" />
+      <workItem from="1764532360952" duration="14000" />
+      <workItem from="1764666767425" duration="2306000" />
+      <workItem from="1764669111062" duration="3710000" />
+      <workItem from="1764676788845" duration="12543000" />
+      <workItem from="1764712230470" duration="6727000" />
+      <workItem from="1764763166547" duration="32691000" />
+      <workItem from="1764844594891" duration="3111000" />
+      <workItem from="1764868026236" duration="8057000" />
+      <workItem from="1764971706204" duration="1326000" />
+      <workItem from="1765116179608" duration="3997000" />
+      <workItem from="1765375632572" duration="7321000" />
+      <workItem from="1765531968963" duration="4340000" />
+      <workItem from="1765708390702" duration="31542000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint type="java-exception">
+          <properties class="jakarta.ws.rs.ProcessingException" package="jakarta.ws.rs" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Deprecated
 public class PasswordService {
 
     private final UserService userService; // lub UserRepository, zależnie od preferencji

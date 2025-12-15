@@ -53,9 +53,4 @@ public class UserServiceImpl implements UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
-
-    @Override
-    public RedisUser save(RedisUser redisUser) {
-       return redisUserRepository.save(redisUser);
-    }
 }

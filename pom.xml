@@ -179,6 +179,20 @@
                 <version>3.1.11</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+            <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-security</artifactId>
+                <version>3.5.7</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-validation</artifactId>
+                <version>3.5.7</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
