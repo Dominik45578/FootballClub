@@ -1,4 +1,5 @@
-.idea/
+.idea/dataSources/
+.idea/httpRequests
 out/
 footballclub.iml
 .env

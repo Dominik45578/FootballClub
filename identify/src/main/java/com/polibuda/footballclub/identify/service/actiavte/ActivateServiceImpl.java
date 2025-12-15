@@ -1,6 +1,6 @@
 package com.polibuda.footballclub.identify.service.actiavte;
 
-import com.polibuda.footballclub.common.actions.NotificationAction;
+import com.polibuda.footballclub.common.actions.UserAccountAction;
 import com.polibuda.footballclub.common.dto.ActivateRequest;
 import com.polibuda.footballclub.common.dto.ActivateResponse;
 import com.polibuda.footballclub.identify.EmailTemplates;
@@ -27,7 +27,7 @@ public class ActivateServiceImpl implements ActivateService {
     @Override
     @Transactional
     public ActivateResponse activateAccount(ActivateRequest request) {
-        boolean isValid = redisService.validateCode(request.getEmail(), request.getCode(), NotificationAction.VERIFY_USER_ACCOUNT);
+        boolean isValid = redisService.validateCode(request.getEmail(), request.getCode(), UserAccountAction.VERIFY_USER_ACCOUNT);
 
         if (!isValid) {
             log.warn("Invalid activation code for: {}", request.getEmail());
@@ -44,7 +44,7 @@ public class ActivateServiceImpl implements ActivateService {
                     user.setAccountNonLocked(true);
                     userRepository.save(user);
 
-                    redisService.deleteCode(request.getEmail(), NotificationAction.VERIFY_USER_ACCOUNT);
+                    redisService.deleteCode(request.getEmail(), UserAccountAction.VERIFY_USER_ACCOUNT);
 
                     String emailContent = EmailTemplates.generateAccountActivatedEmail(user.getUsername());
                     rabbitService.sendMessageWithVerificationCode(user.getEmail(), emailContent, "Account verified successfully!");
@@ -67,7 +67,7 @@ public class ActivateServiceImpl implements ActivateService {
     public boolean sendActivationCode(String email, String username) {
         try {
             String code = RegisterCodeGenerator.generateUrlSafeToken();
-            redisService.saveCode(email, code, NotificationAction.VERIFY_USER_ACCOUNT);
+            redisService.saveCode(email, code, UserAccountAction.VERIFY_USER_ACCOUNT);
 
             String content = EmailTemplates.generateEmailWithActivationCode(username, code);
             rabbitService.sendMessageWithVerificationCode(email, content, "Verify your account");

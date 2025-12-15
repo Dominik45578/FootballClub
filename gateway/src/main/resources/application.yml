@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: gateway
+  data:
+    redis:
+      host: ${REDIS_CONTAINER:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}      # jeśli nie masz hasła → zostaw puste lub usuń linię
+      timeout: 5000ms
 
   cloud:
     gateway:
@@ -49,6 +55,7 @@ gateway:
 
     public-paths:
       - /api/auth/**
+      - /api/logout
       - /actuator/**
       - /health
       - /ready
@@ -60,6 +67,7 @@ gateway:
       - "http://localhost:3000"
       - "https://twoja-domena.pl"
       - "http://localhost:${GATEWAY_PORT:12001}"
+    max-allowed-request-per-route: 5
 
 management:
   endpoints:

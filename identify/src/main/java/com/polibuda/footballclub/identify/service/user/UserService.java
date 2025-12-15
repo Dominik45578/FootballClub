@@ -16,5 +16,4 @@ public interface UserService {
     boolean existsByEmail(String email);
     
     User save(User user);
-    RedisUser save(RedisUser redisUser);
 }

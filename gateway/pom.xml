@@ -47,6 +47,11 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- Security + JWT (OAuth2 Resource Server verifies JWT tokens) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

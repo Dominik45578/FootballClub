@@ -34,7 +34,7 @@ public class JwtAccessServiceImpl implements JwtAccessService {
     public String generateToken(User user) {
         Map<String, Object> claims = buildClaims(user);
         log.info(claims.toString());
-        return buildToken(claims, user.getUsername());
+        return buildToken(claims,Long.toString(user.getId()));
     }
 
     @Override

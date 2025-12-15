@@ -9,7 +9,7 @@ public class TokenClaims {
     public static final String BEARER = "Bearer ";
     public static final String EMAIL = "email";
     public static final String ACTIVE = "active";
-    public static final String NON_BLOCKED = "blocked";
+    public static final String NON_BLOCKED = "non_blocked";
 
 
     public static final String EXP = "exp";

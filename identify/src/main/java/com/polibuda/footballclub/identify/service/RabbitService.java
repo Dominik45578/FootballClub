@@ -20,6 +20,7 @@ public class RabbitService {
         if(creditionals == null){
             log.error("Message recipient is null");
             return false;
+
         }
         return true;
     }

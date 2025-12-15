@@ -1,14 +1,12 @@
 package com.polibuda.footballclub.identify.service.user;
 
-import com.polibuda.footballclub.common.actions.NotificationAction;
+import com.polibuda.footballclub.common.actions.UserAccountAction;
 import com.polibuda.footballclub.common.dto.*;
 import com.polibuda.footballclub.identify.EmailTemplates;
 import com.polibuda.footballclub.identify.RegisterCodeGenerator;
 import com.polibuda.footballclub.identify.entity.User;
-import com.polibuda.footballclub.identify.repository.UserRepository;
 import com.polibuda.footballclub.identify.service.RabbitService;
 import com.polibuda.footballclub.identify.service.redis.RedisService;
-import com.polibuda.footballclub.identify.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Deprecated
 public class PasswordService {
 
     private final UserService userService; // lub UserRepository, zależnie od preferencji
@@ -31,7 +30,7 @@ public class PasswordService {
             User user = userService.findByEmail(request.getEmail());
             if (user != null) {
                 String code = RegisterCodeGenerator.generateUrlSafeToken();
-                redisService.saveCode(user.getEmail(), code, NotificationAction.PASSWORD_RESET);
+                redisService.saveCode(user.getEmail(), code, UserAccountAction.PASSWORD_RESET);
                 
                 String emailContent = EmailTemplates.generatePasswordResetEmail(user.getEmail(), code);
                 rabbitService.sendMessageWithVerificationCode(user.getEmail(), emailContent, "Reset your password");
@@ -53,7 +52,7 @@ public class PasswordService {
             }
 
             // 2. Walidacja kodu w Redis
-            boolean isCodeValid = redisService.validateCode(request.getEmail(), request.getCode(), NotificationAction.PASSWORD_RESET);
+            boolean isCodeValid = redisService.validateCode(request.getEmail(), request.getCode(), UserAccountAction.PASSWORD_RESET);
             if (!isCodeValid) {
                 return NewPasswordResponse.builder().status(false).message("Invalid or expired code").build();
             }
@@ -73,7 +72,7 @@ public class PasswordService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userService.save(user); // Zakładam że userService ma save, lub użyj repo
             
-            redisService.deleteCode(request.getEmail(), NotificationAction.PASSWORD_RESET);
+            redisService.deleteCode(request.getEmail(), UserAccountAction.PASSWORD_RESET);
             
             log.info("Password successfully changed for user: {}", request.getEmail());
             return NewPasswordResponse.builder().status(true).message("Password changed successfully").build();

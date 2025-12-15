@@ -8,5 +8,5 @@ public class MutationHeaderClaims {
     public static final String X_USERNAME = "X-Username";
     public static final String X_EMAIL = "X-Email";
     public static final String X_ACTIVATED = "X-Activated";
-    public static final String X_NON_BLOCKED = "X-Blocked";
+    public static final String X_NON_BLOCKED = "X-Non-Blocked";
 }
