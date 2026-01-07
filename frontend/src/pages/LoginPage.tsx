@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner' // <-- poprawny import funkcji toast
+import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+
+import { login as apiLogin, setToken } from '@/lib/auth'
 
 export function LoginPage() {
     const [email, setEmail] = useState('')
@@ -12,25 +14,55 @@ export function LoginPage() {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
+    const TEST_EMAIL = 'admin@klub.pl'
+    const TEST_PASSWORD = 'haslo123'
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
 
-        // Symulacja logowania (później tu będzie fetch do backendu)
-        setTimeout(() => {
+        try {
+            const res = await apiLogin(email, password)
             setLoading(false)
 
-            if (email === 'admin@klub.pl' && password === 'haslo123') {
+            if (res.success) {
                 toast.success('Zalogowano pomyślnie!', {
-                    description: 'Witaj w panelu zarządzania klubem.',
+                    description: res.message || 'Witaj w panelu zarządzania klubem.',
                 })
                 navigate('/dashboard')
-            } else {
-                toast.error('Błąd logowania', {
-                    description: 'Nieprawidłowy email lub hasło.',
-                })
+                return
             }
-        }, 1000)
+
+            // backend returned success=false — allow test credentials fallback
+            if (email === TEST_EMAIL && password === TEST_PASSWORD) {
+                setToken('dev-token')
+                toast.success('Zalogowano testowo (fallback)', {
+                    description: 'Użyto danych testowych lokalnie.',
+                })
+                navigate('/dashboard')
+                return
+            }
+
+            toast.error('Błąd logowania', {
+                description: res.message || 'Nieprawidłowy email lub hasło.',
+            })
+        } catch (err: any) {
+            setLoading(false)
+
+            // on network/backend error allow test credentials fallback
+            if (email === TEST_EMAIL && password === TEST_PASSWORD) {
+                setToken('dev-token')
+                toast.success('Zalogowano testowo (offline fallback)', {
+                    description: 'Użyto danych testowych lokalnie (bez połączenia z backendem).',
+                })
+                navigate('/dashboard')
+                return
+            }
+
+            toast.error('Błąd', {
+                description: err?.message || 'Wystąpił nieoczekiwany błąd',
+            })
+        }
     }
 
     return (

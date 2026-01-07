@@ -10,23 +10,17 @@ import {
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 
-interface Player {
-    id: number
-    name: string
-    position: string
-    goals: number
-}
+import { fetchPlayers } from '@/lib/api'
+import type { Player } from '@/lib/api'
 
-const fetchPlayers = async (): Promise<Player[]> => {
-    const res = await fetch('/api/players')
-    if (!res.ok) throw new Error('Nie udało się pobrać danych')
-    return res.json()
+const fetchPlayersLocal = async (): Promise<Player[]> => {
+    return fetchPlayers()
 }
 
 export function PlayersTable() {
     const { data: players, isLoading, error } = useQuery({
         queryKey: ['players'],
-        queryFn: fetchPlayers,
+        queryFn: fetchPlayersLocal,
     })
 
     if (isLoading) {
