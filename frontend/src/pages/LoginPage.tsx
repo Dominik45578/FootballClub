@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,13 @@ export function LoginPage() {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
+
+    // set tab title on this page
+    useEffect(() => {
+        const prev = document.title
+        document.title = 'Logowanie'
+        return () => { document.title = prev }
+    }, [])
 
     const TEST_EMAIL = 'admin@klub.pl'
     const TEST_PASSWORD = 'haslo123'
