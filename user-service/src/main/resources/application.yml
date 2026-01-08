@@ -18,7 +18,7 @@ spring:
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
   datasource:
-    url: jdbc:mysql://localhost:3306/memberdb?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+    url: jdbc:mysql://${DB_CONTAINER:localhost}:${DB_PORT:3306}/${DB_TEAM_MEMBER_NAME:team_member_db}${DB_PARAMETERS:?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}

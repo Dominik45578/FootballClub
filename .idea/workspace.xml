@@ -5,64 +5,36 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/actions/TeamFetchMode.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/actions/TeamMemberStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/claims/TeamType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamCategory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamRole.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamTable.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/GlobalExceptionHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/SecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/UserAuthenticationFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/MemberController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamManagementController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/JoinTeamRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManageTeamMemberRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManualAddMemberRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/UpdateMemberProfileRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/MemberProfileResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamDetailsResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/AbstractSummaryResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/MemberSummaryResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/TeamSummaryResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/AbstractSearchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/MemberSearchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/TeamSearchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/AbstractAuditableEntity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Member.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Team.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/TeamMember.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/InsufficientPermissionsException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/BusinessLogicException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/InvalidTeamCodeException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/UserAlreadyInTeamException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/UserAlreadyVerified.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/FootballClubException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/MemberNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/ResourceNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/TeamMemberNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/notFound/TeamNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/model/ApiErrorResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/MemberRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamMemberRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/RedisConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/RedisConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/RabbitService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/RabbitService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/PasswordService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/PasswordService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/user/UserServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/UserRole.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/UserRoleAuth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/football-external-data-service/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/football-external-data-service/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/FootballExternalDataApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/resources/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/MatchApplications.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/resources/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/RoleAuthConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/AddTeamRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/TeamAlreadyExistExceptions.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamRole.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamRole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/TempController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/UserAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/UserAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/MemberController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/MemberController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Team.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Team.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -75,10 +47,10 @@
       <list>
         <option value="GraphQL File" />
         <option value="Dockerfile" />
-        <option value="Enum" />
         <option value="Interface" />
-        <option value="Class" />
         <option value="Exception" />
+        <option value="Enum" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -160,6 +132,8 @@
     "Maven.identify [clean].executor": "Run",
     "Maven.identify [compile].executor": "Run",
     "Maven.identify [install].executor": "Run",
+    "Maven.match-service [clean].executor": "Run",
+    "Maven.match-service [install].executor": "Run",
     "Maven.notification [install].executor": "Run",
     "Maven.shared [clean].executor": "Run",
     "Maven.shared [install].executor": "Run",
@@ -186,13 +160,14 @@
     "Spring Boot.GatewayApplication.executor": "Run",
     "Spring Boot.Identify-service.executor": "Run",
     "Spring Boot.IdentifyApplication.executor": "Run",
+    "Spring Boot.MatchApplications.executor": "Run",
     "Spring Boot.Notification-service.executor": "Run",
     "Spring Boot.NotificationApplication.executor": "Run",
     "Spring Boot.User-service.executor": "Run",
     "git-widget-placeholder": "user-service",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Dominik/IdeaProjects/FootballClubSystem/user-service",
+    "last_opened_file_path": "C:/Users/Dominik/IdeaProjects/FootballClubSystem/football-external-data-service",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -202,7 +177,7 @@
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
     "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "spring",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -218,13 +193,14 @@
       <recent name="com.polibuda.footballclub.user.dto.response.summary" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\football-external-data-service" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\football-external-data-service\src\main\resources" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service\src\main\resources" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\user-service" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\notification" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\gateway" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\gateway\src\main" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify\src\main\resources" />
@@ -287,6 +263,7 @@
               <entry key="Eureka-service" value="STOPPED" />
               <entry key="Gateway-service" value="STOPPED" />
               <entry key="Identify-service" value="STOPPED" />
+              <entry key="MatchApplications" value="STOPPED" />
               <entry key="Notification-service" value="STOPPED" />
               <entry key="User-service" value="STOPPED" />
             </map>
@@ -295,7 +272,7 @@
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Docker.Docker_standalone">
+  <component name="RunManager" selected="Docker.Docker">
     <configuration name="generated-requests | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#2" index="2" runType="Run single request">
       <method v="2" />
     </configuration>
@@ -322,6 +299,13 @@
     <configuration name="Eureka-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="eureka" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.eureka.EurekaApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FootballExternalDataApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="football-external-data-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.football_external_data.FootballExternalDataApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -381,6 +365,7 @@
       <item itemvalue="HTTP Request.generated-requests | #3" />
       <item itemvalue="HTTP Request.generated-requests | #4" />
       <item itemvalue="HTTP Request.generated-requests | #5" />
+      <item itemvalue="Spring Boot.FootballExternalDataApplication" />
       <item itemvalue="Spring Boot.Eureka-service" />
       <item itemvalue="Spring Boot.Gateway-service" />
       <item itemvalue="Spring Boot.Identify-service" />
@@ -446,7 +431,12 @@
       <workItem from="1765116179608" duration="3997000" />
       <workItem from="1765375632572" duration="7321000" />
       <workItem from="1765531968963" duration="4340000" />
-      <workItem from="1765708390702" duration="31542000" />
+      <workItem from="1765708390702" duration="33901000" />
+      <workItem from="1766414964216" duration="2962000" />
+      <workItem from="1767362643866" duration="3780000" />
+      <workItem from="1767867158811" duration="3914000" />
+      <workItem from="1767878934893" duration="16170000" />
+      <workItem from="1767896627642" duration="10829000" />
     </task>
     <servers />
   </component>

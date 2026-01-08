@@ -1,6 +1,7 @@
 package com.polibuda.footballclub.user.entity;
 
 import com.polibuda.footballclub.common.database.TeamCategory;
+import com.polibuda.footballclub.common.database.TeamStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -36,7 +37,16 @@ public class Team extends AbstractAuditableEntity {
     @Column(nullable = false)
     private TeamCategory category;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private TeamStatus status = TeamStatus.ACTIVE;
+
+    @Column(nullable = false , length = 4096)
+    private String description;
+
     @OneToMany(mappedBy = "team", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<TeamMember> members = new HashSet<>();
+
 }

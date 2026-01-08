@@ -21,20 +21,12 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    /**
-     * Pobierz MÓJ profil (pełne dane z Peselem).
-     * Dostęp: Każdy zalogowany użytkownik.
-     */
     @GetMapping("/me")
     public ResponseEntity<MemberProfileResponse> getMyProfile(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId) {
         return ResponseEntity.ok(memberService.getMyProfile(userId));
     }
 
-    /**
-     * Zaktualizuj MÓJ profil (waga, wzrost, telefon).
-     * Dostęp: Każdy zalogowany użytkownik.
-     */
     @PatchMapping("/me")
     public ResponseEntity<MemberProfileResponse> updateMyProfile(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId,
@@ -42,11 +34,6 @@ public class MemberController {
         return ResponseEntity.ok(memberService.updateMyProfile(userId, request));
     }
 
-    /**
-     * Wyszukaj innych użytkowników (np. żeby dodać ich do drużyny).
-     * Zwraca dane okrojone (MemberSummary).
-     * Dostęp: Każdy zalogowany.
-     */
     @GetMapping("search")
     public ResponseEntity<MemberSearchResponse> searchMembers(
             @RequestParam String query,

@@ -45,7 +45,9 @@
         <module>gateway</module>
         <module>identify</module>
         <module>user-service</module>
+        <module>match-service</module>
         <module>notification</module>
+        <module>football-external-data-service</module>
 
     </modules>
 

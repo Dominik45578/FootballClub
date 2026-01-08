@@ -1,8 +1,11 @@
 package com.polibuda.footballclub.user.service.team;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
+import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
+import com.polibuda.footballclub.user.dto.response.summary.TeamSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
+import com.polibuda.footballclub.user.entity.Team;
 import org.springframework.data.domain.Pageable;
 
 public interface TeamService {
@@ -31,4 +34,9 @@ public interface TeamService {
      * @return Szczegółowy obiekt DTO
      */
     TeamDetailsResponse getTeamDetails(Long teamId);
+    TeamSummaryResponse getTeamProfile(Long teamId);
+    boolean addTeam(AddTeamRequest team);
+    boolean updateTeam(Team team);
+
+    boolean deleteTeam(Long teamId);
 }

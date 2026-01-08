@@ -77,11 +77,9 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         validateCoachPermissions(target.getTeam().getId(), requesterUserId);
 
         if (target.getStatus() == TeamMemberStatus.WAITING_FOR_VERIFICATION) {
-            // Hard delete dla odrzuconej aplikacji
             teamMemberRepository.delete(target);
             log.info("COACH_EVENT: Application rejected for member {}", target.getId());
         } else {
-            // Soft delete (archiwizacja) dla byłego członka
             target.setStatus(TeamMemberStatus.ARCHIVED);
             teamMemberRepository.save(target);
             log.info("COACH_EVENT: Member {} moved to archive by {}", target.getId(), requesterUserId);
