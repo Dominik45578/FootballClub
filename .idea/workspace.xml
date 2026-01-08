@@ -36,6 +36,14 @@
       <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/PlayersTable.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/lib/query-client.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/tailwind.config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,10 +59,18 @@
         <option value="Exception" />
         <option value="Enum" />
         <option value="Class" />
+        <option value="TypeScript File" />
+        <option value="package.json" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -127,6 +143,7 @@
     "Maven.footballclub-parent [package].executor": "Run",
     "Maven.footballclub-parent [site].executor": "Run",
     "Maven.footballclub-parent [validate].executor": "Run",
+    "Maven.gateway [clean].executor": "Run",
     "Maven.gateway [install].executor": "Run",
     "Maven.gateway [package].executor": "Run",
     "Maven.identify [clean].executor": "Run",
@@ -134,6 +151,7 @@
     "Maven.identify [install].executor": "Run",
     "Maven.match-service [clean].executor": "Run",
     "Maven.match-service [install].executor": "Run",
+    "Maven.notification [clean].executor": "Run",
     "Maven.notification [install].executor": "Run",
     "Maven.shared [clean].executor": "Run",
     "Maven.shared [install].executor": "Run",
@@ -164,7 +182,7 @@
     "Spring Boot.Notification-service.executor": "Run",
     "Spring Boot.NotificationApplication.executor": "Run",
     "Spring Boot.User-service.executor": "Run",
-    "git-widget-placeholder": "user-service",
+    "git-widget-placeholder": "frontend",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/Dominik/IdeaProjects/FootballClubSystem/football-external-data-service",
@@ -178,6 +196,8 @@
     "project.structure.side.proportion": "0.2",
     "run.configurations.included.in.services": "true",
     "settings.editor.selected.configurable": "preferences.lookFeel",
+    "settings.editor.selected.configurable": "spring",
+    "ts.external.directory.path": "E:\\Studia\\Projekt\\FootballClub\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -273,6 +293,9 @@
     </option>
   </component>
   <component name="RunManager" selected="Docker.Docker">
+  </component>
+  <component name="RunManager" selected="Spring Boot.Eureka-service">
+
     <configuration name="generated-requests | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#2" index="2" runType="Run single request">
       <method v="2" />
     </configuration>
