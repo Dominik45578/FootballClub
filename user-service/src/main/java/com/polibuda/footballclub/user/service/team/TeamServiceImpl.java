@@ -1,24 +1,31 @@
 package com.polibuda.footballclub.user.service.team;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
+import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
 import com.polibuda.footballclub.user.dto.response.summary.TeamSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
 import com.polibuda.footballclub.user.entity.Team;
+import com.polibuda.footballclub.user.entity.TeamMember;
+import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
+import com.polibuda.footballclub.user.exceptions.business.TeamAlreadyExistExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamNotFoundException;
+import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
-import com.polibuda.footballclub.user.service.team.TeamService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.BeanDefinitionDsl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.management.relation.RoleNotFoundException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +34,7 @@ import java.util.stream.Collectors;
 public class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -74,6 +82,46 @@ public class TeamServiceImpl implements TeamService {
         return mapToDetails(team);
     }
 
+    @Override
+    public TeamSummaryResponse getTeamProfile(Long teamId) {
+        return teamRepository.findById(teamId)
+                .map(this::mapToSummary)
+                .orElseThrow(() -> new TeamNotFoundException(teamId));
+    }
+
+
+    @Override
+    public boolean addTeam(AddTeamRequest team) {
+        if(teamRepository.existsByCode(team.getCode())){
+            throw new TeamAlreadyExistExceptions();
+        }
+        try{
+            teamRepository.save(
+                    Team.builder()
+                            .name(team.getName())
+                            .category(team.getCategory())
+                            .code(team.getCode())
+                            .description(team.getDescription())
+                            .build()
+            );
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+
+    }
+
+    @Override//TODO: nie ruszamy narazie
+    public boolean updateTeam(Team team) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteTeam(Long teamId) {
+        teamRepository.deleteById(teamId);
+        return true;
+    }
+
     // --- Mappers (Private Methods for Encapsulation) ---
 
     private TeamSummaryResponse mapToSummary(Team team) {
@@ -105,5 +153,14 @@ public class TeamServiceImpl implements TeamService {
                 .createdAt(team.getCreatedAt())
                 .members(members)
                 .build();
+    }
+
+    private void validateCoachPermissions(Long teamId, Long userId) {
+        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberId(teamId,userId)
+                .orElseThrow(() -> new InsufficientPermissionsException("You are not part of this team context."));
+
+        if (!requester.isCoach()) {
+            throw new InsufficientPermissionsException("Contextual Permission Denied: Role COACH required in this team.");
+        }
     }
 }

@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: ${FED_SERVICE_NAME:football-external-data-service}
+
+server:
+  port: ${FED_SERVICE_PORT:12006}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${EUREKA_NAME:localhost}:${EUREKA_PORT:8761}/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name:football-external-data-service}:${server.port:12006}
+
+logging:
+  level:
+    com.polibuda.footballclub.match-service: DEBUG
+    org.springframework.security: DEBUG

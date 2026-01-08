@@ -1,6 +1,8 @@
 package com.polibuda.footballclub.user.repository;
 
 import com.polibuda.footballclub.user.entity.Team;
+import com.polibuda.footballclub.user.entity.TeamMember;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -25,4 +27,6 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     // 3. Pobranie konkretnego z dociągnięciem członków (optymalizacja N+1)
     @EntityGraph(attributePaths = {"members", "members.member"})
     Optional<Team> findById(Long id);
+
+    boolean existsTeamsByName(@NotBlank(message = "Nazwa teamu jest wymagana") String name);
 }

@@ -8,8 +8,12 @@ import com.polibuda.footballclub.user.service.team.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/user/teams")
@@ -48,5 +52,17 @@ public class TeamController {
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetailsResponse> getTeamDetails(@PathVariable Long teamId) {
         return ResponseEntity.ok(teamService.getTeamDetails(teamId));
+    }
+    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+    @DeleteMapping("/{teamid}")
+    public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+    @PutMapping("/{teamid}")
+    public ResponseEntity<Void> addTeam(@PathVariable Long teamId,
+                                        @RequestHeader(MutationHeaderClaims.X_ROLES) Set<String> roles) {
+        return ResponseEntity.ok().build();
     }
 }

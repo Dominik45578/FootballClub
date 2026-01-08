@@ -11,11 +11,22 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="notification" />
-        <module name="user-service" />
         <module name="common" />
         <module name="identify" />
         <module name="eureka" />
+        <module name="match-service" />
+        <module name="user-service" />
         <module name="gateway" />
+      </profile>
+      <profile name="Annotation profile for football-external-data-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="football-external-data-service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -23,9 +34,11 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="common" options="-parameters" />
       <module name="eureka" options="-parameters" />
+      <module name="football-external-data-service" options="-parameters" />
       <module name="footballclub-parent" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="identify" options="-parameters" />
+      <module name="match-service" options="-parameters" />
       <module name="notification" options="-parameters" />
       <module name="user-service" options="-parameters" />
     </option>

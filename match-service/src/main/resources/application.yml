@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: ${MATCH_SERVICE_NAME:match-service}
+
+server:
+  port: ${MATCH_SERVICE_PORT:12005}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${EUREKA_NAME:localhost}:${EUREKA_PORT:8761}/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name:match-service}:${server.port:12005}
+
+logging:
+  level:
+    com.polibuda.footballclub.match-service: DEBUG
+    org.springframework.security: DEBUG

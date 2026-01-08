@@ -39,9 +39,6 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
-
-
-
     networks:
       - services-network
 
@@ -154,6 +151,36 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
       EMAIL_NAME: ${EMAIL_NAME}
       EMAIL_PASS_CODE: ${EMAIL_PASS_CODE}
+  # ==========================================
+  # MATCH SERVICE
+  # ==========================================
+  match-service:
+    build:
+      context: ./match-service
+      dockerfile: Dockerfile
+    container_name: ${MATCH_SERVICE_NAME}
+    depends_on:
+      eureka:
+        condition: service_started
+    networks:
+      - services-network
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+  # ==========================================
+  # FOOTBALL EXTERNAL DATA SERVICE
+  # ==========================================
+  football-external-data-service:
+    build:
+      context: ./football-external-data-service
+      dockerfile: Dockerfile
+    container_name: ${FED_SERVICE_NAME}
+    depends_on:
+      eureka:
+        condition: service_started
+    networks:
+      - services-network
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
 
 
   # ==========================================
