@@ -29,10 +29,11 @@ export function LoginPage() {
         setLoading(true)
 
         try {
-            const res = await apiLogin(email, password)
+            const res = await apiLogin()
             setLoading(false)
 
             if (res.success) {
+                if (res.token) setToken(res.token)
                 toast.success('Zalogowano pomyślnie!', {
                     description: res.message || 'Witaj w panelu zarządzania klubem.',
                 })

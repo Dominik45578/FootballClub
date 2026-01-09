@@ -23,11 +23,11 @@ export function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // Simple placeholder: show success toast and navigate to login
+    // Simple placeholder: show success toast and navigate to activation page
     setTimeout(() => {
       setLoading(false)
       toast.success('Zarejestrowano (placeholder)')
-      navigate('/login')
+      navigate('/activate-account')
     }, 600)
   }
 
@@ -53,7 +53,9 @@ export function RegisterPage() {
                 <Label htmlFor="password">Hasło</Label>
                 <Input id="password" type="password" placeholder="hasło" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
               </div>
-              <Button className="w-full mt-4" type="submit" disabled={loading}>{loading ? 'Rejestracja...' : 'Zarejestruj się'}</Button>
+              <Button className="w-full mt-4" type="submit" disabled={loading} style={{ cursor: 'pointer' }}>
+                {loading ? 'Rejestracja...' : 'Zarejestruj się'}
+              </Button>
             </div>
           </form>
         </CardContent>
