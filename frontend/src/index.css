@@ -81,10 +81,15 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    /* Niestandardowe utility powodowały błąd JIT (border-border nie istnieje) -
+       używamy bezpośrednio zmiennych CSS, co jest bezpieczne i jednoznaczne. */
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    /* Używamy bezpośrednio zmiennych CSS zamiast @apply z niestandardowymi utility */
+    background-color: var(--background);
+    color: var(--foreground);
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
   }
@@ -119,4 +124,23 @@
   .btn-focus:hover:not(:disabled) { transform: scale(1.02); }
   /* lekkie przyciśnięcie przy active */
   .btn-focus:active:not(:disabled) { transform: scale(0.995); }
+
+  /* Nowa klasa, wymusza rozjaśnienie i cień przy hover/focus dla przycisków */
+  .btn-brighten {
+    transition: filter 150ms ease-in-out, box-shadow 150ms ease-in-out, transform 150ms ease-in-out;
+    -webkit-transition: filter 150ms ease-in-out, box-shadow 150ms ease-in-out, transform 150ms ease-in-out;
+    will-change: filter, box-shadow, transform;
+  }
+  .btn-brighten:hover,
+  .btn-brighten:focus {
+    filter: brightness(1.5) !important;
+    box-shadow: 0 10px 28px rgba(16,24,40,0.09), 0 1px 0 rgba(16,24,40,0.02), 0 0 12px rgba(91,33,182,0.06) !important;
+    transform: scale(1.03) !important;
+    outline: none !important;
+  }
+  /* Ensure inner content also brightens when parent is hovered */
+  .btn-brighten:hover *,
+  .btn-brighten:focus * {
+    filter: brightness(1.5) !important;
+  }
 }

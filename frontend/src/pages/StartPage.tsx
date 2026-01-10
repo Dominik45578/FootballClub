@@ -47,7 +47,7 @@ export function StartPage() {
 
       <div className="relative z-10 w-full max-w-lg">
         <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl">
-          <CardContent className="p-8 text-center card-primary-shadow">
+          <CardContent className="p-8 text-center shadow-none md:shadow-lg rounded-lg">
             <div className="mb-6">
               {/* Replace with your actual logo file if available */}
               <div className="mx-auto w-32 h-32 rounded-full bg-teal-600 flex items-center justify-center text-white text-4xl font-bold">FC</div>
