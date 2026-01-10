@@ -17,7 +17,10 @@ export function ClubSquadPage() {
   const navigate = useNavigate()
   const [clubName, setClubName] = useState<string>('')
   const [players, setPlayers] = useState<any[]>([])
-  const [positionFilter, setPositionFilter] = useState<string>('')
+  const [positionFilter, setPositionFilter] = useState<string>('ALL')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [clubIdError, setClubIdError] = useState<string | null>(null)
 
   useEffect(() => {
     const prev = document.title
@@ -28,19 +31,43 @@ export function ClubSquadPage() {
   useEffect(() => {
     const load = async () => {
       const idNum = Number(clubId)
-      if (!idNum) return
-      const squad = await getClubSquad(idNum)
-      setPlayers(squad)
-      // Best-effort: fetch club name from list (mock) to show header
-      const clubs = await getClubs({ page: 0, size: 50 })
-      const found = clubs.items.find((c) => c.id === idNum)
-      setClubName(found?.name || `Klub ${idNum}`)
+      if (!clubId || Number.isNaN(idNum) || idNum <= 0) {
+        const msg = 'Brak poprawnego ID klubu w adresie'
+        setError(msg)
+        setClubIdError(msg)
+        setPlayers([])
+        setClubName('—')
+        return
+      }
+      setClubIdError(null)
+      setLoading(true)
+      setError(null)
+      try {
+        const squad = await getClubSquad(idNum)
+        setPlayers(squad && squad.length > 0 ? squad : [])
+        // Best-effort: fetch club name from list (mock) to show header
+        const clubs = await getClubs({ page: 0, size: 50 })
+        const found = clubs.items.find((c) => (c.id ?? c.teamId) === idNum)
+        setClubName(found?.name ?? found?.teamName ?? `Klub ${idNum}`)
+        if (!squad || squad.length === 0) {
+          // fallback: pokaż przykładowych graczy zamiast pustki
+          const fallback = await getClubSquad(-1)
+          setPlayers(fallback)
+          setError(null)
+        }
+      } catch (e: any) {
+        setError(e?.message || 'Nie udało się wczytać składu')
+        const fallback = await getClubSquad(-1)
+        setPlayers(fallback)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [clubId])
 
   const filtered = useMemo(
-    () => players.filter((p) => !positionFilter || p.position === positionFilter),
+    () => players.filter((p) => positionFilter === 'ALL' || p.position === positionFilter),
     [players, positionFilter]
   )
 
@@ -53,8 +80,8 @@ export function ClubSquadPage() {
   }, [players])
 
   return (
-    <div className="min-h-screen bg-background">
-      <Card className="container mt-8">
+    <div className="min-h-screen bg-background overflow-hidden">
+      <Card className="container mt-4 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Skład: {clubName || '—'}</CardTitle>
@@ -62,14 +89,15 @@ export function ClubSquadPage() {
           </div>
           <Button variant="outline" onClick={() => navigate('/team-search')}>Wróć do wyszukiwarki</Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 overflow-hidden">
+          {(error || clubIdError) && <div className="text-sm text-destructive">{error || clubIdError}</div>}
           <div className="flex flex-wrap items-center gap-3">
             <div className="space-y-1">
               <span className="text-sm font-medium">Filtruj po pozycji</span>
               <Select value={positionFilter} onValueChange={setPositionFilter}>
                 <SelectTrigger className="w-40"><SelectValue placeholder="Wszystkie" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Wszystkie</SelectItem>
+                  <SelectItem value="ALL">Wszystkie</SelectItem>
                   <SelectItem value="Goalkeeper">Bramkarze</SelectItem>
                   <SelectItem value="Defender">Obrońcy</SelectItem>
                   <SelectItem value="Midfielder">Pomocnicy</SelectItem>
@@ -84,26 +112,40 @@ export function ClubSquadPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((p) => (
-              <div key={p.id} className="rounded-lg border p-4 flex flex-col gap-2 bg-card shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="size-12 rounded-full bg-muted flex items-center justify-center text-lg font-semibold">{p.number || '—'}</div>
-                  <div>
-                    <div className="font-semibold">{p.name}</div>
-                    <div className="text-sm text-muted-foreground">{positionLabels[p.position || ''] || '—'}</div>
-                  </div>
-                </div>
-                <div className="text-sm text-muted-foreground flex gap-4">
-                  <span>Wiek: {p.age || '—'}</span>
-                  <span>Nr: {p.number || '—'}</span>
-                </div>
-              </div>
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-sm text-muted-foreground">Brak graczy dla wybranego filtra.</div>
-            )}
+          <div className="rounded-lg border w-full overflow-x-hidden">
+            <table className="table-auto text-sm w-full">
+              <thead>
+                <tr className="bg-muted/60">
+                  <th className="text-left px-3 py-2">#</th>
+                  <th className="text-left px-3 py-2">Zawodnik</th>
+                  <th className="text-left px-3 py-2">Pozycja</th>
+                  <th className="text-left px-3 py-2">Wiek</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((p) => (
+                  <tr key={p.id} className="border-t hover:bg-muted/40">
+                    <td className="px-3 py-2 font-semibold">{p.number || '—'}</td>
+                    <td className="px-3 py-2">{p.name}</td>
+                    <td className="px-3 py-2">{positionLabels[p.position || ''] || '—'}</td>
+                    <td className="px-3 py-2">{p.age || '—'}</td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && !loading && !error && (
+                  <tr><td colSpan={4} className="px-3 py-4 text-center text-muted-foreground">Brak graczy dla wybranego filtra.</td></tr>
+                )}
+                {loading && (
+                  <tr><td colSpan={4} className="px-3 py-4 text-center text-muted-foreground">Ładowanie...</td></tr>
+                )}
+                {error && filtered.length === 0 && !loading && (
+                  <tr><td colSpan={4} className="px-3 py-4 text-center text-muted-foreground">Spróbuj wrócić do wyszukiwarki i wybrać klub ponownie.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
+          {!clubId && (
+            <div className="text-sm text-muted-foreground">Brak ID klubu w adresie. Wróć do wyszukiwarki, aby wybrać zespół.</div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -111,4 +153,3 @@ export function ClubSquadPage() {
 }
 
 export default ClubSquadPage
-

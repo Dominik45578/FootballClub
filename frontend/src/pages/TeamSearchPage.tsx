@@ -35,13 +35,13 @@ export function TeamSearchPage() {
     const totalPages = useMemo(() => Math.max(1, Math.ceil((clubs.total || 0) / size)), [clubs.total, size])
 
     return (
-        <div className="min-h-screen bg-background">
-            <Card className="container mt-8">
+        <div className="min-h-screen bg-background overflow-hidden">
+            <Card className="container mt-4 overflow-auto max-h-[calc(100vh-2rem)]">
                 <CardHeader>
                     <CardTitle>Wyszukiwarka klubów</CardTitle>
                     <CardDescription>Filtruj po nazwie i kraju, zobacz stadion i przejdź do składu</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 overflow-hidden">
                     <div className="grid gap-3 md:grid-cols-3">
                         <div>
                             <label className="text-sm font-medium">Nazwa</label>
@@ -57,8 +57,8 @@ export function TeamSearchPage() {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                    <div className="w-full overflow-x-hidden">
+                        <table className="w-full text-sm table-auto">
                             <thead>
                                 <tr className="border-b">
                                     <th className="text-left py-2">Klub</th>
@@ -70,19 +70,22 @@ export function TeamSearchPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {clubs.items.map((c) => (
-                                    <tr key={c.id} className="border-b hover:bg-muted/50">
-                                        <td className="py-2 font-medium">{c.name}</td>
+                                {clubs.items.map((c) => {
+                                    const clubId = c.id ?? c.teamId
+                                    const clubName = c.name ?? c.teamName ?? '—'
+                                    return (
+                                    <tr key={clubId ?? c.name} className="border-b hover:bg-muted/50">
+                                        <td className="py-2 font-medium">{clubName}</td>
                                         <td className="py-2">{c.country || '—'}</td>
                                         <td className="py-2">{c.founded || '—'}</td>
                                         <td className="py-2">{c.venue?.name || '—'}</td>
                                         <td className="py-2">{c.venue?.capacity ? c.venue.capacity.toLocaleString() : '—'}</td>
                                         <td className="py-2 flex gap-2">
-                                            <Button size="sm" variant="outline" onClick={() => navigate(`/club/${c.id}`)}>Szczegóły</Button>
-                                            <Button size="sm" onClick={() => navigate(`/club/${c.id}/squad`)}>Skład</Button>
+                                            <Button size="sm" variant="outline" onClick={() => clubId && navigate(`/team-details/${clubId}`)} disabled={!clubId}>Szczegóły</Button>
+                                            <Button size="sm" onClick={() => clubId && navigate(`/club/${clubId}/squad`)} disabled={!clubId}>Skład</Button>
                                         </td>
                                     </tr>
-                                ))}
+                                )})}
                                 {clubs.items.length === 0 && !loading && (
                                     <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">Brak wyników</td></tr>
                                 )}

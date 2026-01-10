@@ -35,7 +35,7 @@ export function TeamDetailsPage() {
     return (
         <div className="min-h-screen bg-background">
             <header className="border-b bg-card">
-                <div className="container flex h-16 items-center justify-between px-4">
+                <div className="container flex h-16 items-center justify-between px-4 overflow-hidden">
                     <h1 className="text-2xl font-bold">Szczegóły zespołu</h1>
                 </div>
             </header>
@@ -54,7 +54,7 @@ export function TeamDetailsPage() {
                 )}
                 {team && (
                     <>
-                        <div className="flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-start flex-wrap gap-3 overflow-hidden">
                             <div>
                                 <h2 className="text-xl font-bold">{team.name} {teamId ? `(ID: ${teamId})` : ''}</h2>
                                 <p>Kod zespołu: {team.code}</p>
@@ -62,8 +62,8 @@ export function TeamDetailsPage() {
                                 <p>Data utworzenia: {team.createdAt}</p>
                             </div>
                             {teamId && (
-                                <Button variant="outline" onClick={() => navigate(`/club/${teamId}/squad`)}>
-                                    Zobacz skład
+                                <Button variant="default" size="lg" className="shrink-0 px-6" onClick={() => navigate(`/club/${teamId}/squad`)}>
+                                    Zobacz skład zespołu
                                 </Button>
                             )}
                         </div>
