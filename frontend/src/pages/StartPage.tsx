@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export function StartPage() {
   const navigate = useNavigate()
@@ -43,33 +45,27 @@ export function StartPage() {
         }}
       />
 
-      <div className="relative z-10 w-full max-w-lg p-8 bg-white/80 dark:bg-gray-800/70 rounded-xl shadow-xl text-center backdrop-blur-sm">
-        <div className="mb-6">
-          {/* Replace with your actual logo file if available */}
-          <div className="mx-auto w-32 h-32 rounded-full bg-teal-600 flex items-center justify-center text-white text-4xl font-bold">FC</div>
-        </div>
-        <h1 className="text-2xl font-bold mb-2">Panel zarządzania klubem</h1>
-        <p className="text-sm text-muted-foreground mb-6">Zarządzaj zawodnikami, meczami i powiadomieniami.</p>
+      <div className="relative z-10 w-full max-w-lg">
+        <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl">
+          <CardContent className="p-8 text-center card-primary-shadow">
+            <div className="mb-6">
+              {/* Replace with your actual logo file if available */}
+              <div className="mx-auto w-32 h-32 rounded-full bg-teal-600 flex items-center justify-center text-white text-4xl font-bold">FC</div>
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Panel zarządzania klubem</h1>
+            <p className="text-sm text-muted-foreground mb-6">Zarządzaj zawodnikami, meczami i powiadomieniami.</p>
 
-        <div className="flex gap-4 justify-center">
-          <button
-            className="px-6 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-700 cursor-pointer"
-            onClick={() => navigate('/login')}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-          >
-            Zaloguj
-          </button>
+            <div className="flex gap-4 justify-center">
+              <Button aria-label="Zaloguj" onClick={() => navigate('/login')} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                Zaloguj
+              </Button>
 
-          <button
-            className="px-6 py-2 rounded-md border border-teal-600 text-teal-600 hover:bg-teal-50 cursor-pointer"
-            onClick={() => navigate('/register')}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-          >
-            Zarejestruj
-          </button>
-        </div>
+              <Button variant="outline" aria-label="Zarejestruj" onClick={() => navigate('/register')} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                Zarejestruj
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

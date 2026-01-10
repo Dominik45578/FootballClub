@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
-
-const mockTeams = [
-    { teamId: 1, teamName: 'Drużyna A', category: 'Amatorska', numberOfMembers: 10 },
-    { teamId: 2, teamName: 'Drużyna B', category: 'Profesjonalna', numberOfMembers: 15 },
-];
+import { getTeams } from '@/lib/userApi'
+import type { TeamSummary } from '@/lib/userApi'
 
 export function TeamSearchPage() {
     useEffect(() => {
@@ -11,14 +8,25 @@ export function TeamSearchPage() {
         document.title = 'Wyszukiwarka zespołów'
         return () => { document.title = prev }
     }, [])
-    const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredTeams = mockTeams.map(team => ({
-        id: team.teamId,
-        name: team.teamName,
-        category: team.category,
-        membersCount: team.numberOfMembers,
-    }));
+    const [searchTerm, setSearchTerm] = useState('');
+    const [teams, setTeams] = useState<TeamSummary[]>([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        let mounted = true
+        setLoading(true)
+        setError(null)
+        getTeams({ name: searchTerm }).then(res => {
+            if (!mounted) return
+            setTeams(res.items || [])
+        }).catch(err => {
+            if (!mounted) return
+            setError(err?.message || 'Błąd ładowania')
+        }).finally(() => { if (mounted) setLoading(false) })
+        return () => { mounted = false }
+    }, [searchTerm])
 
     return (
         <div className="min-h-screen bg-background">
@@ -35,12 +43,16 @@ export function TeamSearchPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full p-2 border rounded mb-4"
                 />
+
+                {loading && <div>Ładowanie...</div>}
+                {error && <div className="text-red-500">{error}</div>}
+
                 <ul>
-                    {filteredTeams.map(team => (
-                        <li key={team.id} className="p-4 border-b">
-                            <h2 className="text-lg font-bold">{team.name}</h2>
+                    {teams.map(team => (
+                        <li key={team.teamId} className="p-4 border-b">
+                            <h2 className="text-lg font-bold">{team.teamName}</h2>
                             <p>Kategoria: {team.category}</p>
-                            <p>Liczba członków: {team.membersCount}</p>
+                            <p>Liczba członków: {team.numberOfMembers ?? '-'}</p>
                         </li>
                     ))}
                 </ul>

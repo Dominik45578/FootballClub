@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { joinTeam } from '@/lib/userApi'
+import { toast } from 'sonner'
 
 export function JoinTeamPage() {
     useEffect(() => {
@@ -8,13 +10,16 @@ export function JoinTeamPage() {
     }, [])
     const [teamCode, setTeamCode] = useState('');
 
-    // Zaktualizowano obsługę formularza dołączenia do zespołu, aby korzystać z DTO
-    const handleJoinTeam = (event: React.FormEvent) => {
+    // Zaktualizowano obsługę formularza dołączenia do zespołu, aby korzystać z userApi
+    const handleJoinTeam = async (event: React.FormEvent) => {
         event.preventDefault();
-        const joinTeamRequest = {
-            teamCode,
-        };
-        console.log('Wysłano żądanie dołączenia do zespołu:', joinTeamRequest);
+        try {
+            await joinTeam(teamCode)
+            toast.success('Wysłano prośbę dołączenia do zespołu (mock).')
+            setTeamCode('')
+        } catch (err: any) {
+            toast.error('Błąd', { description: err?.message || 'Nie udało się dołączyć' })
+        }
     };
 
     return (
