@@ -4,21 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Added StartPage.tsx, added RegisterPage.tsx, added title and favicon.png for StartPage.tsx, RegisterPage.tsx and LoginPage.tsx.">
-      <change afterPath="$PROJECT_DIR$/frontend/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/ui/icons.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ActivateAccountPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ActivateAccountPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/JoinTeamPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/JoinTeamPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/StartPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/StartPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" afterDir="false" />
-    </list>
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Added frontend sources" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -429,7 +415,23 @@
       <option name="project" value="LOCAL" />
       <updated>1767892673131</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Improved appearance">
+      <option name="closed" value="true" />
+      <created>1768015236173</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1768015236173</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Added frontend sources">
+      <option name="closed" value="true" />
+      <created>1768015379861</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1768015379861</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -449,7 +451,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Edited login page. Partially added dashboard." />
     <MESSAGE value="Added StartPage.tsx, added RegisterPage.tsx, added title and favicon.png for StartPage.tsx, RegisterPage.tsx and LoginPage.tsx." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added StartPage.tsx, added RegisterPage.tsx, added title and favicon.png for StartPage.tsx, RegisterPage.tsx and LoginPage.tsx." />
+    <MESSAGE value="Improved appearance" />
+    <MESSAGE value="Added frontend sources" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added frontend sources" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
