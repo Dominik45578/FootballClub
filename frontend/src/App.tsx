@@ -14,6 +14,9 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const TeamsPage = lazy(() => import('./pages/TeamsPage').then(m => ({ default: (m as any).default || (m as any).TeamsPage })));
 const TeamManagementPage = lazy(() => import('./pages/TeamManagementPage').then(m => ({ default: (m as any).default || (m as any).TeamManagementPage })));
 const JoinTeamPage = lazy(() => import('./pages/JoinTeamPage').then(m => ({ default: (m as any).default || (m as any).JoinTeamPage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: (m as any).default || (m as any).ResetPasswordPage })));
+const ClubSquadPage = lazy(() => import('./pages/ClubSquadPage').then(m => ({ default: (m as any).default || (m as any).ClubSquadPage })));
+
 
 function App() {
     return (
@@ -41,8 +44,10 @@ function App() {
                 {/* Team and member related pages */}
                 <Route path="/team-search" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamSearchPage /> </Suspense>} />
                 <Route path="/team-details/:teamId?" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamDetailsPage /> </Suspense>} />
+                <Route path="/club/:clubId/squad" element={<Suspense fallback={<div>Ładowanie...</div>}> <ClubSquadPage /> </Suspense>} />
                 <Route path="/member-profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberProfilePage /> </Suspense>} />
                 <Route path="/profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <ProfilePage /> </Suspense>} />
+                <Route path="/reset-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <ResetPasswordPage /> </Suspense>} />
 
                 {/* Additional team pages (placeholders) */}
                 <Route path="/teams" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamsPage /> </Suspense>} />

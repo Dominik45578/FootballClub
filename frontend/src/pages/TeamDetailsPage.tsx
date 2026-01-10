@@ -54,10 +54,19 @@ export function TeamDetailsPage() {
                 )}
                 {team && (
                     <>
-                        <h2 className="text-xl font-bold">{team.name} {teamId ? `(ID: ${teamId})` : ''}</h2>
-                        <p>Kod zespołu: {team.code}</p>
-                        <p>Kategoria: {team.category}</p>
-                        <p>Data utworzenia: {team.createdAt}</p>
+                        <div className="flex items-center justify-between flex-wrap gap-3">
+                            <div>
+                                <h2 className="text-xl font-bold">{team.name} {teamId ? `(ID: ${teamId})` : ''}</h2>
+                                <p>Kod zespołu: {team.code}</p>
+                                <p>Kategoria: {team.category}</p>
+                                <p>Data utworzenia: {team.createdAt}</p>
+                            </div>
+                            {teamId && (
+                                <Button variant="outline" onClick={() => navigate(`/club/${teamId}/squad`)}>
+                                    Zobacz skład
+                                </Button>
+                            )}
+                        </div>
                         <h3 className="mt-4 text-lg font-bold">Członkowie:</h3>
                         <ul>
                             {team.members?.map((member, index) => (

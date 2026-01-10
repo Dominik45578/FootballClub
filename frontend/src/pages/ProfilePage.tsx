@@ -1,4 +1,8 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { logout } from '@/lib/auth';
@@ -55,30 +59,64 @@ export function ProfilePage() {
             <header className="border-b bg-card">
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Profil użytkownika</h1>
-                    <Button variant="outline" onClick={handleLogout} className="cursor-pointer">
-                        Wyloguj się
-                    </Button>
+                    <Button variant="outline" onClick={handleLogout} className="cursor-pointer">Wyloguj się</Button>
                 </div>
             </header>
             <main className="container py-8">
-                <section className="p-4 bg-card rounded-lg shadow">
-                    <h2 className="text-xl font-semibold">Informacje o koncie</h2>
-                    <p className="mt-2">Imię i nazwisko: {profile ? `${profile.firstName} ${profile.lastName}` : '—'}</p>
-                    <p className="mt-2">PESEL (maskowany): {profile?.maskedPesel || '—'}</p>
-                    <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
-                        <label className="text-sm">Wzrost (cm)</label>
-                        <input value={height} onChange={(e) => setHeight(e.target.value)} className="p-2 border rounded" />
-                        <label className="text-sm">Waga (kg)</label>
-                        <input value={weight} onChange={(e) => setWeight(e.target.value)} className="p-2 border rounded" />
-                        <label className="text-sm">Numer telefonu</label>
-                        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="p-2 border rounded" />
-                        <div className="flex gap-2">
-                            <Button type="submit">Zapisz</Button>
-                            <Button variant="outline" onClick={handleLogout}>Wyloguj się</Button>
-                        </div>
-                    </form>
-                </section>
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card className="shadow-sm">
+                        <CardHeader>
+                            <CardTitle>Informacje o koncie</CardTitle>
+                            <CardDescription>Podstawowe dane pobrane z profilu</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                            {!profile && (
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-48" />
+                                    <Skeleton className="h-4 w-64" />
+                                    <Skeleton className="h-4 w-56" />
+                                </div>
+                            )}
+                            {profile && (
+                                <>
+                                    <p className="font-medium">{profile.firstName} {profile.lastName}</p>
+                                    <p className="text-muted-foreground">PESEL (maskowany): {profile.maskedPesel || '—'}</p>
+                                    <p className="text-muted-foreground">Wiek: {profile.age ?? '—'}</p>
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm">
+                        <CardHeader>
+                            <CardTitle>Edycja profilu</CardTitle>
+                            <CardDescription>Wzrost, waga i numer telefonu</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={handleSubmit} className="grid gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="height">Wzrost (cm)</Label>
+                                    <Input id="height" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="np. 180" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="weight">Waga (kg)</Label>
+                                    <Input id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="np. 75" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Numer telefonu</Label>
+                                    <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="np. +48123456789" />
+                                </div>
+                                <div className="flex gap-2 flex-wrap">
+                                    <Button type="submit">Zapisz</Button>
+                                    <Button type="button" variant="ghost" onClick={handleLogout}>Wyloguj się</Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
             </main>
         </div>
-    );
+    )
 }
+
+export default ProfilePage

@@ -32,6 +32,15 @@ export type TeamDetails = {
   members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string }>
 }
 
+export const TEAM_ROLES = [
+  'ROLE_TEAM_PLAYER',
+  'ROLE_TEAM_CAPTAIN',
+  'ROLE_TEAM_HEAD_COACH',
+  'ROLE_TEAM_ASSISTANT_COACH',
+  'ROLE_TEAM_PHYSIO',
+  'ROLE_TEAM_MANAGER',
+] as const
+
 // Mock data
 const mockMyProfile: MemberProfile = {
   id: 1,
@@ -143,4 +152,15 @@ export async function resendActivation(email?: string): Promise<{ sent: boolean 
   }
   // w trybie online wysyłamy żądanie do endpointu resend (przykładowo)
   return fetchJson(`${GATEWAY}/api/auth/resend-activation`, { method: 'POST', body: JSON.stringify({ email }) })
+}
+
+export async function addMemberManually(teamId: number, payload: { memberId: number; initialRoles?: string[] }) {
+  if (OFFLINE) {
+    if (!teamId || !payload?.memberId) throw new Error('Wymagane ID zespołu i członka')
+    return Promise.resolve({ ok: true })
+  }
+  return fetchJson(`${GATEWAY}/user/team-management/${teamId}/add-member`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
