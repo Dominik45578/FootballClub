@@ -2,6 +2,26 @@ spring:
   application:
     name: ${FED_SERVICE_NAME:football-external-data-service}
 
+  datasource:
+    url: jdbc:mysql://${DB_CONTAINER:localhost}:${DB_PORT:3306}/${DB_FED_NAME:feddb}${DB_PARAMETERS:?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    open-in-view: false
+
 server:
   port: ${FED_SERVICE_PORT:12006}
 
@@ -19,3 +39,18 @@ logging:
   level:
     com.polibuda.footballclub.match-service: DEBUG
     org.springframework.security: DEBUG
+
+api:
+  football:
+    api-url: ${API_FOOTBALL_URL:https://v3.football.api-sports.io/}
+    api-key: ${API_FOOTBALL_KEY:mojklucz}
+    auth:
+      header: ${API_FOOTBALL_AUTH_HEADER:x-apisports-key}
+    squads:
+      url: ${API_FOOTBALL_URL:https://v3.football.api-sports.io/}${API_FOOTBALL_SQUADS_URL:players/squads}
+    teams:
+      url: ${API_FOOTBALL_URL:https://v3.football.api-sports.io/}${API_FOOTBALL_TEAM_URL:teams}
+    param:
+      id: id
+      team: team
+
