@@ -10,23 +10,21 @@ import {
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 
-interface Player {
-    id: number
-    name: string
-    position: string
-    goals: number
-}
+import type { Player } from '@/lib/api'
 
-const fetchPlayers = async (): Promise<Player[]> => {
-    const res = await fetch('/api/players')
-    if (!res.ok) throw new Error('Nie udało się pobrać danych')
-    return res.json()
+const fetchPlayersLocal = async (): Promise<Player[]> => {
+    // Mockowane dane zamiast wywołania do backendu
+    return [
+        { id: 1, name: 'Jan Kowalski', position: 'Napastnik', goals: 10 },
+        { id: 2, name: 'Adam Nowak', position: 'Obrońca', goals: 2 },
+        { id: 3, name: 'Piotr Wiśniewski', position: 'Pomocnik', goals: 5 },
+    ]
 }
 
 export function PlayersTable() {
     const { data: players, isLoading, error } = useQuery({
         queryKey: ['players'],
-        queryFn: fetchPlayers,
+        queryFn: fetchPlayersLocal,
     })
 
     if (isLoading) {
@@ -52,7 +50,7 @@ export function PlayersTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {players?.map((player) => (
+                        {players?.map((player: Player) => (
                             <TableRow key={player.id}>
                                 <TableCell className="font-medium">{player.name}</TableCell>
                                 <TableCell>{player.position}</TableCell>

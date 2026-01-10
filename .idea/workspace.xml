@@ -4,32 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/actions/AuditActionType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/FootballDataMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/aop/AuditAspect.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/aop/Auditable.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/FedProperties.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/FootballClientConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/PropertiesConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/dto/audit/AuditLogDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/entity/AuditLogEntity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/model/FootballApiClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/repository/AuditLogRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/repository/VenueRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/AuditLogService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballDataSyncService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballDataValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballFetchService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballImportOrchestrator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballManagementService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballReadService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballWriteService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/football-external-data-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/resources/application.yml" afterDir="false" />
-    </list>
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Added frontend sources" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,13 +15,13 @@
       <list>
         <option value="GraphQL File" />
         <option value="Dockerfile" />
+        <option value="Enum" />
         <option value="Interface" />
+        <option value="Class" />
         <option value="Exception" />
         <option value="TypeScript File" />
         <option value="package.json" />
         <option value="TypeScript JSX File" />
-        <option value="Enum" />
-        <option value="Class" />
       </list>
     </option>
   </component>
@@ -66,8 +41,8 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Dominik45578/FootballClub&quot;,
-    &quot;accountId&quot;: &quot;6333b2a0-0847-4ccb-9335-a438f23cc5b3&quot;
+    &quot;url&quot;: &quot;https://github.com/Dominik45578/FootballClub.git&quot;,
+    &quot;accountId&quot;: &quot;5169ff68-3c75-45bb-b6c0-912145f4115e&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -84,15 +59,11 @@
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
 }</component>
-  <component name="MavenImportPreferences">
-    <option name="generalSettings">
-      <MavenGeneralSettings>
-        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
-      </MavenGeneralSettings>
-    </option>
-  </component>
   <component name="MavenRunner">
     <option name="skipTests" value="true" />
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -108,109 +79,102 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.GatewayApplication.executor": "Run",
-    "Docker.Docker.executor": "Run",
-    "Docker.Docker_standalone.executor": "Run",
-    "HTTP Request.generated-requests | #2.executor": "Run",
-    "HTTP Request.generated-requests | #3.executor": "Run",
-    "HTTP Request.generated-requests | #4.executor": "Run",
-    "HTTP Request.generated-requests | #5.executor": "Run",
-    "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
-    "Maven.common [clean].executor": "Run",
-    "Maven.common [install].executor": "Run",
-    "Maven.football-external-data-service [clean].executor": "Run",
-    "Maven.football-external-data-service [install].executor": "Run",
-    "Maven.footballclub [clean].executor": "Run",
-    "Maven.footballclub-parent [clean,package...].executor": "Run",
-    "Maven.footballclub-parent [clean].executor": "Run",
-    "Maven.footballclub-parent [compile].executor": "Run",
-    "Maven.footballclub-parent [install].executor": "Run",
-    "Maven.footballclub-parent [package].executor": "Run",
-    "Maven.footballclub-parent [site].executor": "Run",
-    "Maven.footballclub-parent [validate].executor": "Run",
-    "Maven.gateway [clean].executor": "Run",
-    "Maven.gateway [install].executor": "Run",
-    "Maven.gateway [package].executor": "Run",
-    "Maven.identify [clean].executor": "Run",
-    "Maven.identify [compile].executor": "Run",
-    "Maven.identify [install].executor": "Run",
-    "Maven.match-service [clean].executor": "Run",
-    "Maven.match-service [install].executor": "Run",
-    "Maven.notification [clean].executor": "Run",
-    "Maven.notification [install].executor": "Run",
-    "Maven.shared [clean].executor": "Run",
-    "Maven.shared [install].executor": "Run",
-    "Maven.user-service [clean].executor": "Run",
-    "Maven.user-service [compile].executor": "Run",
-    "Maven.user-service [install].executor": "Run",
-    "Maven.user-service [package].executor": "Run",
-    "Maven.user-service [site].executor": "Run",
-    "Maven.user-service [validate].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found": "New/updated database configurations found",
-    "Notification.DoNotAsk-DatabaseConfigFileWatcher.found": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.Eureka-service.executor": "Run",
-    "Spring Boot.EurekaApplication.executor": "Run",
-    "Spring Boot.FootballClubSystemApplication.executor": "Run",
-    "Spring Boot.FootballExternalDataApplication.executor": "Run",
-    "Spring Boot.Gateway-service.executor": "Run",
-    "Spring Boot.GatewayApplication.executor": "Run",
-    "Spring Boot.Identify-service.executor": "Run",
-    "Spring Boot.IdentifyApplication.executor": "Run",
-    "Spring Boot.MatchApplications.executor": "Run",
-    "Spring Boot.Notification-service.executor": "Run",
-    "Spring Boot.NotificationApplication.executor": "Run",
-    "Spring Boot.User-service.executor": "Run",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Dominik/IdeaProjects/FootballClubSystem/football-external-data-service",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "npm.build.executor": "Run",
-    "npm.dev.executor": "Run",
-    "npm.preview.executor": "Run",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "spring",
-    "ts.external.directory.path": "C:\\Users\\Dominik\\IdeaProjects\\FootballClubSystem\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.GatewayApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.Docker.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.Docker_standalone.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #1.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #2.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #3 (1).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #3.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #4 (1).executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #4.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #5.executor&quot;: &quot;Run&quot;,
+    &quot;Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.common [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.common [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [clean,package...].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [site].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.footballclub-parent [validate].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.gateway [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.gateway [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.gateway [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.identify [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.identify [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.identify [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.notification [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.notification [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.shared [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.shared [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.user-service [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.user-service [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.user-service [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.user-service [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.user-service [site].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.user-service [validate].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;New/updated database configurations found&quot;,
+    &quot;Notification.DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.Eureka-service.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.EurekaApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.FootballClubSystemApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.Gateway-service.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.GatewayApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.Identify-service.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.IdentifyApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.Notification-service.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.NotificationApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.User-service.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;frontend&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;G:/Studia/Projekt/FootballClub/frontend/public&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;G:\\Studia\\Projekt\\FootballClub\\frontend\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "redis",
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;redis&quot;,
+      &quot;mysql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.polibuda.footballclub.user.dto.request." />
       <recent name="com.polibuda.footballclub.user.dto.response.summary" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\football-external-data-service" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\football-external-data-service\src\main\resources" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service\src\main\resources" />
+      <recent name="G:\Studia\Projekt\FootballClub\frontend\public" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\user-service" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\notification" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\gateway\src\main" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify\src\main\resources" />
@@ -258,36 +222,21 @@
         <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
-    <option name="configurationStatuses">
-      <map>
-        <entry key="HttpClient.HttpRequestRunConfigurationType">
-          <value>
-            <map>
-              <entry key="generated-requests | #2" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-        <entry key="SpringBootApplicationConfigurationType">
-          <value>
-            <map>
-              <entry key="Eureka-service" value="STOPPED" />
-              <entry key="FootballExternalDataApplication" value="STOPPED" />
-              <entry key="Gateway-service" value="STOPPED" />
-              <entry key="Identify-service" value="STOPPED" />
-              <entry key="MatchApplications" value="STOPPED" />
-              <entry key="Notification-service" value="STOPPED" />
-              <entry key="User-service" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
   <component name="RunManager" selected="Docker.Docker">
-    <configuration name="generated-requests | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#2" index="2" runType="Run single request">
+    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #5" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#5" index="5" runType="Run single request">
+    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #4" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #5" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="5" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration default="true" type="JetRunConfigurationType">
@@ -308,13 +257,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="FootballExternalDataApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="football-external-data-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.football_external_data.FootballExternalDataApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Gateway-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="gateway" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.gateway.GatewayApplication" />
@@ -325,13 +267,6 @@
     <configuration name="Identify-service" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="identify" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.identify.IdentifyApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="MatchApplications" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="match-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.polibuda.footballclub.match.MatchApplications" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -370,46 +305,14 @@
       </deployment>
       <method v="2" />
     </configuration>
-    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="build" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="dev" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="preview" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="preview" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Docker.Docker" />
       <item itemvalue="Docker.Docker_standalone" />
-      <item itemvalue="HTTP Request.generated-requests | #2" />
+      <item itemvalue="HTTP Request.generated-requests | #1" />
+      <item itemvalue="HTTP Request.generated-requests | #3 (1)" />
+      <item itemvalue="HTTP Request.generated-requests | #4 (1)" />
+      <item itemvalue="HTTP Request.generated-requests | #4" />
       <item itemvalue="HTTP Request.generated-requests | #5" />
-      <item itemvalue="npm.build" />
-      <item itemvalue="npm.dev" />
-      <item itemvalue="npm.preview" />
-      <item itemvalue="Spring Boot.MatchApplications" />
-      <item itemvalue="Spring Boot.FootballExternalDataApplication" />
       <item itemvalue="Spring Boot.Eureka-service" />
       <item itemvalue="Spring Boot.Gateway-service" />
       <item itemvalue="Spring Boot.Identify-service" />
@@ -418,22 +321,23 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.dev" />
-        <item itemvalue="npm.preview" />
-        <item itemvalue="npm.build" />
-        <item itemvalue="HTTP Request.generated-requests | #2" />
+        <item itemvalue="HTTP Request.generated-requests | #4 (1)" />
+        <item itemvalue="HTTP Request.generated-requests | #3 (1)" />
+        <item itemvalue="HTTP Request.generated-requests | #1" />
         <item itemvalue="HTTP Request.generated-requests | #5" />
+        <item itemvalue="HTTP Request.generated-requests | #4" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26199.169" />
-        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-IU-252.26199.169" />
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.26775.15" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.26775.15" />
       </set>
     </attachedChunks>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="" />
@@ -476,15 +380,58 @@
       <workItem from="1765116179608" duration="3997000" />
       <workItem from="1765375632572" duration="7321000" />
       <workItem from="1765531968963" duration="4340000" />
-      <workItem from="1765708390702" duration="33901000" />
-      <workItem from="1766414964216" duration="2962000" />
-      <workItem from="1767362643866" duration="3780000" />
-      <workItem from="1767867158811" duration="3914000" />
-      <workItem from="1767878934893" duration="16170000" />
-      <workItem from="1767896627642" duration="10829000" />
-      <workItem from="1767950320886" duration="7186000" />
-      <workItem from="1768053052172" duration="13620000" />
+      <workItem from="1765708390702" duration="31542000" />
+      <workItem from="1767795339260" duration="5762000" />
+      <workItem from="1767807746475" duration="697000" />
+      <workItem from="1767814595959" duration="1520000" />
+      <workItem from="1767820458085" duration="2575000" />
+      <workItem from="1767862397485" duration="886000" />
+      <workItem from="1767863307910" duration="2355000" />
+      <workItem from="1767865839347" duration="100000" />
+      <workItem from="1767883858856" duration="9242000" />
+      <workItem from="1767894149520" duration="54000" />
+      <workItem from="1767894270605" duration="8000" />
+      <workItem from="1767898009437" duration="568000" />
+      <workItem from="1767898678147" duration="313000" />
+      <workItem from="1767899068761" duration="1502000" />
+      <workItem from="1767967458481" duration="76000" />
+      <workItem from="1767967588938" duration="170000" />
+      <workItem from="1767969575241" duration="8841000" />
+      <workItem from="1767980493009" duration="2283000" />
     </task>
+    <task id="LOCAL-00001" summary="Edited login page. Partially added dashboard.">
+      <option name="closed" value="true" />
+      <created>1767801659361</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1767801659361</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Added StartPage.tsx, added RegisterPage.tsx, added title and favicon.png for StartPage.tsx, RegisterPage.tsx and LoginPage.tsx.">
+      <option name="closed" value="true" />
+      <created>1767892673131</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1767892673131</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Improved appearance">
+      <option name="closed" value="true" />
+      <created>1768015236173</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1768015236173</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Added frontend sources">
+      <option name="closed" value="true" />
+      <created>1768015379861</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1768015379861</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -501,6 +448,13 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Edited login page. Partially added dashboard." />
+    <MESSAGE value="Added StartPage.tsx, added RegisterPage.tsx, added title and favicon.png for StartPage.tsx, RegisterPage.tsx and LoginPage.tsx." />
+    <MESSAGE value="Improved appearance" />
+    <MESSAGE value="Added frontend sources" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added frontend sources" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
@@ -514,5 +468,13 @@
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>
