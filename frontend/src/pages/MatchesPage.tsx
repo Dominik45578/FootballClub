@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,13 @@ const mockMatches = [
 
 export function MatchesPage() {
 	const navigate = useNavigate()
+	useEffect(() => {
+		const prev = document.title
+		document.title = 'Mecze'
+		return () => {
+			document.title = prev
+		}
+	}, [])
 
 	return (
 		<div className="min-h-screen bg-background">

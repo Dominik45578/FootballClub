@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { getClubs } from '@/lib/externalApi'
 import { useNavigate } from 'react-router-dom'
+import { Eye, Users, Search as SearchIcon, RotateCw } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function TeamSearchPage() {
     const [name, setName] = useState('')
@@ -41,72 +44,98 @@ export function TeamSearchPage() {
                     <h1 className="text-2xl font-bold">Wyszukiwarka klubów</h1>
                 </div>
             </header>
-            <main className="container py-8">
-            <Card>
-                <CardHeader>
-                    <CardDescription>Filtruj po nazwie i kraju, zobacz stadion i przejdź do składu</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 overflow-hidden">
-                    <div className="grid gap-3 md:grid-cols-3">
-                        <div>
-                            <label className="text-sm font-medium">Nazwa</label>
-                            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="np. Real" />
+            <main className="container py-8 px-4 sm:px-6 lg:px-8">
+                <Card className="shadow-sm">
+                    <CardHeader className="space-y-1">
+                        <CardDescription>Filtruj po nazwie i kraju, zobacz stadion i przejdź do składu</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 overflow-hidden">
+                        <div className="grid gap-3 md:grid-cols-3">
+                            <div>
+                                <label className="text-sm font-medium">Nazwa</label>
+                                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="np. Real" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Kraj</label>
+                                <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="np. Spain" />
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <Button onClick={() => { setPage(0); fetchClubs() }} disabled={loading}>
+                                    <SearchIcon className="mr-2 h-4 w-4" />
+                                    Szukaj
+                                </Button>
+                                <Button variant="outline" onClick={() => { setName(''); setCountry(''); setPage(0); fetchClubs() }} disabled={loading}>
+                                    <RotateCw className="mr-2 h-4 w-4" />
+                                    Wyczyść
+                                </Button>
+                            </div>
                         </div>
-                        <div>
-                            <label className="text-sm font-medium">Kraj</label>
-                            <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="np. Spain" />
-                        </div>
-                        <div className="flex items-end gap-2">
-                            <Button onClick={() => { setPage(0); fetchClubs() }} disabled={loading}>Szukaj</Button>
-                            <Button variant="outline" onClick={() => { setName(''); setCountry(''); setPage(0); fetchClubs() }} disabled={loading}>Wyczyść</Button>
-                        </div>
-                    </div>
 
-                    <div className="w-full overflow-x-hidden">
-                        <table className="w-full text-sm table-auto">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-2">Klub</th>
-                                    <th className="text-left py-2">Kraj</th>
-                                    <th className="text-left py-2">Rok</th>
-                                    <th className="text-left py-2">Stadion</th>
-                                    <th className="text-left py-2">Pojemność</th>
-                                    <th className="text-left py-2">Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {clubs.items.map((c) => {
-                                    const clubId = c.id ?? c.teamId
-                                    const clubName = c.name ?? c.teamName ?? '—'
-                                    return (
-                                    <tr key={clubId ?? c.name} className="border-b hover:bg-muted/50">
-                                        <td className="py-2 font-medium">{clubName}</td>
-                                        <td className="py-2">{c.country || '—'}</td>
-                                        <td className="py-2">{c.founded || '—'}</td>
-                                        <td className="py-2">{c.venue?.name || '—'}</td>
-                                        <td className="py-2">{c.venue?.capacity ? c.venue.capacity.toLocaleString() : '—'}</td>
-                                        <td className="py-2 flex gap-2">
-                                            <Button size="sm" variant="outline" onClick={() => clubId && navigate(`/team-details/${clubId}`)} disabled={!clubId}>Szczegóły</Button>
-                                            <Button size="sm" onClick={() => clubId && navigate(`/club/${clubId}/squad`)} disabled={!clubId}>Skład</Button>
-                                        </td>
+                        <div className="w-full overflow-x-auto rounded-lg border">
+                            <table className="w-full text-sm table-auto min-w-[700px]">
+                                <thead>
+                                    <tr className="bg-muted/60">
+                                        <th className="text-left py-2 px-3 rounded-tl-lg">Klub</th>
+                                        <th className="text-left py-2 px-3">Kraj</th>
+                                        <th className="text-left py-2 px-3">Rok</th>
+                                        <th className="text-left py-2 px-3">Stadion</th>
+                                        <th className="text-left py-2 px-3">Pojemność</th>
+                                        <th className="text-left py-2 px-3 rounded-tr-lg">Akcje</th>
                                     </tr>
-                                )})}
-                                {clubs.items.length === 0 && !loading && (
-                                    <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">Brak wyników</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Strona {page + 1} / {totalPages}</span>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading}>Poprzednia</Button>
-                            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1 || loading}>Następna</Button>
+                                </thead>
+                                <tbody>
+                                    {loading && clubs.items.length === 0 && (
+                                        Array.from({ length: 4 }).map((_, i) => (
+                                            <tr key={`skeleton-${i}`} className="border-t">
+                                                <td className="px-3 py-3" colSpan={6}>
+                                                    <Skeleton className="h-4 w-full" />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                    {!loading && clubs.items.map((c, idx) => {
+                                        const clubId = c.id ?? c.teamId
+                                        const clubName = c.name ?? c.teamName ?? '—'
+                                        return (
+                                        <tr key={clubId ?? c.name} className="border-t odd:bg-muted/40 hover:bg-muted/60">
+                                            <td className="py-2 px-3 font-medium flex items-center gap-2">
+                                                <Badge variant="outline">{idx + 1 + page * size}</Badge>
+                                                {clubName}
+                                            </td>
+                                            <td className="py-2 px-3">{c.country || '—'}</td>
+                                            <td className="py-2 px-3">{c.founded || '—'}</td>
+                                            <td className="py-2 px-3">{c.venue?.name || '—'}</td>
+                                            <td className="py-2 px-3">{c.venue?.capacity ? c.venue.capacity.toLocaleString() : '—'}</td>
+                                            <td className="py-2 px-3">
+                                                <div className="flex gap-2">
+                                                    <Button size="sm" variant="outline" onClick={() => clubId && navigate(`/team-details/${clubId}`)} disabled={!clubId}>
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        Szczegóły
+                                                    </Button>
+                                                    <Button size="sm" onClick={() => clubId && navigate(`/club/${clubId}/squad`)} disabled={!clubId}>
+                                                        <Users className="mr-2 h-4 w-4" />
+                                                        Skład
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )})}
+                                    {clubs.items.length === 0 && !loading && (
+                                        <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">Brak wyników</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <span className="text-sm text-muted-foreground">Strona {page + 1} / {totalPages}</span>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading}>Poprzednia</Button>
+                                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1 || loading}>Następna</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </main>
         </div>
     )
