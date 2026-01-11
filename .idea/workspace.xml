@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Added pages">
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Improved frontend">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/externalApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/externalApi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/ClubSquadPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ClubSquadPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -453,7 +451,15 @@
       <option name="project" value="LOCAL" />
       <updated>1768073001630</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Improved frontend">
+      <option name="closed" value="true" />
+      <created>1768080786357</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1768080786357</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -477,7 +483,8 @@
     <MESSAGE value="Added frontend sources" />
     <MESSAGE value="Improved page styling" />
     <MESSAGE value="Added pages" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added pages" />
+    <MESSAGE value="Improved frontend" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved frontend" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

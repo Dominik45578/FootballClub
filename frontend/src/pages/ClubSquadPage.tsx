@@ -96,12 +96,30 @@ export function ClubSquadPage() {
               <span className="text-sm font-medium">Filtruj po pozycji</span>
               <Select value={positionFilter} onValueChange={setPositionFilter}>
                 <SelectTrigger className="w-40"><SelectValue placeholder="Wszystkie" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Wszystkie</SelectItem>
-                  <SelectItem value="Goalkeeper">Bramkarze</SelectItem>
-                  <SelectItem value="Defender">Obrońcy</SelectItem>
-                  <SelectItem value="Midfielder">Pomocnicy</SelectItem>
-                  <SelectItem value="Attacker">Napastnicy</SelectItem>
+                <SelectContent
+                  position="popper"
+                  className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg [&_[data-radix-select-viewport]]:bg-white dark:[&_[data-radix-select-viewport]]:bg-slate-900"
+                >
+                  <SelectItem
+                    value="ALL"
+                    className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700"
+                  >Wszystkie</SelectItem>
+                  <SelectItem
+                    value="Goalkeeper"
+                    className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700"
+                  >Bramkarze</SelectItem>
+                  <SelectItem
+                    value="Defender"
+                    className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700"
+                  >Obrońcy</SelectItem>
+                  <SelectItem
+                    value="Midfielder"
+                    className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700"
+                  >Pomocnicy</SelectItem>
+                  <SelectItem
+                    value="Attacker"
+                    className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700"
+                  >Napastnicy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
