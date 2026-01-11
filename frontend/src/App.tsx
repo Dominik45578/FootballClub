@@ -16,6 +16,9 @@ const TeamManagementPage = lazy(() => import('./pages/TeamManagementPage').then(
 const JoinTeamPage = lazy(() => import('./pages/JoinTeamPage').then(m => ({ default: (m as any).default || (m as any).JoinTeamPage })));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: (m as any).default || (m as any).ResetPasswordPage })));
 const ClubSquadPage = lazy(() => import('./pages/ClubSquadPage').then(m => ({ default: (m as any).default || (m as any).ClubSquadPage })));
+const MemberApplyPage = lazy(() => import('./pages/MemberApplyPage').then(m => ({ default: (m as any).default || (m as any).MemberApplyPage })));
+const MatchesPage = lazy(() => import('./pages/MatchesPage').then(m => ({ default: (m as any).default || (m as any).MatchesPage })));
+const MatchDetailsPage = lazy(() => import('./pages/MatchDetailsPage').then(m => ({ default: (m as any).default || (m as any).MatchDetailsPage })));
 
 
 function App() {
@@ -45,6 +48,8 @@ function App() {
                 <Route path="/team-search" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamSearchPage /> </Suspense>} />
                 <Route path="/team-details/:teamId?" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamDetailsPage /> </Suspense>} />
                 <Route path="/club/:clubId/squad" element={<Suspense fallback={<div>Ładowanie...</div>}> <ClubSquadPage /> </Suspense>} />
+                <Route path="/matches" element={<Suspense fallback={<div>Ładowanie...</div>}> <MatchesPage /> </Suspense>} />
+                <Route path="/matches/:matchId" element={<Suspense fallback={<div>Ładowanie...</div>}> <MatchDetailsPage /> </Suspense>} />
                 <Route path="/member-profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberProfilePage /> </Suspense>} />
                 <Route path="/profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <ProfilePage /> </Suspense>} />
                 <Route path="/reset-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <ResetPasswordPage /> </Suspense>} />
@@ -53,6 +58,7 @@ function App() {
                 <Route path="/teams" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamsPage /> </Suspense>} />
                 <Route path="/team-management" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamManagementPage /> </Suspense>} />
                 <Route path="/join-team" element={<Suspense fallback={<div>Ładowanie...</div>}> <JoinTeamPage /> </Suspense>} />
+                <Route path="/member-apply" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberApplyPage /> </Suspense>} />
 
                 {/* Activate Account */}
                 <Route path="/activate-account" element={<ActivateAccountPage />} />

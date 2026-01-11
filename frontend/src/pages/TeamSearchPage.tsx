@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { getClubs } from '@/lib/externalApi'
@@ -35,10 +35,15 @@ export function TeamSearchPage() {
     const totalPages = useMemo(() => Math.max(1, Math.ceil((clubs.total || 0) / size)), [clubs.total, size])
 
     return (
-        <div className="min-h-screen bg-background overflow-hidden">
-            <Card className="container mt-4 overflow-auto max-h-[calc(100vh-2rem)]">
+        <div className="min-h-screen bg-background">
+            <header className="border-b bg-card">
+                <div className="container flex h-16 items-center px-4">
+                    <h1 className="text-2xl font-bold">Wyszukiwarka klubów</h1>
+                </div>
+            </header>
+            <main className="container py-8">
+            <Card>
                 <CardHeader>
-                    <CardTitle>Wyszukiwarka klubów</CardTitle>
                     <CardDescription>Filtruj po nazwie i kraju, zobacz stadion i przejdź do składu</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 overflow-hidden">
@@ -102,6 +107,7 @@ export function TeamSearchPage() {
                     </div>
                 </CardContent>
             </Card>
+            </main>
         </div>
     )
 }

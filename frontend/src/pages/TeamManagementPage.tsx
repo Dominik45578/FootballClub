@@ -48,7 +48,7 @@ export function TeamManagementPage() {
                 </div>
             </header>
             <main className="container py-8 space-y-8">
-                <section className="max-w-xl rounded-lg border bg-card p-6 shadow-sm">
+                <section className="w-full rounded-lg border bg-card p-6 shadow-sm">
                     <h2 className="text-lg font-semibold">Dodaj członka ręcznie</h2>
                     <p className="text-sm text-muted-foreground mb-4">Wprowadź ID zespołu oraz ID członka. Opcjonalnie wybierz rolę startową.</p>
                     <Form {...form}>
@@ -108,7 +108,7 @@ export function TeamManagementPage() {
                         </form>
                     </Form>
                 </section>
-                <section className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+                <section className="w-full rounded-lg border bg-slate-900/80 p-6 text-sm text-slate-100">
                     <p>Lista członków zespołu i inne akcje (zatwierdzanie, usuwanie) mogą zostać dodane tutaj później.</p>
                 </section>
             </main>

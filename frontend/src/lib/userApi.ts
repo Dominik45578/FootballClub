@@ -164,3 +164,36 @@ export async function addMemberManually(teamId: number, payload: { memberId: num
     body: JSON.stringify(payload),
   })
 }
+
+const MEMBER_STATUS_KEY = 'memberStatus'
+export type MemberStatus = 'guest' | 'pending' | 'member'
+
+function readMemberStatus(): MemberStatus {
+  if (typeof localStorage === 'undefined') return 'guest'
+  const val = localStorage.getItem(MEMBER_STATUS_KEY)
+  return (val as MemberStatus) || 'guest'
+}
+
+function writeMemberStatus(status: MemberStatus) {
+  if (typeof localStorage === 'undefined') return
+  localStorage.setItem(MEMBER_STATUS_KEY, status)
+}
+
+export function resetMemberStatusMock() {
+  if (typeof localStorage === 'undefined') return
+  localStorage.removeItem(MEMBER_STATUS_KEY)
+}
+
+export function getMemberStatus(): MemberStatus {
+  return readMemberStatus()
+}
+
+export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
+  // Offline-only mock: mark status pending and echo data
+  writeMemberStatus('pending')
+  return Promise.resolve({ status: 'pending', submitted: payload })
+}
+
+export function setMemberActiveForMock() {
+  writeMemberStatus('member')
+}

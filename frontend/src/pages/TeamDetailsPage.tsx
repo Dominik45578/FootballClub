@@ -35,7 +35,7 @@ export function TeamDetailsPage() {
     return (
         <div className="min-h-screen bg-background">
             <header className="border-b bg-card">
-                <div className="container flex h-16 items-center justify-between px-4 overflow-hidden">
+                <div className="container flex h-16 items-center px-4">
                     <h1 className="text-2xl font-bold">Szczegóły zespołu</h1>
                 </div>
             </header>
