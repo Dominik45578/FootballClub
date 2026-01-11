@@ -1,7 +1,15 @@
-import { authHeader } from './auth'
+import { authHeader, logout } from './auth'
+import { setToken, setUserId } from './auth'
 // Centralny klient API z trybem OFFLINE (mocki)
 const OFFLINE = import.meta.env.VITE_OFFLINE === 'true'
-const GATEWAY = import.meta.env.VITE_GATEWAY_URL || ''
+const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
+const AUTH_URL = (import.meta.env.VITE_AUTH_URL || GATEWAY || import.meta.env.VITE_IDENTITY_URL || '').replace(/\/$/, '')
+const USE_GATEWAY_PREFIX = AUTH_URL === GATEWAY && !!API_PREFIX
+// Bazowe ścieżki usług
+const USER_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/user`
+const AUTH_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/auth`
+const PASSWORD_BASE = `${AUTH_BASE}/password`
 
 export type MemberProfile = {
   id: number
@@ -74,8 +82,12 @@ const mockTeamDetails: TeamDetails = {
 // Helper for fetch wrapper
 async function fetchJson(url: string, opts: RequestInit = {}) {
   const headers = { ...(opts.headers || {}), ...authHeader(), 'Content-Type': 'application/json' }
-  const res = await fetch(url, { ...opts, headers })
+  const res = await fetch(url, { ...opts, headers, credentials: 'include' })
   if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      logout()
+      if (typeof window !== 'undefined') window.location.href = '/login'
+    }
     const text = await res.text().catch(() => '')
     throw new Error(text || res.statusText)
   }
@@ -84,7 +96,7 @@ async function fetchJson(url: string, opts: RequestInit = {}) {
 
 export async function getMyProfile(): Promise<MemberProfile> {
   if (OFFLINE) return Promise.resolve(mockMyProfile)
-  return fetchJson(`${GATEWAY}/user/members/me`, { headers: { 'Content-Type': 'application/json' } })
+  return fetchJson(`${USER_BASE}/members/me`)
 }
 
 export async function updateMyProfile(payload: { height?: number; weight?: number; phoneNumber?: string }): Promise<MemberProfile> {
@@ -93,7 +105,7 @@ export async function updateMyProfile(payload: { height?: number; weight?: numbe
     Object.assign(mockMyProfile, payload)
     return Promise.resolve(mockMyProfile)
   }
-  return fetchJson(`${GATEWAY}/user/members/me`, { method: 'PATCH', body: JSON.stringify(payload) })
+  return fetchJson(`${USER_BASE}/members/me`, { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
 export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }): Promise<{ items: TeamSummary[]; total?: number }>{
@@ -104,12 +116,13 @@ export async function getTeams(params?: { mode?: string; teamId?: number; name?:
   if (params?.name) qs.set('name', params.name)
   if (params?.page) qs.set('page', String(params.page))
   if (params?.size) qs.set('size', String(params.size))
-  return fetchJson(`${GATEWAY}/user/teams?${qs.toString()}`)
+  const data = await fetchJson(`${USER_BASE}/teams?${qs.toString()}`)
+  return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
 }
 
 export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
   if (OFFLINE) return Promise.resolve(teamId === mockTeamDetails.id ? mockTeamDetails : { ...mockTeamDetails, id: teamId, name: `Drużyna ${teamId}` })
-  return fetchJson(`${GATEWAY}/user/teams/${teamId}`)
+  return fetchJson(`${USER_BASE}/teams/${teamId}`)
 }
 
 export async function joinTeam(teamCode: string): Promise<void> {
@@ -117,41 +130,40 @@ export async function joinTeam(teamCode: string): Promise<void> {
     if (!teamCode || teamCode.length < 10) throw new Error('Kod zespołu musi mieć od 10 do 16 znaków (mock)')
     return Promise.resolve()
   }
-  const res = await fetch(`${GATEWAY}/user/team-management/join`, { method: 'POST', headers: { ...authHeader(), 'Content-Type': 'application/json' }, body: JSON.stringify({ teamCode }) })
-  if (!res.ok) throw new Error('Join failed')
+  await fetchJson(`${USER_BASE}/team-management/join`, { method: 'POST', body: JSON.stringify({ teamCode }) })
 }
 
 export async function searchMembers(query: string, page = 0, size = 10) {
   if (OFFLINE) return Promise.resolve({ items: [{ id: 11, firstName: 'Jan', lastName: 'Kowalski', age: 36 }], total: 1 })
   const qs = new URLSearchParams({ query, page: String(page), size: String(size) })
-  return fetchJson(`${GATEWAY}/user/members/search?${qs.toString()}`)
+  const data = await fetchJson(`${USER_BASE}/members/search?${qs.toString()}`)
+  return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
 }
 
 export async function getMemberProfile(id: number) {
   if (OFFLINE) return Promise.resolve({ id, firstName: 'Jan', lastName: 'Kowalski', age: 36 })
-  return fetchJson(`${GATEWAY}/user/members?id=${id}`)
+  return fetchJson(`${USER_BASE}/members?id=${id}`)
 }
 
 // Aktywacja konta - do testów UI
-export async function activateAccount(code: string): Promise<{ success: boolean }> {
+export async function activateAccount(code: string, email?: string): Promise<{ success: boolean }> {
   if (OFFLINE) {
     // wymóg: dokładnie 8 znaków alfanumerycznych
-    const ok = typeof code === 'string' && /^[A-Za-z0-9]{8}$/.test(code)
+    const ok = /^[A-Za-z0-9]{6,10}$/.test(code)
     if (!ok) throw new Error('Nieprawidłowy kod aktywacyjny (8 znaków alfanumerycznych)')
     return Promise.resolve({ success: true })
   }
-  return fetchJson(`${GATEWAY}/api/auth/activate`, { method: 'POST', body: JSON.stringify({ code }) })
+  return fetchJson(`${AUTH_BASE}/activate`, { method: 'POST', body: JSON.stringify({ code, email }) })
 }
 
 // Wyślij ponownie kod aktywacyjny na email (mock) — w produkcji backend wyśle mail
-export async function resendActivation(email?: string): Promise<{ sent: boolean }> {
+export async function resendActivation(_email?: string): Promise<{ sent: boolean }> {
   if (OFFLINE) {
     // symuluj opóźnienie i sukces
     await new Promise((r) => setTimeout(r, 500))
     return Promise.resolve({ sent: true })
   }
-  // w trybie online wysyłamy żądanie do endpointu resend (przykładowo)
-  return fetchJson(`${GATEWAY}/api/auth/resend-activation`, { method: 'POST', body: JSON.stringify({ email }) })
+  throw new Error('Wysyłka kodu aktywacyjnego nie jest obsługiwana przez backend')
 }
 
 export async function addMemberManually(teamId: number, payload: { memberId: number; initialRoles?: string[] }) {
@@ -159,10 +171,54 @@ export async function addMemberManually(teamId: number, payload: { memberId: num
     if (!teamId || !payload?.memberId) throw new Error('Wymagane ID zespołu i członka')
     return Promise.resolve({ ok: true })
   }
-  return fetchJson(`${GATEWAY}/user/team-management/${teamId}/add-member`, {
+  return fetchJson(`${USER_BASE}/team-management/${teamId}/add-member`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
+}
+
+export async function approveTeamMember(teamMemberId: number) {
+  if (OFFLINE) return Promise.resolve({ ok: true })
+  return fetchJson(`${USER_BASE}/team-management/${teamMemberId}/approve`, { method: 'POST' })
+}
+
+export async function removeTeamMember(teamMemberId: number) {
+  if (OFFLINE) return Promise.resolve({ ok: true })
+  return fetchJson(`${USER_BASE}/team-management/${teamMemberId}`, { method: 'DELETE' })
+}
+
+// Auth flows (identify service)
+export async function register(payload: { username: string; password: string; email: string }) {
+  if (OFFLINE) return Promise.resolve({ success: true, message: 'Zarejestrowano lokalnie (mock)' })
+  const res = await fetchJson(`${AUTH_BASE}/register`, { method: 'POST', body: JSON.stringify(payload) })
+  if (res?.token) setToken(res.token)
+  if (res?.userId) setUserId(res.userId)
+  return res
+}
+
+export async function login(payload: { email: string; password: string }) {
+  if (OFFLINE) return Promise.resolve({ success: true, token: 'dev-token', message: 'Zalogowano (mock)' })
+  const res = await fetchJson(`${AUTH_BASE}/login`, { method: 'POST', body: JSON.stringify(payload) })
+  if (res?.token) setToken(res.token)
+  if (res?.userId) setUserId(res.userId)
+  return res
+}
+
+export async function refreshToken(payload: { refreshToken: string }) {
+  if (OFFLINE) return Promise.resolve({ token: 'dev-token' })
+  const res = await fetchJson(`${AUTH_BASE}/refresh`, { method: 'POST', body: JSON.stringify(payload) })
+  if (res?.token) setToken(res.token)
+  return res
+}
+
+export async function requestPasswordReset(payload: { email: string }) {
+  if (OFFLINE) return Promise.resolve({ status: true })
+  return fetchJson(`${PASSWORD_BASE}/reset-request`, { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export async function setNewPassword(payload: { email: string; code: string; newPassword: string }) {
+  if (OFFLINE) return Promise.resolve({ status: true })
+  return fetchJson(`${PASSWORD_BASE}/new-password`, { method: 'POST', body: JSON.stringify(payload) })
 }
 
 const MEMBER_STATUS_KEY = 'memberStatus'
@@ -189,11 +245,11 @@ export function getMemberStatus(): MemberStatus {
 }
 
 export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
-  // Offline-only mock: mark status pending and echo data
+  if (OFFLINE) {
+    writeMemberStatus('pending')
+    return Promise.resolve({ status: 'pending', submitted: payload })
+  }
+  const res = await fetchJson(`${USER_BASE}/members/apply`, { method: 'POST', body: JSON.stringify(payload) })
   writeMemberStatus('pending')
-  return Promise.resolve({ status: 'pending', submitted: payload })
-}
-
-export function setMemberActiveForMock() {
-  writeMemberStatus('member')
+  return res ?? { status: 'pending' }
 }
