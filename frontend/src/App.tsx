@@ -19,6 +19,9 @@ const ClubSquadPage = lazy(() => import('./pages/ClubSquadPage').then(m => ({ de
 const MemberApplyPage = lazy(() => import('./pages/MemberApplyPage').then(m => ({ default: (m as any).default || (m as any).MemberApplyPage })));
 const MatchesPage = lazy(() => import('./pages/MatchesPage').then(m => ({ default: (m as any).default || (m as any).MatchesPage })));
 const MatchDetailsPage = lazy(() => import('./pages/MatchDetailsPage').then(m => ({ default: (m as any).default || (m as any).MatchDetailsPage })));
+const MemberSearchPage = lazy(() => import('./pages/MemberSearchPage').then(m => ({ default: (m as any).default || (m as any).MemberSearchPage })));
+const MemberPublicProfilePage = lazy(() => import('./pages/MemberPublicProfilePage').then(m => ({ default: (m as any).default || (m as any).MemberPublicProfilePage })));
+const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
 
 
 function App() {
@@ -51,7 +54,10 @@ function App() {
                 <Route path="/matches" element={<Suspense fallback={<div>Ładowanie...</div>}> <MatchesPage /> </Suspense>} />
                 <Route path="/matches/:matchId" element={<Suspense fallback={<div>Ładowanie...</div>}> <MatchDetailsPage /> </Suspense>} />
                 <Route path="/member-profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberProfilePage /> </Suspense>} />
+                <Route path="/members" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberSearchPage /> </Suspense>} />
+                <Route path="/member/:memberId" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberPublicProfilePage /> </Suspense>} />
                 <Route path="/profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <ProfilePage /> </Suspense>} />
+                <Route path="/new-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <NewPasswordPage /> </Suspense>} />
                 <Route path="/reset-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <ResetPasswordPage /> </Suspense>} />
 
                 {/* Additional team pages (placeholders) */}

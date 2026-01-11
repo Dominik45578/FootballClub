@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { getMyProfile, updateMyProfile } from '@/lib/userApi'
 import type { MemberProfile } from '@/lib/userApi'
 import { Badge } from '@/components/ui/badge'
+import { Lock } from 'lucide-react'
 
 export function ProfilePage() {
     useEffect(() => {
@@ -94,9 +95,15 @@ export function ProfilePage() {
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card className="shadow-sm">
-                        <CardHeader>
-                            <CardTitle>Informacje o koncie</CardTitle>
-                            <CardDescription>Podstawowe dane pobrane z profilu</CardDescription>
+                        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <CardTitle>Informacje o koncie</CardTitle>
+                                <CardDescription>Podstawowe dane pobrane z profilu</CardDescription>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => navigate('/new-password')}>
+                                <Lock className="mr-2 h-4 w-4" />
+                                Ustaw / zresetuj hasło
+                            </Button>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
                             {!profile && (

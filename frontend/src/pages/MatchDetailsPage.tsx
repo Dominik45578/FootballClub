@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,11 @@ const mockMatch = {
 export function MatchDetailsPage() {
   const { matchId } = useParams()
   const navigate = useNavigate()
+  useEffect(() => {
+    const prev = document.title
+    document.title = matchId ? `Mecz #${matchId}` : 'Szczegóły meczu'
+    return () => { document.title = prev }
+  }, [matchId])
   const data = matchId ? { ...mockMatch, id: Number(matchId) } : mockMatch
 
   return (
