@@ -102,6 +102,14 @@ export function LoginPage() {
                             <Button className="w-full mt-4" type="submit" disabled={loading}>
                                 {loading ? 'Logowanie...' : 'Zaloguj się'}
                             </Button>
+                            <button
+                              type="button"
+                              className="text-sm text-primary hover:underline mt-2"
+                              onClick={() => navigate('/reset-password')}
+                              disabled={loading}
+                            >
+                              Zapomniałem hasła
+                            </button>
                         </div>
                     </form>
                 </CardContent>
@@ -113,3 +121,5 @@ export function LoginPage() {
         </div>
     )
 }
+
+export default LoginPage

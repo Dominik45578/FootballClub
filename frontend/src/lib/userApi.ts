@@ -32,6 +32,15 @@ export type TeamDetails = {
   members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string }>
 }
 
+export const TEAM_ROLES = [
+  'ROLE_TEAM_PLAYER',
+  'ROLE_TEAM_CAPTAIN',
+  'ROLE_TEAM_HEAD_COACH',
+  'ROLE_TEAM_ASSISTANT_COACH',
+  'ROLE_TEAM_PHYSIO',
+  'ROLE_TEAM_MANAGER',
+] as const
+
 // Mock data
 const mockMyProfile: MemberProfile = {
   id: 1,
@@ -143,4 +152,48 @@ export async function resendActivation(email?: string): Promise<{ sent: boolean 
   }
   // w trybie online wysyłamy żądanie do endpointu resend (przykładowo)
   return fetchJson(`${GATEWAY}/api/auth/resend-activation`, { method: 'POST', body: JSON.stringify({ email }) })
+}
+
+export async function addMemberManually(teamId: number, payload: { memberId: number; initialRoles?: string[] }) {
+  if (OFFLINE) {
+    if (!teamId || !payload?.memberId) throw new Error('Wymagane ID zespołu i członka')
+    return Promise.resolve({ ok: true })
+  }
+  return fetchJson(`${GATEWAY}/user/team-management/${teamId}/add-member`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+const MEMBER_STATUS_KEY = 'memberStatus'
+export type MemberStatus = 'guest' | 'pending' | 'member'
+
+function readMemberStatus(): MemberStatus {
+  if (typeof localStorage === 'undefined') return 'guest'
+  const val = localStorage.getItem(MEMBER_STATUS_KEY)
+  return (val as MemberStatus) || 'guest'
+}
+
+function writeMemberStatus(status: MemberStatus) {
+  if (typeof localStorage === 'undefined') return
+  localStorage.setItem(MEMBER_STATUS_KEY, status)
+}
+
+export function resetMemberStatusMock() {
+  if (typeof localStorage === 'undefined') return
+  localStorage.removeItem(MEMBER_STATUS_KEY)
+}
+
+export function getMemberStatus(): MemberStatus {
+  return readMemberStatus()
+}
+
+export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
+  // Offline-only mock: mark status pending and echo data
+  writeMemberStatus('pending')
+  return Promise.resolve({ status: 'pending', submitted: payload })
+}
+
+export function setMemberActiveForMock() {
+  writeMemberStatus('member')
 }
