@@ -169,6 +169,7 @@ services:
       - services-network
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+
   # ==========================================
   # FOOTBALL EXTERNAL DATA SERVICE
   # ==========================================
