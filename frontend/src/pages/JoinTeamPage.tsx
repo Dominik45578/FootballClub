@@ -14,11 +14,16 @@ export function JoinTeamPage() {
     const handleJoinTeam = async (event: React.FormEvent) => {
         event.preventDefault();
         try {
-            await joinTeam(teamCode)
-            toast.success('Wysłano prośbę dołączenia do zespołu (mock).')
+            await joinTeam(teamCode, { allowUnauth: true })
+            toast.success('Wysłano prośbę dołączenia do zespołu')
             setTeamCode('')
         } catch (err: any) {
-            toast.error('Błąd', { description: err?.message || 'Nie udało się dołączyć' })
+            const msg = err?.message || 'Nie udało się dołączyć'
+            if (err?.status === 401 || err?.status === 403) {
+                toast.error('Musisz być zatwierdzonym członkiem, aby dołączyć do zespołu.', { description: msg })
+            } else {
+                toast.error('Błąd', { description: msg })
+            }
         }
     };
 

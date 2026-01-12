@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addMemberManually, TEAM_ROLES } from '@/lib/userApi'
+import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile } from '@/lib/userApi'
+import { OFFLINE } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -38,10 +39,25 @@ export function TeamManagementPage() {
     const [members, setMembers] = useState(mockMembers)
     const [teamForm, setTeamForm] = useState(mockTeam)
     const [tab, setTab] = useState<'manual' | 'members' | 'team'>('manual')
+    const [memberAllowed, setMemberAllowed] = useState(true)
+    const [memberError, setMemberError] = useState<string | null>(null)
     useEffect(() => {
         const prev = document.title
         document.title = 'Zarządzanie zespołem'
-        return () => { document.title = prev }
+        let mounted = true
+        if (OFFLINE) {
+            setMemberAllowed(true)
+            setMemberError(null)
+            return () => { document.title = prev }
+        }
+        getMyProfile({ allowUnauth: true })
+            .then(() => { if (mounted) { setMemberAllowed(true); setMemberError(null) } })
+            .catch((err: any) => {
+                if (!mounted) return
+                setMemberAllowed(false)
+                setMemberError(err?.message || 'Brak dostępu — wymagana rola członka')
+            })
+        return () => { mounted = false; document.title = prev }
     }, [])
 
     const form = useForm<FormValues>({
@@ -69,14 +85,24 @@ export function TeamManagementPage() {
         setTimeout(() => setLoading(false), 400)
     }
 
-    const approveMember = (id: number) => {
-        setMembers((prev) => prev.map((m) => m.id === id ? { ...m, status: 'ACTIVE' } : m))
-        toast.success('Zatwierdzono członka (mock)')
+    const approveMember = async (id: number) => {
+        try {
+            await approveTeamMember(id)
+            setMembers((prev) => prev.map((m) => m.id === id ? { ...m, status: 'ACTIVE' } : m))
+            toast.success('Zatwierdzono członka')
+        } catch (err: any) {
+            toast.error('Nie udało się zatwierdzić', { description: err?.message })
+        }
     }
 
-    const rejectMember = (id: number) => {
-        setMembers((prev) => prev.map((m) => m.id === id ? { ...m, status: 'REJECTED' } : m))
-        toast.info('Odrzucono/wykluczono członka (mock)')
+    const rejectMember = async (id: number) => {
+        try {
+            await removeTeamMember(id)
+            setMembers((prev) => prev.filter((m) => m.id !== id))
+            toast.info('Odrzucono/wykluczono członka')
+        } catch (err: any) {
+            toast.error('Nie udało się odrzucić', { description: err?.message })
+        }
     }
 
     const handleSaveTeam = () => {
@@ -87,6 +113,23 @@ export function TeamManagementPage() {
         toast.info('Mock: przywrócono dane zespołu')
     }
 
+    if (!memberAllowed && !OFFLINE) {
+        return (
+            <div className="min-h-screen bg-background">
+                <header className="border-b bg-card">
+                    <div className="container flex h-16 items-center px-4">
+                        <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>
+                    </div>
+                </header>
+                <main className="container py-8 px-4 sm:px-6 lg:px-8">
+                    <div className="rounded-md border border-amber-500 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+                        {memberError || 'Brak dostępu — wymagana rola członka. Zostań zatwierdzonym członkiem, aby zarządzać zespołem.'}
+                    </div>
+                </main>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-background">
             <header className="border-b bg-card">
@@ -95,11 +138,31 @@ export function TeamManagementPage() {
                 </div>
             </header>
             <main className="container py-8 space-y-6 px-4 sm:px-6 lg:px-8">
+                {!memberAllowed && !OFFLINE && (
+                    <div className="rounded-md border border-amber-500 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+                        {memberError}. Zostań zatwierdzonym członkiem, aby zarządzać zespołem.
+                    </div>
+                )}
                 <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="space-y-6">
-                    <TabsList>
-                        <TabsTrigger value="manual">Ręczne dodanie</TabsTrigger>
-                        <TabsTrigger value="members">Członkowie / oczekujące</TabsTrigger>
-                        <TabsTrigger value="team">Aktualizuj zespół</TabsTrigger>
+                    <TabsList className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-transparent p-0">
+                        <TabsTrigger
+                            value="manual"
+                            className="rounded-lg border bg-card hover:bg-card/80 shadow-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
+                        >
+                            Ręczne dodanie
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="members"
+                            className="rounded-lg border bg-card hover:bg-card/80 shadow-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
+                        >
+                            Członkowie / oczekujące
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="team"
+                            className="rounded-lg border bg-card hover:bg-card/80 shadow-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
+                        >
+                            Aktualizuj zespół
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="manual">

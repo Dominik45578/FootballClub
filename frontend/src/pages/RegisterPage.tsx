@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icons'
 import { Skeleton } from '@/components/ui/skeleton'
+import { register as registerUser } from '@/lib/userApi'
 
 function passwordStrength(pw: string) {
   let score = 0
@@ -47,11 +48,19 @@ export function RegisterPage() {
       return
     }
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const res = await registerUser({ username, email, password })
+      if (res?.success) {
+        toast.success(res.message || 'Zarejestrowano — sprawdź email i aktywuj konto')
+        navigate('/activate-account')
+      } else {
+        throw new Error(res?.message || 'Rejestracja nie powiodła się')
+      }
+    } catch (err: any) {
+      toast.error('Nie udało się zarejestrować', { description: err?.message })
+    } finally {
       setLoading(false)
-      toast.success('Zarejestrowano (mock) — sprawdź email i aktywuj konto')
-      navigate('/activate-account')
-    }, 600)
+    }
   }
 
   return (
@@ -112,7 +121,7 @@ export function RegisterPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center text-sm text-muted-foreground">
-          <p>To jest placeholder — integracja z backendem do zaimplementowania.</p>
+          <p>Po rejestracji przejdź do aktywacji konta.</p>
         </CardFooter>
       </Card>
     </div>
