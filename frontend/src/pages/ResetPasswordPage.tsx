@@ -6,20 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icons'
-
-// Placeholder API calls; replace with real identify endpoints when available
-async function requestReset(email: string) {
-  if (!email) throw new Error('Podaj email')
-  await new Promise((r) => setTimeout(r, 400))
-  return { ok: true }
-}
-
-async function setNewPassword(_token: string, password: string) {
-  // token stays for URL; validation happens on fields below
-  if (password.length < 8) throw new Error('Hasło musi mieć min. 8 znaków')
-  await new Promise((r) => setTimeout(r, 400))
-  return { ok: true }
-}
+import { requestPasswordReset, setNewPassword } from '@/lib/userApi'
 
 export function ResetPasswordPage() {
   const [search] = useSearchParams()
@@ -43,8 +30,8 @@ export function ResetPasswordPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      await requestReset(email)
-      toast.success('Jeśli email istnieje, wysłaliśmy link resetujący')
+      const res = await requestPasswordReset({ email })
+      toast.success(res?.message || 'Jeśli email istnieje, wysłaliśmy kod resetujący')
       setEmail('')
     } catch (err: any) {
       toast.error('Błąd', { description: err?.message || 'Nie udało się wysłać resetu' })
@@ -73,12 +60,16 @@ export function ResetPasswordPage() {
     }
     setLoading(true)
     try {
-      await setNewPassword(tokenFromUrl, password)
-      toast.success('Hasło zmienione (mock), możesz się zalogować')
-      setPassword('')
-      setConfirm('')
-      setCode('')
-      setEmail('')
+      const res = await setNewPassword({ email, code, password, confirmNewPassword: confirm })
+      if (res?.status !== false) {
+        toast.success(res?.message || 'Hasło zmienione, możesz się zalogować')
+        setPassword('')
+        setConfirm('')
+        setCode('')
+        setEmail('')
+      } else {
+        toast.error(res?.message || 'Nie udało się ustawić hasła')
+      }
     } catch (err: any) {
       toast.error('Błąd', { description: err?.message || 'Nie udało się ustawić hasła' })
     } finally {

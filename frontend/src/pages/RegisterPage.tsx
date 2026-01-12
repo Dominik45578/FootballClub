@@ -54,7 +54,7 @@ export function RegisterPage() {
         toast.success(res.message || 'Zarejestrowano — sprawdź email i aktywuj konto')
         navigate('/activate-account')
       } else {
-        throw new Error(res?.message || 'Rejestracja nie powiodła się')
+        toast.error(res?.message || 'Rejestracja nie powiodła się')
       }
     } catch (err: any) {
       toast.error('Nie udało się zarejestrować', { description: err?.message })
