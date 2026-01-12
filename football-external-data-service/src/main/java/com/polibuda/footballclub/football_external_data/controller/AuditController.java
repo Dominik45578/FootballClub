@@ -4,6 +4,7 @@ import com.polibuda.footballclub.football_external_data.dto.audit.AuditLogDTO;
 import com.polibuda.footballclub.football_external_data.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("external/audit")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
 public class AuditController {
 
     private final AuditLogService auditLogService;

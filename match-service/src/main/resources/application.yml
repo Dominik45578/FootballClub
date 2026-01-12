@@ -19,3 +19,8 @@ logging:
   level:
     com.polibuda.footballclub.match-service: DEBUG
     org.springframework.security: DEBUG
+
+grpc:
+  football-data:
+    host: ${FED_SERVICE_NAME:localhost}
+    port: ${FED_GRPC_PORT:9090}

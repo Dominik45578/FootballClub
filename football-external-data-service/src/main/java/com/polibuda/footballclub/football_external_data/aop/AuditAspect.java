@@ -7,9 +7,13 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @Aspect
 @Component
@@ -18,8 +22,8 @@ import java.util.Arrays;
 public class AuditAspect {
 
     private final AuditLogService auditLogService;
+    private static final String SYSTEM_USER = "SYSTEM";
 
-    // Pointcut na metody oznaczone naszą adnotacją
     @Pointcut("@annotation(com.polibuda.footballclub.football_external_data.aop.Auditable)")
     public void auditableMethods() {}
 
@@ -31,7 +35,6 @@ public class AuditAspect {
             Object[] args = joinPoint.getArgs();
             String details = auditable.description() + " [Args: " + Arrays.toString(args) + "]";
 
-            // 3. Zapisz log
             auditLogService.saveLog(
                     currentUserId,
                     auditable.actionType(),
@@ -39,12 +42,21 @@ public class AuditAspect {
                     details
             );
         } catch (Exception e) {
-            log.error("Failed to save audit log", e);
+            // Łapiemy wyjątki, aby błąd logowania nie przerwał logiki biznesowej
+            log.error("Failed to save audit log for method: {}", joinPoint.getSignature().toShortString(), e);
         }
     }
 
+    /**
+     * Pobiera ID użytkownika z SecurityContextHolder.
+     * W Twoim UserAuthenticationFilter principal jest ustawiany jako Long.
+     */
     private String getCurrentUser() {
-        // TODO: Wpiąć Spring Security: SecurityContextHolder.getContext().getAuthentication().getName();
-        return "ADMIN_USER"; // Placeholder
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .filter(auth -> !(auth instanceof AnonymousAuthenticationToken)) // Ignoruj użytkowników anonimowych
+                .filter(Authentication::isAuthenticated)
+                .map(Authentication::getPrincipal)
+                .map(String::valueOf) // Konwersja Long -> String
+                .orElse(SYSTEM_USER);
     }
 }

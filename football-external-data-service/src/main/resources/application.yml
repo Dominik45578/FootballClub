@@ -54,3 +54,6 @@ api:
       id: id
       team: team
 
+grpc:
+  server:
+    port: 9090

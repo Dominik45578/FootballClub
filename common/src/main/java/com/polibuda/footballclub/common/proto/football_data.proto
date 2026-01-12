@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package football.external.v1;
+
+// Konfiguracja dla generowania kodu Java
+option java_multiple_files = true;
+option java_package = "com.polibuda.footballclub.football_external_data.grpc";
+option java_outer_classname = "FootballDataProto";
+
+// Definicja serwisu
+service FootballDataService {
+  // Pobiera listę wszystkich drużyn (odpowiednik getAllTeams)
+  rpc GetAllTeams (GetAllTeamsRequest) returns (GetAllTeamsResponse);
+
+  // Pobiera szczegóły konkretnej drużyny (odpowiednik getTeamDetails)
+  rpc GetTeamDetails (GetTeamDetailsRequest) returns (GetTeamDetailsResponse);
+}
+
+// --- Wiadomości Request/Response ---
+
+message GetAllTeamsRequest {
+  // Pole puste, zarezerwowane pod przyszłą paginację (page_size, page_token)
+}
+
+message GetAllTeamsResponse {
+  repeated TeamSummary teams = 1;
+}
+
+message GetTeamDetailsRequest {
+  int64 team_id = 1;
+}
+
+message GetTeamDetailsResponse {
+  TeamBasicInfo team_info = 1;
+  Venue venue = 2;
+  repeated Player squad = 3;
+}
+
+// --- Obiekty Domenowe (odpowiedniki Twoich DTO) ---
+
+// Odpowiednik TeamSummaryDataDTO (zakładam uproszczoną strukturę na listę)
+message TeamSummary {
+  int64 id = 1;
+  string name = 2;
+  string code = 3;
+  string country = 4;
+  string logo_url = 5;
+}
+
+// Odpowiednik TeamBasicResponseDTO
+message TeamBasicInfo {
+  int64 id = 1;
+  string name = 2;
+  string code = 3;
+  string country = 4;
+  int32 founded = 5; // int32 wystarczy dla roku
+  bool national = 6;
+  string logo_url = 7;
+}
+
+// Odpowiednik VenueResponseDTO
+message Venue {
+  int64 id = 1;
+  string name = 2;
+  string address = 3;
+  string city = 4;
+  int64 capacity = 5;
+  string surface = 6;
+  string logo_url = 7;
+}
+
+// Odpowiednik PlayerResponseDTO
+message Player {
+  int64 id = 1;
+  string name = 2;
+  int32 age = 3;
+  int32 number = 4;
+  string position = 5;
+  string photo_url = 6;
+}

@@ -162,6 +162,9 @@ services:
     depends_on:
       eureka:
         condition: service_started
+      football-external-data-service:
+        condition: service_started
+
     networks:
       - services-network
     environment:
