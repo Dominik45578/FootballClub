@@ -1,7 +1,6 @@
-import { authHeader, logout } from './auth'
+import { authHeader, logout, OFFLINE } from './auth'
 import { setToken, setUserId } from './auth'
 // Centralny klient API z trybem OFFLINE (mocki)
-const OFFLINE = import.meta.env.VITE_OFFLINE === 'true'
 const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
 const AUTH_URL = (import.meta.env.VITE_AUTH_URL || GATEWAY || import.meta.env.VITE_IDENTITY_URL || '').replace(/\/$/, '')
@@ -10,6 +9,7 @@ const USE_GATEWAY_PREFIX = AUTH_URL === GATEWAY && !!API_PREFIX
 const USER_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/user`
 const AUTH_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/auth`
 const PASSWORD_BASE = `${AUTH_BASE}/password`
+const LOGOUT_URL = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/logout`
 
 export type MemberProfile = {
   id: number
@@ -80,23 +80,77 @@ const mockTeamDetails: TeamDetails = {
 }
 
 // Helper for fetch wrapper
-async function fetchJson(url: string, opts: RequestInit = {}) {
-  const headers = { ...(opts.headers || {}), ...authHeader(), 'Content-Type': 'application/json' }
-  const res = await fetch(url, { ...opts, headers, credentials: 'include' })
+type ApiRequestOptions = RequestInit & { dontRedirectOnAuthError?: boolean }
+
+async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
+  const { dontRedirectOnAuthError, ...rest } = opts
+  const headers = { ...(rest.headers || {}), ...authHeader(), 'Content-Type': 'application/json' }
+  const res = await fetch(url, { ...rest, headers, credentials: 'include' })
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
+    if ((res.status === 401 || res.status === 403) && !dontRedirectOnAuthError) {
       logout()
       if (typeof window !== 'undefined') window.location.href = '/login'
     }
     const text = await res.text().catch(() => '')
-    throw new Error(text || res.statusText)
+    const message = text || res.statusText
+    const err: any = new Error(message)
+    err.status = res.status
+    throw err
   }
   return res.status === 204 ? null : res.json()
 }
 
-export async function getMyProfile(): Promise<MemberProfile> {
+export type MemberStatus = 'guest' | 'pending' | 'member'
+
+const MEMBER_STATUS_KEY = 'memberStatus'
+
+function readMemberStatus(): MemberStatus {
+  if (typeof localStorage === 'undefined') return 'guest'
+  const val = localStorage.getItem(MEMBER_STATUS_KEY)
+  return (val as MemberStatus) || 'guest'
+}
+
+function writeMemberStatus(status: MemberStatus) {
+  if (typeof localStorage === 'undefined') return
+  localStorage.setItem(MEMBER_STATUS_KEY, status)
+}
+
+export function resetMemberStatusMock() {
+  if (typeof localStorage === 'undefined') return
+  localStorage.removeItem(MEMBER_STATUS_KEY)
+}
+
+export function getMemberStatus(): MemberStatus {
+  return OFFLINE ? 'member' : readMemberStatus()
+}
+
+export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
+  if (OFFLINE) {
+    writeMemberStatus('pending')
+    return Promise.resolve({ status: 'pending', submitted: payload })
+  }
+  const res = await fetchJson(`${USER_BASE}/members/apply`, { method: 'POST', body: JSON.stringify(payload) })
+  writeMemberStatus('pending')
+  return res ?? { status: 'pending' }
+}
+
+export async function apiLogout(): Promise<void> {
+  if (OFFLINE) {
+    logout()
+    resetMemberStatusMock()
+    return
+  }
+  try {
+    await fetchJson(LOGOUT_URL, { method: 'POST' })
+  } finally {
+    logout()
+    resetMemberStatusMock()
+  }
+}
+
+export async function getMyProfile(opts?: { allowUnauth?: boolean }): Promise<MemberProfile> {
   if (OFFLINE) return Promise.resolve(mockMyProfile)
-  return fetchJson(`${USER_BASE}/members/me`)
+  return fetchJson(`${USER_BASE}/members/me`, { dontRedirectOnAuthError: opts?.allowUnauth })
 }
 
 export async function updateMyProfile(payload: { height?: number; weight?: number; phoneNumber?: string }): Promise<MemberProfile> {
@@ -108,7 +162,7 @@ export async function updateMyProfile(payload: { height?: number; weight?: numbe
   return fetchJson(`${USER_BASE}/members/me`, { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
-export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }): Promise<{ items: TeamSummary[]; total?: number }>{
+export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }, opts?: { allowUnauth?: boolean }): Promise<{ items: TeamSummary[]; total?: number }>{
   if (OFFLINE) return Promise.resolve({ items: mockTeams, total: mockTeams.length })
   const qs = new URLSearchParams()
   if (params?.mode) qs.set('mode', params.mode)
@@ -116,7 +170,7 @@ export async function getTeams(params?: { mode?: string; teamId?: number; name?:
   if (params?.name) qs.set('name', params.name)
   if (params?.page) qs.set('page', String(params.page))
   if (params?.size) qs.set('size', String(params.size))
-  const data = await fetchJson(`${USER_BASE}/teams?${qs.toString()}`)
+  const data = await fetchJson(`${USER_BASE}/teams?${qs.toString()}`, { dontRedirectOnAuthError: opts?.allowUnauth })
   return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
 }
 
@@ -125,18 +179,18 @@ export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
   return fetchJson(`${USER_BASE}/teams/${teamId}`)
 }
 
-export async function joinTeam(teamCode: string): Promise<void> {
+export async function joinTeam(teamCode: string, opts?: { allowUnauth?: boolean }): Promise<void> {
   if (OFFLINE) {
     if (!teamCode || teamCode.length < 10) throw new Error('Kod zespołu musi mieć od 10 do 16 znaków (mock)')
     return Promise.resolve()
   }
-  await fetchJson(`${USER_BASE}/team-management/join`, { method: 'POST', body: JSON.stringify({ teamCode }) })
+  await fetchJson(`${USER_BASE}/team-management/join`, { method: 'POST', body: JSON.stringify({ teamCode }), dontRedirectOnAuthError: opts?.allowUnauth })
 }
 
-export async function searchMembers(query: string, page = 0, size = 10) {
+export async function searchMembers(query: string, page = 0, size = 10, opts?: { allowUnauth?: boolean }) {
   if (OFFLINE) return Promise.resolve({ items: [{ id: 11, firstName: 'Jan', lastName: 'Kowalski', age: 36 }], total: 1 })
   const qs = new URLSearchParams({ query, page: String(page), size: String(size) })
-  const data = await fetchJson(`${USER_BASE}/members/search?${qs.toString()}`)
+  const data = await fetchJson(`${USER_BASE}/members/search?${qs.toString()}`, { dontRedirectOnAuthError: opts?.allowUnauth })
   return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
 }
 
@@ -219,37 +273,4 @@ export async function requestPasswordReset(payload: { email: string }) {
 export async function setNewPassword(payload: { email: string; code: string; newPassword: string }) {
   if (OFFLINE) return Promise.resolve({ status: true })
   return fetchJson(`${PASSWORD_BASE}/new-password`, { method: 'POST', body: JSON.stringify(payload) })
-}
-
-const MEMBER_STATUS_KEY = 'memberStatus'
-export type MemberStatus = 'guest' | 'pending' | 'member'
-
-function readMemberStatus(): MemberStatus {
-  if (typeof localStorage === 'undefined') return 'guest'
-  const val = localStorage.getItem(MEMBER_STATUS_KEY)
-  return (val as MemberStatus) || 'guest'
-}
-
-function writeMemberStatus(status: MemberStatus) {
-  if (typeof localStorage === 'undefined') return
-  localStorage.setItem(MEMBER_STATUS_KEY, status)
-}
-
-export function resetMemberStatusMock() {
-  if (typeof localStorage === 'undefined') return
-  localStorage.removeItem(MEMBER_STATUS_KEY)
-}
-
-export function getMemberStatus(): MemberStatus {
-  return readMemberStatus()
-}
-
-export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
-  if (OFFLINE) {
-    writeMemberStatus('pending')
-    return Promise.resolve({ status: 'pending', submitted: payload })
-  }
-  const res = await fetchJson(`${USER_BASE}/members/apply`, { method: 'POST', body: JSON.stringify(payload) })
-  writeMemberStatus('pending')
-  return res ?? { status: 'pending' }
 }

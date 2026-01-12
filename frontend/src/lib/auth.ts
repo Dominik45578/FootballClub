@@ -7,6 +7,7 @@ const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, ''
 const AUTH_URL = (import.meta.env.VITE_AUTH_URL || GATEWAY || import.meta.env.VITE_IDENTITY_URL || '').replace(/\/$/, '')
 const USE_GATEWAY_PREFIX = AUTH_URL === GATEWAY && !!API_PREFIX
 const AUTH_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/auth`
+const LOGOUT_URL = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/logout`
 const COOKIE_TOKEN_KEY = 'token'
 
 const TOKEN_KEY = 'auth-token'
@@ -70,12 +71,18 @@ export async function refreshAuth(refreshToken: string) {
   return res
 }
 
-export function logout() {
+export async function logout() {
   if (OFFLINE) {
     clearDevAuth()
     return
   }
-  clearProdAuth()
+  try {
+    await fetchJson(LOGOUT_URL, { method: 'POST', headers: authHeader() })
+  } catch (e) {
+    // ignore logout failures, still clear client auth
+  } finally {
+    clearProdAuth()
+  }
 }
 
 export function getToken(): string | null {

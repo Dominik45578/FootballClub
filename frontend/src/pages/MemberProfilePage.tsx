@@ -4,59 +4,70 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Loader2, UserCog, Lock } from 'lucide-react'
-
-// Zaktualizowano dane profilu użytkownika, aby korzystać z DTO
-const mockProfile = {
-    id: 1,
-    firstName: 'Jan',
-    lastName: 'Kowalski',
-    maskedPesel: '90********12',
-    birthDate: '1990-01-01',
-    phoneNumber: '123-456-789',
-    height: 180,
-    weight: 75,
-    age: 36,
-};
+import { getMyProfile, updateMyProfile, type MemberProfile } from '@/lib/userApi'
+import { toast } from 'sonner'
 
 export function MemberProfilePage() {
   const navigate = useNavigate()
+  const [profile, setProfile] = useState<MemberProfile | null>(null)
+  const [form, setForm] = useState({ phoneNumber: '', height: '', weight: '' })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   useEffect(() => {
     const prev = document.title
     document.title = 'Profil użytkownika'
     return () => { document.title = prev }
   }, [])
 
-    const profile = {
-        id: mockProfile.id,
-        fullName: `${mockProfile.firstName} ${mockProfile.lastName}`,
-        maskedPesel: mockProfile.maskedPesel,
-        birthDate: mockProfile.birthDate,
-        phoneNumber: mockProfile.phoneNumber,
-        height: mockProfile.height,
-        weight: mockProfile.weight,
-        age: mockProfile.age,
-    };
-
-  const [form, setForm] = useState({
-    phoneNumber: mockProfile.phoneNumber,
-    height: mockProfile.height?.toString() || '',
-    weight: mockProfile.weight?.toString() || '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    setError(null)
+    getMyProfile({ allowUnauth: true })
+      .then((p) => {
+        if (!mounted) return
+        setProfile(p)
+        setForm({
+          phoneNumber: p.phoneNumber || '',
+          height: p.height != null ? String(p.height) : '',
+          weight: p.weight != null ? String(p.weight) : '',
+        })
+      })
+      .catch((err: any) => {
+        if (!mounted) return
+        setError(err?.message || 'Nie udało się pobrać profilu')
+      })
+      .finally(() => { if (mounted) setLoading(false) })
+    return () => { mounted = false }
+  }, [])
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     setSaved(false)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!profile) return
     setSaving(true)
-    setTimeout(() => {
-      setSaving(false)
+    try {
+      const payload = {
+        phoneNumber: form.phoneNumber || undefined,
+        height: form.height ? Number(form.height) : undefined,
+        weight: form.weight ? Number(form.weight) : undefined,
+      }
+      const updated = await updateMyProfile(payload)
+      setProfile(updated)
       setSaved(true)
-    }, 500)
+      toast.success('Zapisano zmiany')
+    } catch (err: any) {
+      toast.error('Nie udało się zapisać', { description: err?.message })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -72,53 +83,68 @@ export function MemberProfilePage() {
       <main className="container py-8 px-4 sm:px-6 lg:px-8">
         <Card className="max-w-3xl mx-auto shadow-sm">
           <CardHeader>
-            <CardTitle>{profile.fullName}</CardTitle>
-            <CardDescription>Podgląd i edycja wybranych danych (mock, bez backendu).</CardDescription>
+            <CardTitle>{profile ? `${profile.firstName} ${profile.lastName}` : '—'}</CardTitle>
+            <CardDescription>Podgląd i edycja danych.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm text-muted-foreground">PESEL (maskowany)</p>
-                <p className="text-base font-medium">{profile.maskedPesel}</p>
+            {loading && <div className="text-sm text-muted-foreground">Ładowanie profilu...</div>}
+            {error && (
+              <div className="text-sm text-red-500">
+                {error === 'Member not approved' ? 'Twoje członkostwo nie jest jeszcze zatwierdzone.' : error}
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Data urodzenia</p>
-                <p className="text-base font-medium">{profile.birthDate}</p>
+            )}
+            {!loading && !profile && !error && (
+              <div className="text-sm text-muted-foreground">
+                Nie masz profilu członka. Wypełnij formularz „Zostań członkiem”, aby uzyskać dostęp.
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Wiek</p>
-                <p className="text-base font-medium">{profile.age} lat</p>
-              </div>
-            </div>
+            )}
+            {profile && !loading && (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">PESEL (maskowany)</p>
+                    <p className="text-base font-medium">{profile.maskedPesel ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Data urodzenia</p>
+                    <p className="text-base font-medium">{profile.birthDate ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Wiek</p>
+                    <p className="text-base font-medium">{profile.age != null ? `${profile.age} lat` : '—'}</p>
+                  </div>
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Numer telefonu</label>
-                  <Input value={form.phoneNumber} onChange={(e) => handleChange('phoneNumber', e.target.value)} placeholder="123-456-789" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Wzrost (cm)</label>
-                  <Input type="number" value={form.height} onChange={(e) => handleChange('height', e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Waga (kg)</label>
-                  <Input type="number" value={form.weight} onChange={(e) => handleChange('weight', e.target.value)} />
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button type="submit" disabled={saving}>
-                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCog className="mr-2 h-4 w-4" />}
-                  Zapisz zmiany (mock)
-                </Button>
-              </div>
-              {saved && (
-                <div className="flex items-center gap-2 rounded-md border border-green-700/50 bg-green-900/40 px-3 py-2 text-sm text-green-100">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Zapisano zmiany lokalnie (mock).</span>
-                </div>
-              )}
-            </form>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Numer telefonu</label>
+                      <Input value={form.phoneNumber} onChange={(e) => handleChange('phoneNumber', e.target.value)} placeholder="123-456-789" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Wzrost (cm)</label>
+                      <Input type="number" value={form.height} onChange={(e) => handleChange('height', e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Waga (kg)</label>
+                      <Input type="number" value={form.weight} onChange={(e) => handleChange('weight', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="submit" disabled={saving}>
+                      {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCog className="mr-2 h-4 w-4" />}
+                      Zapisz zmiany
+                    </Button>
+                  </div>
+                  {saved && (
+                    <div className="flex items-center gap-2 rounded-md border border-green-700/50 bg-green-900/40 px-3 py-2 text-sm text-green-100">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Zapisano zmiany.</span>
+                    </div>
+                  )}
+                </form>
+              </>
+            )}
           </CardContent>
         </Card>
       </main>

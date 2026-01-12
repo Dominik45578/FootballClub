@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { applyForMembership, getMemberStatus, type MemberStatus } from '@/lib/userApi'
+import { applyForMembership, getMemberStatus, type MemberStatus, getMyProfile } from '@/lib/userApi'
 import { toast } from 'sonner'
 
 export function MemberApplyPage() {
@@ -22,7 +22,12 @@ export function MemberApplyPage() {
     const prev = document.title
     document.title = 'Zostań członkiem'
     setStatus(getMemberStatus())
-    return () => { document.title = prev }
+    let mounted = true
+    // Jeśli backend zwróci profil, traktujemy użytkownika jako member
+    getMyProfile({ allowUnauth: true })
+      .then(() => { if (mounted) setStatus('member') })
+      .catch(() => { /* brak profilu -> guest/pending */ })
+    return () => { mounted = false; document.title = prev }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,18 +48,23 @@ export function MemberApplyPage() {
   const member = status === 'member'
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-hidden">
       <Card className="mt-6 w-full rounded-none border-0 bg-card/90 shadow-none">
         <CardHeader>
           <CardTitle>Zostań członkiem</CardTitle>
-          <CardDescription>Uzupełnij dane, a trener/admin zatwierdzi Twój wniosek. (Tryb offline – nic nie trafia do backendu)</CardDescription>
+          <CardDescription>Uzupełnij dane, a trener/admin zatwierdzi Twój wniosek.</CardDescription>
         </CardHeader>
         <CardContent>
           {member && (
-            <div className="p-4 rounded-lg bg-emerald-50 text-emerald-800 mb-4">Jesteś już członkiem. Możesz przejść do profilu lub drużyny.</div>
+            <div className="p-4 rounded-lg bg-emerald-900/60 text-emerald-100 border border-emerald-700 mb-4">Jesteś zatwierdzonym członkiem. Możesz przejść do profilu lub drużyny.
+              <div className="mt-2 flex gap-2 flex-wrap">
+                <Button size="sm" onClick={() => navigate('/member/profile')}>Profil</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate('/teams')}>Zespoły</Button>
+              </div>
+            </div>
           )}
           {pending && !member && (
-            <div className="p-4 rounded-lg mb-4 border border-slate-700 bg-slate-800/90 text-slate-100">Wniosek oczekuje na akceptację. (mock)</div>
+            <div className="p-4 rounded-lg mb-4 border border-slate-600 bg-slate-900 text-slate-100">Wniosek oczekuje na akceptację. Poczekaj na zatwierdzenie przez trenera/admina.</div>
           )}
           {!member && (
             <form onSubmit={handleSubmit} className="grid gap-4">
@@ -78,7 +88,7 @@ export function MemberApplyPage() {
               </div>
               <div className="space-y-1">
                 <Label htmlFor="note">Notatka</Label>
-                <Textarea id="note" value={note} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)} placeholder="Dodatkowe informacje" disabled={loading || pending} />
+                <Textarea id="note" value={note} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)} placeholder="Dodatkowe informacje" disabled={loading || pending} />
               </div>
               <div className="flex gap-3 flex-wrap">
                 <Button type="submit" disabled={loading || pending}>{pending ? 'Wysłano (oczekuje)' : 'Wyślij wniosek'}</Button>
