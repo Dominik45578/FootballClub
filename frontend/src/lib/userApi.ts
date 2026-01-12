@@ -4,12 +4,20 @@ import { setToken, setUserId } from './auth'
 const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
 const AUTH_URL = (import.meta.env.VITE_AUTH_URL || GATEWAY || import.meta.env.VITE_IDENTITY_URL || '').replace(/\/$/, '')
-const USE_GATEWAY_PREFIX = AUTH_URL === GATEWAY && !!API_PREFIX
+const USE_GATEWAY_PREFIX = !!API_PREFIX;
 // Bazowe ścieżki usług
 const USER_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/user`
 const AUTH_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/auth`
 const PASSWORD_BASE = `${AUTH_BASE}/password`
 const LOGOUT_URL = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/logout`
+
+export type RegisterPayload = { username: string; password: string; email: string }
+export type RegisterResponse = { success: boolean; message?: string; timestamp?: string }
+
+export type PasswordResetRequestPayload = { email: string }
+export type PasswordResetResponse = { status?: boolean; message?: string; timestamp?: string }
+export type NewPasswordPayload = { email: string; code: string; password: string; confirmNewPassword: string }
+export type NewPasswordResponse = { status?: boolean; message?: string; timestamp?: string }
 
 export type MemberProfile = {
   id: number
@@ -210,14 +218,17 @@ export async function activateAccount(code: string, email?: string): Promise<{ s
   return fetchJson(`${AUTH_BASE}/activate`, { method: 'POST', body: JSON.stringify({ code, email }) })
 }
 
-// Wyślij ponownie kod aktywacyjny na email (mock) — w produkcji backend wyśle mail
-export async function resendActivation(_email?: string): Promise<{ sent: boolean }> {
+export async function resendActivation(email?: string): Promise<{ sent: boolean }> {
   if (OFFLINE) {
-    // symuluj opóźnienie i sukces
     await new Promise((r) => setTimeout(r, 500))
     return Promise.resolve({ sent: true })
   }
-  throw new Error('Wysyłka kodu aktywacyjnego nie jest obsługiwana przez backend')
+
+  const res = await fetchJson(`${AUTH_BASE}/activation/resend`, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+  return { sent: !!(res?.sent ?? res?.success ?? res?.status ?? true) }
 }
 
 export async function addMemberManually(teamId: number, payload: { memberId: number; initialRoles?: string[] }) {
@@ -242,12 +253,9 @@ export async function removeTeamMember(teamMemberId: number) {
 }
 
 // Auth flows (identify service)
-export async function register(payload: { username: string; password: string; email: string }) {
+export async function register(payload: RegisterPayload): Promise<RegisterResponse> {
   if (OFFLINE) return Promise.resolve({ success: true, message: 'Zarejestrowano lokalnie (mock)' })
-  const res = await fetchJson(`${AUTH_BASE}/register`, { method: 'POST', body: JSON.stringify(payload) })
-  if (res?.token) setToken(res.token)
-  if (res?.userId) setUserId(res.userId)
-  return res
+  return fetchJson(`${AUTH_BASE}/register`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<RegisterResponse>
 }
 
 export async function login(payload: { email: string; password: string }) {
@@ -265,12 +273,12 @@ export async function refreshToken(payload: { refreshToken: string }) {
   return res
 }
 
-export async function requestPasswordReset(payload: { email: string }) {
-  if (OFFLINE) return Promise.resolve({ status: true })
-  return fetchJson(`${PASSWORD_BASE}/reset-request`, { method: 'POST', body: JSON.stringify(payload) })
+export async function requestPasswordReset(payload: PasswordResetRequestPayload): Promise<PasswordResetResponse> {
+  if (OFFLINE) return Promise.resolve({ status: true, message: 'Reset wysłany (mock)' })
+  return fetchJson(`${PASSWORD_BASE}/reset-request`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<PasswordResetResponse>
 }
 
-export async function setNewPassword(payload: { email: string; code: string; newPassword: string }) {
-  if (OFFLINE) return Promise.resolve({ status: true })
-  return fetchJson(`${PASSWORD_BASE}/new-password`, { method: 'POST', body: JSON.stringify(payload) })
+export async function setNewPassword(payload: NewPasswordPayload): Promise<NewPasswordResponse> {
+  if (OFFLINE) return Promise.resolve({ status: true, message: 'Hasło zmienione (mock)' })
+  return fetchJson(`${PASSWORD_BASE}/new-password`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<NewPasswordResponse>
 }

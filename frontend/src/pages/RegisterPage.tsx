@@ -51,10 +51,10 @@ export function RegisterPage() {
     try {
       const res = await registerUser({ username, email, password })
       if (res?.success) {
-        toast.success(res.message || 'Zarejestrowano — sprawdź email i aktywuj konto')
-        navigate('/activate-account')
+        toast.success(res.message || 'Zarejestrowano — kod aktywacyjny wysłany na email')
+        navigate('/activate-account', { state: { email } })
       } else {
-        throw new Error(res?.message || 'Rejestracja nie powiodła się')
+        toast.error(res?.message || 'Rejestracja nie powiodła się')
       }
     } catch (err: any) {
       toast.error('Nie udało się zarejestrować', { description: err?.message })

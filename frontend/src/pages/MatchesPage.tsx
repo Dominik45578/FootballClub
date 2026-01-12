@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
-// Mockowane dane meczów (tryb offline)
 const mockMatches = [
 	{
 		id: 101,
@@ -28,6 +27,7 @@ const mockMatches = [
 
 export function MatchesPage() {
 	const navigate = useNavigate()
+
 	useEffect(() => {
 		const prev = document.title
 		document.title = 'Mecze'
@@ -39,8 +39,11 @@ export function MatchesPage() {
 	return (
 		<div className="min-h-screen bg-background">
 			<header className="border-b bg-card">
-				<div className="container flex h-16 items-center px-4">
+				<div className="container flex h-16 items-center px-4 justify-between">
 					<h1 className="text-2xl font-bold">Mecze</h1>
+					<Button variant="outline" onClick={() => navigate('/dashboard')}>
+						Wróć do panelu
+					</Button>
 				</div>
 			</header>
 			<main className="container py-8">
@@ -60,29 +63,18 @@ export function MatchesPage() {
 								<div className="space-y-1">
 									<div className="flex items-center gap-2">
 										<h3 className="text-lg font-semibold">{m.opponent}</h3>
-										<Badge
-											variant={
-												m.source === 'external' ? 'secondary' : 'default'
-											}
-										>
-											{m.source === 'external'
-												? 'Dane z importu'
-												: 'Nasza drużyna'}
+										<Badge variant={m.source === 'external' ? 'secondary' : 'default'}>
+											{m.source === 'external' ? 'Dane z importu' : 'Nasza drużyna'}
 										</Badge>
 									</div>
 									<p className="text-sm text-slate-200/80">
 										{m.date} • {m.venue}
 									</p>
-									<p className="text-xs text-slate-400">
-										Ostatnia aktualizacja: {m.lastUpdated}
-									</p>
+									<p className="text-xs text-slate-400">Ostatnia aktualizacja: {m.lastUpdated}</p>
 								</div>
 								<div className="flex items-center gap-3">
 									<Badge variant="outline">{m.status}</Badge>
-									<Button
-										variant="outline"
-										onClick={() => navigate(`/matches/${m.id}`)}
-									>
+									<Button variant="outline" onClick={() => navigate(`/matches/${m.id}`)}>
 										Szczegóły
 									</Button>
 								</div>
