@@ -19,5 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetSquadDataDTO extends GetExternalAbstractedDTO {
-    List<PlayerDataDTO> players;
+    @JsonProperty("response")
+   List<PlayerResponseWrapperDTO> response;
 }

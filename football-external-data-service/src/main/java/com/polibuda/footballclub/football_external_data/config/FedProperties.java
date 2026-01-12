@@ -1,14 +1,17 @@
 package com.polibuda.footballclub.football_external_data.config;
 
+import jakarta.inject.Singleton;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 @Data
 @Validated
 @ConfigurationProperties(prefix = "api.football")
+@Singleton
 public class FedProperties {
 
     @NotBlank

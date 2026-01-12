@@ -43,7 +43,7 @@ logging:
 api:
   football:
     api-url: ${API_FOOTBALL_URL:https://v3.football.api-sports.io/}
-    api-key: ${API_FOOTBALL_KEY:mojklucz}
+    api-key: ${API_FOOTBALL_KEY:8cef0cc725df691f5014a503614db58b}
     auth:
       header: ${API_FOOTBALL_AUTH_HEADER:x-apisports-key}
     squads:

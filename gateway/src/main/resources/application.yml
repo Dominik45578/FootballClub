@@ -33,6 +33,21 @@ spring:
                 - Path=/api/user/**
               filters:
                 - StripPrefix=1
+            - id : football-external-data-service
+              uri: lb://football-external-data-service
+              predicates:
+                - Path=/api/external/**
+              filters:
+                - StripPrefix=1
+
+            - id: match-service
+              uri: lb://match-service
+              predicates:
+                - Path=/api/match/**
+              filters:
+                - StripPrefix=1
+
+
 
 eureka:
   client:

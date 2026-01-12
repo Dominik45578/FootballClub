@@ -14,28 +14,23 @@ public class FootballFetchService {
 
     private final FootballApiClient footballApiClient;
 
-    /**
-     * Pobiera dane o klubach dla danego kraju.
-     */
     public GetClubsDTO fetchClubsByCountry(String country) {
-        log.info("Fetching clubs for country: {}", country);
         try {
+            log.debug("Fetching clubs by country {}", country);
             return footballApiClient.getTeamsByCountry(country);
         } catch (Exception e) {
-            log.error("Error fetching clubs for country {}: {}", country, e.getMessage());
+            log.error("Error fetching clubs for country: {}", country, e);
             throw new RuntimeException("External API unavailable for clubs fetch", e);
         }
     }
 
-    /**
-     * Pobiera skład (zawodników) dla konkretnego zespołu.
-     */
     public GetSquadDataDTO fetchSquadByTeamId(Long teamId) {
-        log.debug("Fetching squad for team ID: {}", teamId);
         try {
-            return footballApiClient.getSquad(teamId);
+            GetSquadDataDTO get =  footballApiClient.getSquad(teamId);
+            log.info("Errors {}",get.getErrors().toString());
+            return get;
         } catch (Exception e) {
-            log.error("Error fetching squad for team {}: {}", teamId, e.getMessage());
+            log.error("Error fetching squad for team: {}", teamId, e);
             throw new RuntimeException("External API unavailable for squad fetch", e);
         }
     }
