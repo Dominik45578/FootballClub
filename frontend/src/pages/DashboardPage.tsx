@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button'
-import { User, Search, CalendarClock, Users, Settings2, LogOut, Eye } from 'lucide-react'
+import { User, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { logout } from '@/lib/auth'
+import { OFFLINE } from '@/lib/auth'
+import { apiLogout, getMemberStatus, type MemberStatus } from '@/lib/userApi'
 import { useEffect, useState } from 'react'
-import { getMemberStatus, type MemberStatus } from '@/lib/userApi'
 
 export function DashboardPage() {
     // set tab title for Dashboard
@@ -15,15 +15,19 @@ export function DashboardPage() {
     }, [])
     const navigate = useNavigate()
 
-    const handleLogout = () => {
-        logout()
-        toast.success('Wylogowano pomyślnie')
-        navigate('/')
+    const handleLogout = async () => {
+        try {
+            await apiLogout()
+        } finally {
+            toast.success('Wylogowano pomyślnie')
+            navigate('/')
+        }
     }
 
     const status: MemberStatus = getMemberStatus()
-    const showApply = status === 'guest'
-    const showPending = status === 'pending'
+    const showApply = !OFFLINE && status === 'guest'
+    const showPending = !OFFLINE && status === 'pending'
+    const isMember = OFFLINE ? true : status === 'member'
 
     return (
         <div className="min-h-screen bg-background">
@@ -92,33 +96,12 @@ export function DashboardPage() {
                 </section>
 
                 <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-2">
-                    <HoverableCTA onClick={() => navigate('/club/1/squad')}>
-                        <div className="flex items-center gap-4">
-                            <Users className="h-5 w-5 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Skład drużyny</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Podgląd listy zawodników (mock)</p>
-                            </div>
-                        </div>
-                    </HoverableCTA>
-                    <HoverableCTA onClick={() => navigate('/team-management')}>
+                    <HoverableCTA onClick={() => navigate('/team-management')} disabled={!isMember} className="md:col-span-2">
                         <div className="flex items-center gap-4">
                             <Settings2 className="h-5 w-5 text-muted-foreground shrink-0" />
                             <div>
                                 <h4 className="text-lg font-semibold">Zarządzanie zespołem</h4>
                                 <p className="text-sm text-muted-foreground mt-1">Panel trenera/admina</p>
-                            </div>
-                        </div>
-                    </HoverableCTA>
-                </section>
-
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-2">
-                    <HoverableCTA onClick={() => navigate('/members')}>
-                        <div className="flex items-center gap-4">
-                            <Eye className="h-5 w-5 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Członkowie</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Wyszukaj i przeglądaj profile</p>
                             </div>
                         </div>
                     </HoverableCTA>
@@ -131,9 +114,9 @@ export function DashboardPage() {
 export default DashboardPage
 
 // Small helper component: Button with internal hover state that applies inline styles.
-function HoverableCTA({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+function HoverableCTA({ children, onClick, disabled, className }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; className?: string }) {
     const [hover, setHover] = useState(false)
-    const hoverStyle: React.CSSProperties = hover
+    const hoverStyle: React.CSSProperties = hover && !disabled
         ? {
               transform: 'translateY(-2px) scale(1.01)',
               boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
@@ -144,12 +127,13 @@ function HoverableCTA({ children, onClick }: { children: React.ReactNode; onClic
     return (
         <button
             type="button"
-            onClick={onClick}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
+            onClick={!disabled ? onClick : undefined}
+            onMouseEnter={() => !disabled && setHover(true)}
+            onMouseLeave={() => !disabled && setHover(false)}
             data-hover={hover}
-            className="w-full py-6 px-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center text-foreground transition duration-200 my-4 border border-slate-700 cursor-pointer bg-slate-900/70 text-slate-100 hover:ring-2 hover:ring-ring/20 focus:ring-2 focus:ring-ring/20 focus:outline-none"
+            className={`w-full py-6 px-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center text-foreground transition duration-200 my-4 border border-slate-700 cursor-pointer bg-slate-900/70 text-slate-100 hover:ring-2 hover:ring-ring/20 focus:ring-2 focus:ring-ring/20 focus:outline-none ${disabled ? 'opacity-60 cursor-not-allowed hover:ring-0' : ''} ${className ?? ''}`}
             style={hoverStyle}
+            aria-disabled={disabled}
         >
             {children}
         </button>
