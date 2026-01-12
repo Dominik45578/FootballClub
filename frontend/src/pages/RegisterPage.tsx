@@ -19,7 +19,7 @@ function passwordStrength(pw: string) {
 
 export function RegisterPage() {
   const [email, setEmail] = useState('')
-  const [nick, setNick] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -34,11 +34,22 @@ export function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (username.length < 8 || username.length > 32) {
+      toast.error('Login musi mieć 8-32 znaki')
+      return
+    }
+    if (email.length < 6) {
+      toast.error('Email musi mieć min. 6 znaków')
+      return
+    }
+    if (password.length < 8) {
+      toast.error('Hasło musi mieć min. 8 znaków')
+      return
+    }
     setLoading(true)
-    // Simple placeholder: show success toast and navigate to activation page
     setTimeout(() => {
       setLoading(false)
-      toast.success('Zarejestrowano (placeholder)')
+      toast.success('Zarejestrowano (mock) — sprawdź email i aktywuj konto')
       navigate('/activate-account')
     }, 600)
   }
@@ -54,19 +65,20 @@ export function RegisterPage() {
           <form onSubmit={handleRegister}>
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="nick">Login (nick)</Label>
-                {loading ? <Skeleton className="h-9 w-full rounded-md" /> : <Input id="nick" type="text" placeholder="nick" value={nick} onChange={(e) => setNick(e.target.value)} required disabled={loading} />}
+                <Label htmlFor="username">Login (username)</Label>
+                {loading ? <Skeleton className="h-9 w-full rounded-md" /> : <Input id="username" type="text" placeholder="username" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} minLength={8} maxLength={32} />}
+                <p className="text-xs text-muted-foreground">8-32 znaków</p>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                {loading ? <Skeleton className="h-9 w-full rounded-md" /> : <Input id="email" type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} />}
+                {loading ? <Skeleton className="h-9 w-full rounded-md" /> : <Input id="email" type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} minLength={6} />}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Hasło</Label>
                 <div className="relative">
                   {loading ? <Skeleton className="h-9 w-full rounded-md" /> : (
                     <>
-                      <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="hasło" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
+                      <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="hasło" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} minLength={8} />
                       <button type="button" aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setShowPassword(s => !s)}>
                         {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                       </button>

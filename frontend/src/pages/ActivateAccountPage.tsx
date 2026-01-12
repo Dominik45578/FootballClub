@@ -14,18 +14,23 @@ export function ActivateAccountPage() {
     return () => { document.title = prev }
   }, [])
 
+  const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const COOLDOWN_SECONDS = 30
   const navigate = useNavigate()
 
-  const validate = (value: string) => /^[A-Za-z0-9]{8}$/.test(value)
+  const validate = (value: string) => value.length >= 6 && value.length <= 10
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (email.length < 6) {
+      toast.error('Email musi mieć min. 6 znaków')
+      return
+    }
     if (!validate(code)) {
-      toast.error('Kod musi mieć dokładnie 8 znaków alfanumerycznych')
+      toast.error('Kod musi mieć 6-10 znaków')
       return
     }
 
@@ -78,9 +83,13 @@ export function ActivateAccountPage() {
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="flex flex-col gap-2 w-full items-center">
               <div className="w-full max-w-md">
+                <Label htmlFor="email" className="text-left block mb-1">Email</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" required minLength={6} />
+              </div>
+              <div className="w-full max-w-md">
                 <Label htmlFor="activationCode" className="text-left block mb-1">Kod aktywacyjny</Label>
-                <Input id="activationCode" value={code} onChange={(e) => setCode(e.target.value)} placeholder="8 znaków" maxLength={8} required autoFocus />
-                <p className="text-xs text-muted-foreground mt-2 text-left">Kod składa się z 8 znaków (litery i cyfry).</p>
+                <Input id="activationCode" value={code} onChange={(e) => setCode(e.target.value)} placeholder="6-10 znaków" maxLength={10} required />
+                <p className="text-xs text-muted-foreground mt-2 text-left">Kod składa się z 6-10 znaków (litery i cyfry).</p>
               </div>
             </div>
 
