@@ -169,6 +169,8 @@ services:
       - services-network
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+      GRPC_SERVER_HOST: ${FED_SERVICE_NAME}
+      GRPC_SERVER_PORT: ${FED_GRPC_PORT}
 
   # ==========================================
   # FOOTBALL EXTERNAL DATA SERVICE
@@ -190,6 +192,7 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:mysql://${DB_CONTAINER}:${DB_PORT}/${DB_FED_NAME}${DB_PARAMETERS}"
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      GRPC_SERVER_PORT: ${FED_GRPC_PORT}
 
   # ==========================================
   # RABBITMQ

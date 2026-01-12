@@ -15,10 +15,10 @@ import java.util.concurrent.TimeUnit;
 public class GrpcClientConfig {
 
     // Adres serwisu "football-external-data"
-    @Value("${grpc.football-data.host:localhost}")
+    @Value("${grpc.football-data.host}")
     private String host;
 
-    @Value("${grpc.football-data.port:9090}")
+    @Value("${grpc.football-data.port}")
     private int port;
 
     /**

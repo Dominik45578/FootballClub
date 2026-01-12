@@ -22,5 +22,5 @@ logging:
 
 grpc:
   football-data:
-    host: ${FED_SERVICE_NAME:localhost}
+    host: football-external-data-service
     port: ${FED_GRPC_PORT:9090}

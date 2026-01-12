@@ -5,11 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Implement logout functionality and enhance member status handling">
-      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/data_source_mapping.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/GrpcClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/GrpcClientConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,12 +45,12 @@
     &quot;assignee&quot;: &quot;Dominik45578&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Dominik45578/FootballClub.git&quot;,
-    &quot;accountId&quot;: &quot;5169ff68-3c75-45bb-b6c0-912145f4115e&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Dominik45578/FootballClub",
+    "accountId": "6333b2a0-0847-4ccb-9335-a438f23cc5b3"
   }
-}</component>
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3-sources.jar!/org/apache/http/conn/HttpHostConnectException.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/glassfish/jersey/core/jersey-client/3.1.11/jersey-client-3.1.11-sources.jar!/org/glassfish/jersey/client/ClientRuntime.java" root0="SKIP_INSPECTION" />
@@ -138,10 +138,12 @@
     "Spring Boot.Eureka-service.executor": "Run",
     "Spring Boot.EurekaApplication.executor": "Run",
     "Spring Boot.FootballClubSystemApplication.executor": "Run",
+    "Spring Boot.FootballExternalDataApplication.executor": "Run",
     "Spring Boot.Gateway-service.executor": "Run",
     "Spring Boot.GatewayApplication.executor": "Run",
     "Spring Boot.Identify-service.executor": "Run",
     "Spring Boot.IdentifyApplication.executor": "Run",
+    "Spring Boot.MatchApplications.executor": "Run",
     "Spring Boot.Notification-service.executor": "Run",
     "Spring Boot.NotificationApplication.executor": "Run",
     "Spring Boot.User-service.executor": "Run",
@@ -228,6 +230,18 @@
         <option value="QuarkusRunConfigurationType" />
         <option value="SpringBootApplicationConfigurationType" />
       </set>
+    </option>
+    <option name="configurationStatuses">
+      <map>
+        <entry key="SpringBootApplicationConfigurationType">
+          <value>
+            <map>
+              <entry key="FootballExternalDataApplication" value="STOPPED" />
+              <entry key="MatchApplications" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
     </option>
   </component>
   <component name="RunManager" selected="Docker.Docker">
@@ -355,8 +369,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.26775.15" />
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.26775.15" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26199.169" />
+        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-IU-252.26199.169" />
       </set>
     </attachedChunks>
   </component>
@@ -425,6 +439,7 @@
       <workItem from="1768144940854" duration="4371000" />
       <workItem from="1768154687217" duration="1320000" />
       <workItem from="1768170742637" duration="13089000" />
+      <workItem from="1768216959865" duration="3256000" />
     </task>
     <task id="LOCAL-00001" summary="Edited login page. Partially added dashboard.">
       <option name="closed" value="true" />
