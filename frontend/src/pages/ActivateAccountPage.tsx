@@ -17,8 +17,6 @@ export function ActivateAccountPage() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
-  const [cooldown, setCooldown] = useState(0)
-  const COOLDOWN_SECONDS = 30
   const navigate = useNavigate()
 
   const validate = (value: string) => value.length >= 6 && value.length <= 10
@@ -41,32 +39,6 @@ export function ActivateAccountPage() {
       navigate('/login')
     } catch (err: any) {
       toast.error('Błąd aktywacji', { description: err?.message || 'Nie udało się aktywować konta' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const startCooldown = () => {
-    setCooldown(COOLDOWN_SECONDS)
-    const iv = setInterval(() => {
-      setCooldown(c => {
-        if (c <= 1) {
-          clearInterval(iv)
-          return 0
-        }
-        return c - 1
-      })
-    }, 1000)
-  }
-
-  const handleResend = async () => {
-    try {
-      setLoading(true)
-      await (await import('@/lib/userApi')).resendActivation()
-      toast.success('Kod aktywacyjny został wysłany ponownie na e-mail (mock)')
-      startCooldown()
-    } catch (err: any) {
-      toast.error('Nie udało się wysłać kodu', { description: err?.message || '' })
     } finally {
       setLoading(false)
     }
@@ -99,9 +71,6 @@ export function ActivateAccountPage() {
               </div>
               <div className="flex gap-2 w-full max-w-md mt-2">
                 <Button variant="outline" onClick={() => navigate('/login')} className="flex-1">Powrót do logowania</Button>
-                <Button variant="outline" onClick={handleResend} disabled={cooldown > 0 || loading} className="flex-1">
-                  {cooldown > 0 ? `Wyślij ponownie (${cooldown}s)` : 'Wyślij ponownie kod'}
-                </Button>
               </div>
             </div>
           </form>

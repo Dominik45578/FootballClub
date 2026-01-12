@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { LogIn, UserPlus } from 'lucide-react'
 
 export function StartPage() {
   const navigate = useNavigate()
@@ -56,12 +57,31 @@ export function StartPage() {
             <p className="text-sm text-muted-foreground mb-6">Zarządzaj zawodnikami, meczami i powiadomieniami.</p>
 
             <div className="flex gap-4 justify-center">
-              <Button aria-label="Zaloguj" onClick={() => navigate('/login')} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-                Zaloguj
+              <Button
+                aria-label="Zaloguj"
+                className="group min-w-[160px] px-5 py-3 text-base justify-center"
+                onClick={() => navigate('/login')}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+              >
+                <span className="relative flex items-center justify-center w-full">
+                  <LogIn className="absolute left-5 h-5 w-5 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
+                  <span className="transition-transform duration-200 group-hover:translate-x-2">Zaloguj</span>
+                </span>
               </Button>
 
-              <Button variant="outline" aria-label="Zarejestruj" onClick={() => navigate('/register')} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-                Zarejestruj
+              <Button
+                variant="outline"
+                aria-label="Zarejestruj"
+                className="group min-w-[160px] px-5 py-3 text-base justify-center"
+                onClick={() => navigate('/register')}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+              >
+                <span className="relative flex items-center justify-center w-full">
+                  <UserPlus className="absolute left-1 h-5 w-5 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
+                  <span className="transition-transform duration-200 group-hover:translate-x-2">Zarejestruj</span>
+                </span>
               </Button>
             </div>
           </CardContent>

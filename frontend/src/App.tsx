@@ -5,6 +5,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { Toaster } from '@/components/ui/sonner'
 import { lazy, Suspense } from 'react';
 import ActivateAccountPage from './pages/ActivateAccountPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
 const TeamSearchPage = lazy(() => import('./pages/TeamSearchPage').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
@@ -14,7 +15,6 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const TeamsPage = lazy(() => import('./pages/TeamsPage').then(m => ({ default: (m as any).default || (m as any).TeamsPage })));
 const TeamManagementPage = lazy(() => import('./pages/TeamManagementPage').then(m => ({ default: (m as any).default || (m as any).TeamManagementPage })));
 const JoinTeamPage = lazy(() => import('./pages/JoinTeamPage').then(m => ({ default: (m as any).default || (m as any).JoinTeamPage })));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: (m as any).default || (m as any).ResetPasswordPage })));
 const ClubSquadPage = lazy(() => import('./pages/ClubSquadPage').then(m => ({ default: (m as any).default || (m as any).ClubSquadPage })));
 const MemberApplyPage = lazy(() => import('./pages/MemberApplyPage').then(m => ({ default: (m as any).default || (m as any).MemberApplyPage })));
 const MatchesPage = lazy(() => import('./pages/MatchesPage').then(m => ({ default: (m as any).default || (m as any).MatchesPage })));
@@ -58,7 +58,7 @@ function App() {
                 <Route path="/member/:memberId" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberPublicProfilePage /> </Suspense>} />
                 <Route path="/profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <ProfilePage /> </Suspense>} />
                 <Route path="/new-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <NewPasswordPage /> </Suspense>} />
-                <Route path="/reset-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <ResetPasswordPage /> </Suspense>} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 {/* Additional team pages (placeholders) */}
                 <Route path="/teams" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamsPage /> </Suspense>} />
