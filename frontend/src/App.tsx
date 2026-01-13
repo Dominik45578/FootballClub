@@ -23,7 +23,7 @@ const MatchDetailsPage = lazy(() => import('./pages/MatchDetailsPage').then(m =>
 const MemberSearchPage = lazy(() => import('./pages/MemberSearchPage').then(m => ({ default: (m as any).default || (m as any).MemberSearchPage })));
 const MemberPublicProfilePage = lazy(() => import('./pages/MemberPublicProfilePage').then(m => ({ default: (m as any).default || (m as any).MemberPublicProfilePage })));
 const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
-
+const MatchesManagementPage = lazy(() => import('./pages/MatchesManagementPage').then(m => ({ default: (m as any).default || (m as any).MatchesManagementPage })));
 
 const ProfileRoute = ({ children }: { children: React.ReactElement }) => {
     const [status, setStatus] = useState<MemberStatus>(getMemberStatus())
@@ -74,6 +74,7 @@ function App() {
                 <Route path="/team-management" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamManagementPage /> </Suspense>} />
                 <Route path="/join-team" element={<Suspense fallback={<div>Ładowanie...</div>}> <JoinTeamPage /> </Suspense>} />
                 <Route path="/member-apply" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberApplyPage /> </Suspense>} />
+                <Route path="/matches-management" element={<Suspense fallback={<div>Ładowanie...</div>}> <MatchesManagementPage /> </Suspense>} />
 
                 {/* Activate Account */}
                 <Route path="/activate-account" element={<ActivateAccountPage />} />
