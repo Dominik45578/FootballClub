@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { User, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
+import { UserPlus, Users, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { OFFLINE } from '@/lib/auth'
@@ -57,7 +57,7 @@ export function DashboardPage() {
                     <h1 className="text-2xl font-bold">Panel klubu piłkarskiego</h1>
                     <div className="flex gap-3">
                         <Button variant="secondary" onClick={handleProfile}>
-                            <User className="mr-2 h-4 w-4" />
+                            <Eye className="mr-2 h-4 w-4" />
                             Profil
                         </Button>
                         <Button variant="outline" onClick={handleLogout}>
@@ -116,7 +116,31 @@ export function DashboardPage() {
                     </HoverableCTA>
                 </section>
 
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-2">
+                {/* Sekcja: Zostań członkiem / Dołącz do zespołu (pod wyszukiwaniem i meczami) */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-6">
+                    <HoverableCTA onClick={() => navigate('/member-apply')}>
+                        <div className="flex items-center gap-4">
+                            <UserPlus className="h-7 w-7 text-muted-foreground shrink-0" />
+                            <div>
+                                <h4 className="text-lg font-semibold">Zostań członkiem</h4>
+                                <p className="text-sm text-muted-foreground mt-1">Złóż wniosek o nadanie roli członka w klubie.</p>
+                            </div>
+                        </div>
+                    </HoverableCTA>
+
+                    <HoverableCTA onClick={() => navigate('/join-team')}>
+                        <div className="flex items-center gap-4">
+                            <Users className="h-7 w-7 text-muted-foreground shrink-0" />
+                            <div>
+                                <h4 className="text-lg font-semibold">Dołącz do zespołu</h4>
+                                <p className="text-sm text-muted-foreground mt-1">Wpisz kod zespołu aby dołączyć do konkretnej drużyny.</p>
+                            </div>
+                        </div>
+                    </HoverableCTA>
+                </section>
+
+                {/* Sekcja: Zarządzanie zespołem - przeniesiona niżej */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-6">
                     <HoverableCTA onClick={handleTeamManagement} disabled={!canManageTeam} className="md:col-span-2">
                         <div className="flex items-center gap-4">
                             <Settings2 className="h-7 w-7 text-muted-foreground shrink-0" />

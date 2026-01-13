@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Loader2, UserCog } from 'lucide-react'
+import { CheckCircle, Loader2, UserCog, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { getMyProfile, updateMyProfile, type MemberProfile, ensureMemberStatus } from '@/lib/userApi'
 import { toast } from 'sonner'
 
 export function MemberProfilePage() {
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<MemberProfile | null>(null)
   const [form, setForm] = useState({ phoneNumber: '', height: '', weight: '' })
   const [loading, setLoading] = useState(true)
@@ -78,6 +80,10 @@ export function MemberProfilePage() {
       <header className="border-b bg-card">
         <div className="container flex h-16 items-center justify-between px-4">
           <h1 className="text-2xl font-bold">Profil użytkownika</h1>
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Powrót do dashboardu
+          </Button>
         </div>
       </header>
       <main className="container py-8 px-4 sm:px-6 lg:px-8">

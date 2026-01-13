@@ -4,37 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Implement logout functionality and enhance member status handling">
-      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/proto/identify_data.proto" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/GrpcServerConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/controller/UserRoleGrpcController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/UserRoleManageService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/IdentityGrpcClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/IdentityGrpcClientConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/wrappers/TeamMemberSearchResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/MemberAlreadyExistExceptions.java" afterDir="false" />
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Sending password reset mail works">
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/ErrorBoundary.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/auth/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/auth/AuthServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/token/JwtAccessService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/token/JwtAccessService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/token/JwtAccessServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/token/JwtAccessServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamManagementController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/AddTeamRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/AddTeamRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/TeamSummaryResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/TeamSummaryResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Member.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/Member.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/TeamAlreadyExistExceptions.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/exceptions/business/TeamAlreadyExistExceptions.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamMemberRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamMemberRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/JoinTeamPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/JoinTeamPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,11 +34,11 @@
         <option value="Dockerfile" />
         <option value="Enum" />
         <option value="Interface" />
+        <option value="Class" />
+        <option value="Exception" />
         <option value="TypeScript File" />
         <option value="package.json" />
         <option value="TypeScript JSX File" />
-        <option value="Exception" />
-        <option value="Class" />
       </list>
     </option>
   </component>
@@ -70,12 +56,12 @@
     &quot;assignee&quot;: &quot;Dominik45578&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Dominik45578/FootballClub",
-    "accountId": "6333b2a0-0847-4ccb-9335-a438f23cc5b3"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Dominik45578/FootballClub.git&quot;,
+    &quot;accountId&quot;: &quot;5169ff68-3c75-45bb-b6c0-912145f4115e&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3-sources.jar!/org/apache/http/conn/HttpHostConnectException.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/glassfish/jersey/core/jersey-client/3.1.11/jersey-client-3.1.11-sources.jar!/org/glassfish/jersey/client/ClientRuntime.java" root0="SKIP_INSPECTION" />
@@ -173,7 +159,7 @@
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Dominik/IdeaProjects/FootballClubSystem/user-service/src/main/java/com/polibuda/footballclub/user/config",
+    "last_opened_file_path": "G:/Studia/Projekt/FootballClub/frontend/public",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -183,8 +169,8 @@
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
     "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "C:\\Users\\Dominik\\IdeaProjects\\FootballClubSystem\\node_modules\\typescript\\lib",
+    "settings.editor.selected.configurable": "com.github.copilot.settings.mcp.McpConfigurable",
+    "ts.external.directory.path": "G:\\Studia\\Projekt\\FootballClub\\frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -200,11 +186,11 @@
       <recent name="com.polibuda.footballclub.user.dto.response.summary" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\user-service\src\main\java\com\polibuda\footballclub\user\config" />
       <recent name="G:\Studia\Projekt\FootballClub\frontend\public" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\user-service" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\notification" />
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
@@ -212,7 +198,6 @@
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify\src\main\resources" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.polibuda.footballclub.identify.config" />
       <recent name="com.polibuda.footballclub.gateway.config" />
       <recent name="com.polibuda.footballclub.common.redis" />
     </key>
@@ -257,13 +242,13 @@
     </option>
   </component>
   <component name="RunManager" selected="Docker.Docker">
-    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" runType="Run single request">
+    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" requestIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" runType="Run single request">
+    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" requestIdentifier="#3" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
+    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" requestIdentifier="#4" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="generated-requests | #4" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
@@ -381,8 +366,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26199.169" />
-        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-IU-252.26199.169" />
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.26775.15" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.26775.15" />
       </set>
     </attachedChunks>
   </component>
@@ -451,7 +436,14 @@
       <workItem from="1768144940854" duration="4371000" />
       <workItem from="1768154687217" duration="1320000" />
       <workItem from="1768170742637" duration="13089000" />
-      <workItem from="1768334538187" duration="10970000" />
+      <workItem from="1768214965193" duration="5355000" />
+      <workItem from="1768222448569" duration="361000" />
+      <workItem from="1768225077239" duration="1503000" />
+      <workItem from="1768227201044" duration="2794000" />
+      <workItem from="1768231825363" duration="992000" />
+      <workItem from="1768233427565" duration="3357000" />
+      <workItem from="1768266837803" duration="5500000" />
+      <workItem from="1768318287849" duration="8767000" />
     </task>
     <task id="LOCAL-00001" summary="Edited login page. Partially added dashboard.">
       <option name="closed" value="true" />
@@ -525,7 +517,15 @@
       <option name="project" value="LOCAL" />
       <updated>1768156005543</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Sending password reset mail works">
+      <option name="closed" value="true" />
+      <created>1768229995237</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1768229995237</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -554,7 +554,8 @@
     <MESSAGE value="Added pages and icons to buttons" />
     <MESSAGE value="Login with backend works" />
     <MESSAGE value="Implement logout functionality and enhance member status handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement logout functionality and enhance member status handling" />
+    <MESSAGE value="Sending password reset mail works" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sending password reset mail works" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
