@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { getTeams } from '@/lib/userApi'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Search as SearchIcon, RotateCw } from 'lucide-react'
+import { Eye, Search as SearchIcon, RotateCw, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -39,8 +39,13 @@ export function TeamSearchPage() {
     return (
         <div className="min-h-screen bg-background">
             <header className="border-b bg-card">
-                <div className="container flex h-16 items-center px-4">
+                <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Wyszukiwarka klubów</h1>
+                    <div>
+                        <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
+                        </Button>
+                    </div>
                 </div>
             </header>
             <main className="container py-8 px-4 sm:px-6 lg:px-8">

@@ -208,12 +208,37 @@ export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
   return fetchJson(`${USER_BASE}/teams/${teamId}`)
 }
 
+// Tworzy nowy zespół (POST /user/teams)
+export async function createTeam(payload: { name: string; code?: string; city?: string; founded?: number; status?: string; category?: string }) {
+  if (OFFLINE) {
+    const nextId = (mockTeams.length ? Math.max(...mockTeams.map(t => t.teamId)) : 0) + 1
+    const newTeam: TeamSummary = { teamId: nextId, teamName: payload.name, category: payload.category, myStatus: 'MEMBER', numberOfMembers: 1 }
+    mockTeams.push(newTeam)
+    return Promise.resolve(newTeam)
+  }
+  return fetchJson(`${USER_BASE}/teams`, { method: 'POST', body: JSON.stringify(payload) })
+}
+
 export async function joinTeam(teamCode: string, opts?: { allowUnauth?: boolean }): Promise<void> {
   if (OFFLINE) {
     if (!teamCode || teamCode.length < 10) throw new Error('Kod zespołu musi mieć od 10 do 16 znaków (mock)')
     return Promise.resolve()
   }
   await fetchJson(`${USER_BASE}/team-management/join`, { method: 'POST', body: JSON.stringify({ teamCode }), dontRedirectOnAuthError: opts?.allowUnauth })
+}
+
+// Dodaje nowego członka/zgłoszenie członka — zgodne z NewMemberRequestDTO na backendzie (PUT /user/members/join)
+export async function addMember(payload: { firstName: string; lastName: string; pesel: string; birthDate: string | null; phoneNumber?: string; height?: number; weight?: number }) {
+  if (OFFLINE) {
+    // w trybie offline ustawiamy status pending i zwracamy symulowany wynik
+    writeMemberStatus('pending')
+    return Promise.resolve(true)
+  }
+  const res = await fetchJson(`${USER_BASE}/members/join`, { method: 'PUT', body: JSON.stringify(payload) })
+  // jeśli backend zwróciło boolean true i to oznacza, że zostało dodane/poprawnie wysłane
+  if (res === true) writeMemberStatus('member')
+  else if (res === false) writeMemberStatus('pending')
+  return res
 }
 
 export async function searchMembers(query: string, page = 0, size = 10, opts?: { allowUnauth?: boolean }) {

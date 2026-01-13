@@ -7,10 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { logout } from '@/lib/auth';
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateMyProfile, getMemberStatus, type MemberStatus } from '@/lib/userApi'
+import { getMyProfile, updateMyProfile } from '@/lib/userApi'
 import type { MemberProfile } from '@/lib/userApi'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 export function ProfilePage() {
     useEffect(() => {
@@ -23,15 +24,12 @@ export function ProfilePage() {
     const [height, setHeight] = useState<string>('')
     const [weight, setWeight] = useState<string>('')
     const [phone, setPhone] = useState<string>('')
-    const [unauthorized, setUnauthorized] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const memberStatus: MemberStatus = getMemberStatus()
 
     useEffect(() => {
         let mounted = true
         getMyProfile({ allowUnauth: true }).then(p => {
             if (!mounted) return
-            setUnauthorized(false)
             setError(null)
             setProfile(p)
             setHeight(p.height ? String(p.height) : '')
@@ -42,7 +40,6 @@ export function ProfilePage() {
             console.error(err)
             if (err?.status === 401 || err?.status === 403) {
                 // Traktujemy jak błąd pobrania, nie pokazujemy "Brak dostępu"
-                setUnauthorized(false)
                 setError('Nie udało się pobrać profilu')
             } else {
                 setError('Nie udało się pobrać profilu')
@@ -91,7 +88,12 @@ export function ProfilePage() {
             <header className="border-b bg-card">
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Profil użytkownika</h1>
-                    <Button variant="outline" onClick={handleLogout} className="cursor-pointer">Wyloguj się</Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="cursor-pointer">
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
+                        </Button>
+                        <Button variant="outline" onClick={handleLogout} className="cursor-pointer">Wyloguj się</Button>
+                    </div>
                 </div>
             </header>
             <main className="container py-8 space-y-6">

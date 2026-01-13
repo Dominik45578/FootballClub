@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile } from '@/lib/userApi'
+import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam } from '@/lib/userApi'
 import { OFFLINE } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,9 +38,10 @@ export function TeamManagementPage() {
     const navigate = useNavigate()
     const [members, setMembers] = useState(mockMembers)
     const [teamForm, setTeamForm] = useState(mockTeam)
-    const [tab, setTab] = useState<'manual' | 'members' | 'team'>('manual')
+    const [tab, setTab] = useState<'manual' | 'members' | 'team' | 'create'>('manual')
     const [memberAllowed, setMemberAllowed] = useState(true)
     const [memberError, setMemberError] = useState<string | null>(null)
+    const [createForm, setCreateForm] = useState({ name: '', code: '', city: '', founded: new Date().getFullYear(), status: 'ACTIVE', category: '' })
     useEffect(() => {
         const prev = document.title
         document.title = 'Zarządzanie zespołem'
@@ -163,7 +164,7 @@ export function TeamManagementPage() {
                     </div>
                 )}
                 <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="space-y-6">
-                    <TabsList className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-transparent p-0">
+                    <TabsList className="grid grid-cols-1 sm:grid-cols-4 gap-2 bg-transparent p-0">
                         <TabsTrigger
                             value="manual"
                             className="rounded-lg border bg-card hover:bg-card/80 shadow-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
@@ -181,6 +182,12 @@ export function TeamManagementPage() {
                             className="rounded-lg border bg-card hover:bg-card/80 shadow-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
                         >
                             Aktualizuj zespół
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="create"
+                            className="rounded-lg border bg-card hover:bg-card/80 shadow-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
+                        >
+                            Dodaj zespół
                         </TabsTrigger>
                     </TabsList>
 
@@ -417,10 +424,65 @@ export function TeamManagementPage() {
                                     <Button type="button" variant="outline" onClick={handleResetTeam}>
                                         Usuń zespół (mock)
                                     </Button>
-                                    <Button type="button" variant="outline"
-                                            onClick={() => navigate('/matches-management')}>
-                                        Zarządzaj meczami
-                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="create">
+                        <Card className="shadow-sm">
+                            <CardHeader>
+                                <CardTitle>Dodaj nowy zespół</CardTitle>
+                                <CardDescription>Wprowadź dane zespołu (te same pola co w aktualizacji)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Nazwa zespołu</label>
+                                        <Input value={createForm.name} onChange={(e) => setCreateForm((c) => ({...c, name: e.target.value}))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Miasto</label>
+                                        <Input value={createForm.city} onChange={(e) => setCreateForm((c) => ({...c, city: e.target.value}))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Kod dołączenia (opcjonalnie)</label>
+                                        <Input value={createForm.code} onChange={(e) => setCreateForm((c) => ({...c, code: e.target.value}))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Rok założenia</label>
+                                        <Input type="number" value={createForm.founded} onChange={(e) => setCreateForm((c) => ({...c, founded: Number(e.target.value || 0)}))} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Status zespołu</label>
+                                        <Select value={createForm.status} onValueChange={(v) => setCreateForm((c) => ({...c, status: v}))}>
+                                            <SelectTrigger className="w-full"><SelectValue placeholder="Wybierz status"/></SelectTrigger>
+                                            <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
+                                                <SelectItem value="ACTIVE">Aktywny</SelectItem>
+                                                <SelectItem value="INACTIVE">Nieaktywny</SelectItem>
+                                                <SelectItem value="ARCHIVED">Zarchiwizowany</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Kategoria zespołu</label>
+                                        <Input value={createForm.category} onChange={(e) => setCreateForm((c) => ({...c, category: e.target.value}))} placeholder="np. Senior, Junior, Youth" />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button onClick={async () => {
+                                        try {
+                                            const res: any = await createTeam({ name: createForm.name, code: createForm.code || undefined, city: createForm.city || undefined, founded: createForm.founded, status: createForm.status, category: createForm.category || undefined })
+                                            // Przy mocku może to być TeamSummary lub pełniejsze dane
+                                            const newTeam = { id: (res.id ?? res.teamId ?? teamForm.id), name: (res.name ?? res.teamName ?? createForm.name), code: createForm.code, city: createForm.city, founded: createForm.founded, status: createForm.status, category: createForm.category }
+                                            setTeamForm(newTeam)
+                                            toast.success('Utworzono zespół')
+                                            setTab('team')
+                                        } catch (err: any) {
+                                            toast.error('Nie udało się utworzyć zespołu', { description: err?.message })
+                                        }
+                                    }}>Utwórz zespół</Button>
+                                    <Button variant="outline" onClick={() => setCreateForm({ name: '', code: '', city: '', founded: new Date().getFullYear(), status: 'ACTIVE', category: '' })}>Wyczyść</Button>
                                 </div>
                             </CardContent>
                         </Card>

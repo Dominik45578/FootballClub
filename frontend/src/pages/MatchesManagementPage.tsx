@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import DateInput from '@/components/DateInput'
 
 type MatchItem = {
     id: number
@@ -100,9 +101,9 @@ export function MatchesManagementPage() {
                         { (isAdding || editing) && (
                             <div className="rounded-lg border bg-card p-4">
                                 <h3 className="font-semibold mb-2">{editing ? `Edycja #${editing.id}` : 'Nowy mecz'}</h3>
-                                <div className="grid sm:grid-cols-3 gap-2">
+                                <div className="grid sm:grid-cols-3 gap-2 items-start">
                                     <Input placeholder="Przeciwnik" value={form.opponent || ''} onChange={(e) => setForm(f => ({ ...f, opponent: e.target.value }))} />
-                                    <Input type="date" value={form.date || ''} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
+                                    <DateInput value={form.date || null} onChange={(v) => setForm(f => ({ ...f, date: v ?? '' }))} id="matchDate" placeholder="Wybierz datę" />
                                     <Input placeholder="Miejsce" value={form.venue || ''} onChange={(e) => setForm(f => ({ ...f, venue: e.target.value }))} />
 
                                     <div>
