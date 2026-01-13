@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { activateAccount } from '@/lib/userApi'
+import { activateAccount, resendActivation } from '@/lib/userApi'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,9 +17,34 @@ export function ActivateAccountPage() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendLeft, setResendLeft] = useState(0)
   const navigate = useNavigate()
 
   const validate = (value: string) => value.length >= 6 && value.length <= 10
+
+  useEffect(() => {
+    if (resendLeft <= 0) return
+    const id = setInterval(() => setResendLeft((v) => v - 1), 1000)
+    return () => clearInterval(id)
+  }, [resendLeft])
+
+  const handleResend = async () => {
+    if (email.length < 6) {
+      toast.error('Podaj poprawny email (min. 6 znaków)')
+      return
+    }
+    setResendLoading(true)
+    try {
+      await resendActivation(email)
+      toast.success('Kod ponownie wysłany')
+      setResendLeft(30)
+    } catch (err: any) {
+      toast.error('Nie udało się wysłać kodu ponownie', { description: err?.message || 'Spróbuj za chwilę' })
+    } finally {
+      setResendLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,6 +95,9 @@ export function ActivateAccountPage() {
                 <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Aktywacja...' : 'Aktywuj konto'}</Button>
               </div>
               <div className="flex gap-2 w-full max-w-md mt-2">
+                <Button variant="secondary" className="flex-1" type="button" onClick={handleResend} disabled={resendLoading || resendLeft > 0}>
+                  {resendLoading ? 'Wysyłanie...' : resendLeft > 0 ? `Wyślij ponownie za ${resendLeft}s` : 'Wyślij kod ponownie'}
+                </Button>
                 <Button variant="outline" onClick={() => navigate('/login')} className="flex-1">Powrót do logowania</Button>
               </div>
             </div>

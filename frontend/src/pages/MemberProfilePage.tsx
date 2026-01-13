@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Loader2, UserCog, Lock } from 'lucide-react'
-import { getMyProfile, updateMyProfile, type MemberProfile } from '@/lib/userApi'
+import { CheckCircle, Loader2, UserCog } from 'lucide-react'
+import { getMyProfile, updateMyProfile, type MemberProfile, ensureMemberStatus } from '@/lib/userApi'
 import { toast } from 'sonner'
 
 export function MemberProfilePage() {
-  const navigate = useNavigate()
   const [profile, setProfile] = useState<MemberProfile | null>(null)
   const [form, setForm] = useState({ phoneNumber: '', height: '', weight: '' })
   const [loading, setLoading] = useState(true)
@@ -29,6 +27,7 @@ export function MemberProfilePage() {
     getMyProfile({ allowUnauth: true })
       .then((p) => {
         if (!mounted) return
+        ensureMemberStatus().catch(() => undefined)
         setProfile(p)
         setForm({
           phoneNumber: p.phoneNumber || '',
@@ -38,7 +37,11 @@ export function MemberProfilePage() {
       })
       .catch((err: any) => {
         if (!mounted) return
-        setError(err?.message || 'Nie udało się pobrać profilu')
+        const msg = err?.status === 401 || err?.status === 403 ? 'Brak dostępu do profilu członka' : 'Nie udało się pobrać profilu'
+        setError(msg)
+        if (err?.status === 401 || err?.status === 403) {
+          toast.error('Brak dostępu do profilu członka')
+        }
       })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
@@ -75,9 +78,6 @@ export function MemberProfilePage() {
       <header className="border-b bg-card">
         <div className="container flex h-16 items-center justify-between px-4">
           <h1 className="text-2xl font-bold">Profil użytkownika</h1>
-          <Button variant="outline" size="sm" onClick={() => navigate('/new-password')}>
-            <Lock className="mr-2 h-4 w-4" /> Reset hasła
-          </Button>
         </div>
       </header>
       <main className="container py-8 px-4 sm:px-6 lg:px-8">
@@ -150,6 +150,6 @@ export function MemberProfilePage() {
       </main>
     </div>
   )
- }
+}
 
 export default MemberProfilePage

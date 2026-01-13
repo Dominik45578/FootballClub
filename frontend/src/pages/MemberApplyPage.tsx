@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { applyForMembership, getMemberStatus, type MemberStatus, getMyProfile } from '@/lib/userApi'
 import { toast } from 'sonner'
+import { Send } from 'lucide-react'
 
 export function MemberApplyPage() {
   const [firstName, setFirstName] = useState('')
@@ -46,6 +47,7 @@ export function MemberApplyPage() {
 
   const pending = status === 'pending'
   const member = status === 'member'
+  const submitLabel = pending ? 'Wysłano (oczekuje)' : 'Wyślij wniosek'
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -90,9 +92,16 @@ export function MemberApplyPage() {
                 <Label htmlFor="note">Notatka</Label>
                 <Textarea id="note" value={note} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)} placeholder="Dodatkowe informacje" disabled={loading || pending} />
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <Button type="submit" disabled={loading || pending}>{pending ? 'Wysłano (oczekuje)' : 'Wyślij wniosek'}</Button>
-                <Button type="button" variant="outline" onClick={() => navigate('/dashboard')}>Wróć do panelu</Button>
+              <div className="flex gap-3 flex-wrap items-center">
+                <Button type="submit" className="group relative min-w-[180px] px-5 py-3 justify-center" disabled={loading || pending}>
+                  <span className="relative flex items-center justify-center w-full">
+                    {!pending && (
+                      <Send className="absolute left-1 h-4 w-4 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
+                    )}
+                    <span className={`transition-transform duration-200 ${!pending ? 'group-hover:translate-x-2' : ''}`}>{submitLabel}</span>
+                  </span>
+                </Button>
+                <Button type="button" variant="outline" className="ml-2" onClick={() => navigate('/dashboard')}>Wróć do panelu</Button>
               </div>
             </form>
           )}
