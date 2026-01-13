@@ -14,7 +14,9 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByUserId(Long userId);
+
     boolean existsByPesel(String pesel);
+    boolean existsByUserId(Long userId);
 
     // FIX: Dodano brakującą metodę wyszukiwania
     @Query("SELECT m FROM Member m WHERE " +

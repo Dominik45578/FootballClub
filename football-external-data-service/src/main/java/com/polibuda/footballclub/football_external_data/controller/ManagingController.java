@@ -35,14 +35,14 @@ public class ManagingController {
     }
 
 
-    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping("/team/{teamId}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
         managementService.deleteTeam(teamId);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping("/player/{playerId}")
     public ResponseEntity<Void> deletePlayer(@PathVariable Long playerId) {
         managementService.deletePlayer(playerId);

@@ -6,7 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
+
+import java.util.concurrent.TimeUnit;
 
 @Data
 @Builder
@@ -27,6 +30,10 @@ public class RedisUser {
     @NotBlank
     @Size(min = 6, max = 10)
     private String verificationCode;
+
+    @Builder.Default
+    @TimeToLive(unit = TimeUnit.SECONDS)
+    private Long timeToLiveSeconds = 15 * 60L;
 
     @NotBlank
     private UserAccountAction userAccountAction;

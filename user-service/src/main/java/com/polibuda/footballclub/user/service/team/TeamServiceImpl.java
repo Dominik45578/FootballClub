@@ -2,6 +2,7 @@ package com.polibuda.footballclub.user.service.team;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
+import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
 import com.polibuda.footballclub.user.dto.response.summary.TeamSummaryResponse;
@@ -111,10 +112,35 @@ public class TeamServiceImpl implements TeamService {
 
     }
 
-    @Override//TODO: nie ruszamy narazie
-    public boolean updateTeam(Team team) {
-        return false;
+    @Override
+    @Transactional
+    public boolean updateTeam(UpdateTeamRequestDTO request) {
+        if(!teamRepository.existsById(request.getId())){
+            return false;
+        }
+        Team team = teamRepository.findById(request.getId()).orElseThrow(() -> new TeamNotFoundException(request.getId()));
+
+        teamRepository.save(checkDtoAndSetChanges(request,team));
+        return true;
     }
+
+    private Team checkDtoAndSetChanges(UpdateTeamRequestDTO request,Team team){
+        if(request.getName() != null){
+            team.setName(request.getName());
+        }
+        if(request.getDescription() != null){
+            team.setDescription(request.getDescription());
+        }
+        if(request.getCategory() != null){
+            team.setCategory(request.getCategory());
+        }
+        if(request.getStatus() != null) {
+            team.setStatus(request.getStatus());
+        }
+
+        return team;
+    }
+
 
     @Override
     public boolean deleteTeam(Long teamId) {

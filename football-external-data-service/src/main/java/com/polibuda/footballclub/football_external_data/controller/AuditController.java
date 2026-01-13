@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("external/audit")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 public class AuditController {
 
     private final AuditLogService auditLogService;

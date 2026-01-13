@@ -32,14 +32,12 @@ public class CorsGlobalConfig {
         cors.setAllowedMethods(List.of(
                 HttpMethod.GET.name(),
                 HttpMethod.POST.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.HEAD.name(),
                 HttpMethod.OPTIONS.name()
         ));
 
-
-        cors.setAllowedHeaders(List.of(
-                HttpHeaders.CONTENT_TYPE,
-                "X-Requested-With" // Często używane przez klientów AJAX
-        ));
 
         // 4. Nagłówki, które frontend może odczytać z odpowiedzi (Stałe z Twojej klasy)
         // Np. po zalogowaniu może chcieć odczytać ID użytkownika (opcjonalne)

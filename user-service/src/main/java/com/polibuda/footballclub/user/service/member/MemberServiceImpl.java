@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.user.service.member;
 
+import com.polibuda.footballclub.user.dto.request.NewMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.MemberProfileResponse;
 import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse;
@@ -12,10 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -92,7 +96,36 @@ public class MemberServiceImpl implements MemberService {
                 .build();
     }
 
-    // --- Private Helpers ---
+    @Override
+    @Transactional
+    public ResponseEntity<Boolean> addMember(NewMemberRequestDTO request, Long userId) {
+        if(memberRepository.existsByUserId(userId) || memberRepository.existsById(userId)) {
+            log.error("USER_EVENT: Member already exists for user {}", userId);
+            return ResponseEntity.badRequest().build();
+        }
+
+       memberRepository.save(Member.builder()
+                       .birthDate(request.getBirthDate())
+                       .pesel(request.getPesel())
+               .phoneNumber(request.getPhoneNumber())
+               .firstName(request.getFirstName())
+               .lastName(request.getLastName())
+                       .id(userId)
+                       .userId(userId)
+               .build());
+        return ResponseEntity.ok(Boolean.TRUE);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Boolean> removeMember(Long userId) {
+      if(!memberRepository.existsByUserId(userId)) {
+          log.error("USER_EVENT: Member not found for user {}", userId);
+          return new ResponseEntity<>(Boolean.FALSE,HttpStatus.NOT_FOUND);
+      }
+      memberRepository.deleteById(userId);
+      return ResponseEntity.ok(Boolean.TRUE);
+    }
 
     private Member getMemberByUserIdOrThrow(Long userId) {
         return memberRepository.findByUserId(userId)
@@ -118,9 +151,9 @@ public class MemberServiceImpl implements MemberService {
         return pesel.substring(0, 2) + "*******" + pesel.substring(9);
     }
 
-    private Integer calculateAge(Instant birthDate) {
+    private Integer calculateAge(LocalDate birthDate) {
         if (birthDate == null) return 0;
-        return (int) ChronoUnit.YEARS.between(birthDate.atZone(ZoneId.systemDefault()), Instant.now().atZone(ZoneId.systemDefault()));
+        return (int) ChronoUnit.YEARS.between(LocalDate.now(), birthDate);
     }
 
     private MemberSummaryResponse mapToMemberSummaryResponse(Member member) {

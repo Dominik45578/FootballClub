@@ -1,6 +1,7 @@
 package com.polibuda.footballclub.user.controller;
 
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
+import com.polibuda.footballclub.user.dto.request.NewMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.MemberProfileResponse;
 import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,7 +37,7 @@ public class MemberController {
     @GetMapping("search")
     public ResponseEntity<MemberSearchResponse> searchMembers(
             @RequestParam String query,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(memberService.searchMembers(query, pageable));
     }
     @GetMapping
@@ -45,5 +45,20 @@ public class MemberController {
             @RequestParam Long id
     ){
         return ResponseEntity.ok(memberService.getMemberProfile(id));
+    }
+
+    @PutMapping("/join")
+    public ResponseEntity<Boolean> addNewMember(
+           @Valid  @RequestBody(required = true) NewMemberRequestDTO request,
+            @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
+    ){
+        return memberService.addMember(request,userId);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Boolean> deleteMember(
+            @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
+    ){
+        return memberService.removeMember(userId);
     }
 }

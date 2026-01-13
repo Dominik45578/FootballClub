@@ -1,10 +1,12 @@
 package com.polibuda.footballclub.user.service.member;
 
+import com.polibuda.footballclub.user.dto.request.NewMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.MemberProfileResponse;
 import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 public interface MemberService {
 
@@ -36,4 +38,6 @@ public interface MemberService {
      * @return Wrapper z bezpieczną listą użytkowników
      */
     MemberSearchResponse searchMembers(String query, Pageable pageable);
+    ResponseEntity<Boolean> addMember(NewMemberRequestDTO request, Long memberId);
+    ResponseEntity<Boolean> removeMember(Long memberId);
 }

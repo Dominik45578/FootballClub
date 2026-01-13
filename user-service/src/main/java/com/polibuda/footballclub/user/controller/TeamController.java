@@ -2,6 +2,7 @@ package com.polibuda.footballclub.user.controller;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
+import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
 import com.polibuda.footballclub.user.service.team.TeamService;
@@ -64,5 +65,13 @@ public class TeamController {
     public ResponseEntity<Void> addTeam(@PathVariable Long teamId,
                                         @RequestHeader(MutationHeaderClaims.X_ROLES) Set<String> roles) {
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+    @PatchMapping("/update")
+    public ResponseEntity<Boolean> updateTeam(
+            @RequestBody UpdateTeamRequestDTO request
+            ){
+        return teamService.updateTeam(request) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 }

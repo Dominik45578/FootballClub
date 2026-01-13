@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -20,7 +21,7 @@ public class MemberProfileResponse {
     // To pole będzie zawierać wartość zamaskowaną, np. "90********12"
     private String maskedPesel; 
     
-    private Instant birthDate;
+    private LocalDate birthDate;
     private String phoneNumber;
     private Double height;
     private Double weight;

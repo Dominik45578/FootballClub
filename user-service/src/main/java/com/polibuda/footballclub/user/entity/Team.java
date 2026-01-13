@@ -25,9 +25,9 @@ public class Team extends AbstractAuditableEntity {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
+    @Size(min = 5, max = 128)
     private String name;
-
 
     @Column(nullable = false, unique = true, length = 16)
     @Size(min = 10, max = 16) 
