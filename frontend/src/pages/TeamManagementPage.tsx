@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Eye, UserCheck, UserX, Wrench, Search as SearchIcon, RotateCw } from 'lucide-react'
+import { Eye, UserCheck, UserX, Wrench, Search as SearchIcon, RotateCw, Calendar } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
 
@@ -32,7 +32,7 @@ const mockMembers = Array.from({ length: 8 }).map((_, i) => ({
     roles: i % 2 === 0 ? ['PLAYER'] : ['PLAYER', 'GOALKEEPER'],
 }))
 
-const mockTeam = { id: 101, name: 'Mój zespół', code: 'ABC123', city: 'City', founded: 2020 }
+const mockTeam = { id: 101, name: 'Mój zespół', code: 'ABC123', city: 'City', founded: 2020, status: 'ACTIVE', category: 'Senior' }
 
 export function TeamManagementPage() {
     const navigate = useNavigate()
@@ -135,6 +135,25 @@ export function TeamManagementPage() {
             <header className="border-b bg-card">
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>
+                    <div className="flex items-center gap-8">
+                        <Button
+                            size="lg"
+                            className="group shrink-0 px-8 min-w-[190px] relative"
+                            onClick={() => navigate('/matches-management')}
+                        >
+                            <Calendar
+                                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 opacity-0 -translate-x-2 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0"
+                            />
+                            <span
+                                className="w-full flex justify-center items-center leading-tight transition-transform duration-150 group-hover:translate-x-4">
+                                Zarządzaj meczami
+                            </span>
+                        </Button>
+
+                        <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                            Wróć do panelu
+                        </Button>
+                    </div>
                 </div>
             </header>
             <main className="container py-8 space-y-6 px-4 sm:px-6 lg:px-8">
@@ -168,45 +187,50 @@ export function TeamManagementPage() {
                     <TabsContent value="manual">
                         <section className="w-full rounded-lg border bg-card p-6 shadow-sm">
                             <h2 className="text-lg font-semibold">Dodaj członka ręcznie</h2>
-                            <p className="text-sm text-muted-foreground mb-4">Wprowadź ID zespołu oraz ID członka. Opcjonalnie wybierz rolę startową.</p>
+                            <p className="text-sm text-muted-foreground mb-4">Wprowadź ID zespołu oraz ID członka.
+                                Opcjonalnie wybierz rolę startową.</p>
                             <Form {...form}>
                                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                                     <FormField
                                         control={form.control}
                                         name="teamId"
-                                        render={({ field }) => (
+                                        render={({field}) => (
                                             <FormItem>
                                                 <FormLabel>ID zespołu</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" inputMode="numeric" placeholder="np. 123" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                                    <Input type="number" inputMode="numeric"
+                                                           placeholder="np. 123" {...field}
+                                                           onChange={(e) => field.onChange(Number(e.target.value))}/>
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage/>
                                             </FormItem>
                                         )}
                                     />
                                     <FormField
                                         control={form.control}
                                         name="memberId"
-                                        render={({ field }) => (
+                                        render={({field}) => (
                                             <FormItem>
                                                 <FormLabel>ID członka</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" inputMode="numeric" placeholder="np. 456" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                                    <Input type="number" inputMode="numeric"
+                                                           placeholder="np. 456" {...field}
+                                                           onChange={(e) => field.onChange(Number(e.target.value))}/>
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage/>
                                             </FormItem>
                                         )}
                                     />
                                     <FormField
                                         control={form.control}
                                         name="role"
-                                        render={({ field }) => (
+                                        render={({field}) => (
                                             <FormItem>
                                                 <FormLabel>Rola (opcjonalnie)</FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger className="w-full">
-                                                            <SelectValue placeholder="Wybierz rolę" />
+                                                            <SelectValue placeholder="Wybierz rolę"/>
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent
@@ -224,13 +248,14 @@ export function TeamManagementPage() {
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <FormMessage />
+                                                <FormMessage/>
                                             </FormItem>
                                         )}
                                     />
                                     <div className="flex gap-2">
                                         <Button type="submit">Dodaj członka</Button>
-                                        <Button type="button" variant="outline" onClick={() => form.reset()}>Wyczyść</Button>
+                                        <Button type="button" variant="outline"
+                                                onClick={() => form.reset()}>Wyczyść</Button>
                                     </div>
                                 </form>
                             </Form>
@@ -247,62 +272,81 @@ export function TeamManagementPage() {
                                 <div className="flex flex-wrap items-end gap-3">
                                     <div className="flex-1 min-w-[220px] space-y-1">
                                         <label className="text-sm font-medium">Szukaj</label>
-                                        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="np. Jan" />
+                                        <Input value={query} onChange={(e) => setQuery(e.target.value)}
+                                               placeholder="np. Jan"/>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button onClick={handleSearch} disabled={loading}>
-                                            <SearchIcon className="mr-2 h-4 w-4" />Szukaj
+                                            <SearchIcon className="mr-2 h-4 w-4"/>Szukaj
                                         </Button>
-                                        <Button variant="outline" onClick={() => { setQuery(''); handleSearch() }} disabled={loading}>
-                                            <RotateCw className="mr-2 h-4 w-4" />Wyczyść
+                                        <Button variant="outline" onClick={() => {
+                                            setQuery('');
+                                            handleSearch()
+                                        }} disabled={loading}>
+                                            <RotateCw className="mr-2 h-4 w-4"/>Wyczyść
                                         </Button>
                                     </div>
                                 </div>
                                 <div className="rounded-lg border overflow-x-auto">
                                     <table className="w-full min-w-[620px] text-sm table-auto">
                                         <thead>
-                                            <tr className="bg-muted/60">
-                                                <th className="px-3 py-2 text-left rounded-tl-lg">#</th>
-                                                <th className="px-3 py-2 text-left">Imię i nazwisko</th>
-                                                <th className="px-3 py-2 text-left">Numer</th>
-                                                <th className="px-3 py-2 text-left">Role</th>
-                                                <th className="px-3 py-2 text-left">Status</th>
-                                                <th className="px-3 py-2 text-left rounded-tr-lg">Akcje</th>
-                                            </tr>
+                                        <tr className="bg-muted/60">
+                                            <th className="px-3 py-2 text-left rounded-tl-lg">#</th>
+                                            <th className="px-3 py-2 text-left">Imię i nazwisko</th>
+                                            <th className="px-3 py-2 text-left">Numer</th>
+                                            <th className="px-3 py-2 text-left">Role</th>
+                                            <th className="px-3 py-2 text-left">Status</th>
+                                            <th className="px-3 py-2 text-left rounded-tr-lg">Akcje</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            {loading && Array.from({ length: 3 }).map((_, i) => (
-                                                <tr key={`s-${i}`} className="border-t"><td className="px-3 py-3" colSpan={6}><Skeleton className="h-4 w-full" /></td></tr>
-                                            ))}
-                                            {!loading && filtered.map((m, idx) => (
-                                                <tr key={m.id} className="border-t odd:bg-muted/40 hover:bg-muted/60">
-                                                    <td className="px-3 py-2 font-semibold">{idx + 1}</td>
-                                                    <td className="px-3 py-2">{m.fullName}</td>
-                                                    <td className="px-3 py-2">{m.number}</td>
-                                                    <td className="px-3 py-2">
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {m.roles.map((r) => <Badge key={r} variant="outline">{r}</Badge>)}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-3 py-2"><Badge variant={m.status === 'ACTIVE' ? 'default' : 'secondary'}>{m.status}</Badge></td>
-                                                    <td className="px-3 py-2">
-                                                        <div className="flex gap-2">
-                                                            <Button size="sm" variant="outline" onClick={() => navigate(`/member/${m.id}`)}>
-                                                                <Eye className="mr-2 h-4 w-4" />Podgląd
-                                                            </Button>
-                                                            {m.status === 'WAITING' && (
-                                                                <>
-                                                                    <Button size="sm" variant="default" onClick={() => approveMember(m.id)}><UserCheck className="mr-2 h-4 w-4" />Zatwierdź</Button>
-                                                                    <Button size="sm" variant="destructive" onClick={() => rejectMember(m.id)}><UserX className="mr-2 h-4 w-4" />Odrzuć</Button>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {!loading && filtered.length === 0 && (
-                                                <tr><td colSpan={6} className="px-3 py-4 text-center text-muted-foreground">Brak wyników</td></tr>
-                                            )}
+                                        {loading && Array.from({length: 3}).map((_, i) => (
+                                            <tr key={`s-${i}`} className="border-t">
+                                                <td className="px-3 py-3" colSpan={6}><Skeleton className="h-4 w-full"/>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {!loading && filtered.map((m, idx) => (
+                                            <tr key={m.id} className="border-t odd:bg-muted/40 hover:bg-muted/60">
+                                                <td className="px-3 py-2 font-semibold">{idx + 1}</td>
+                                                <td className="px-3 py-2">{m.fullName}</td>
+                                                <td className="px-3 py-2">{m.number}</td>
+                                                <td className="px-3 py-2">
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {m.roles.map((r) => <Badge key={r}
+                                                                                   variant="outline">{r}</Badge>)}
+                                                    </div>
+                                                </td>
+                                                <td className="px-3 py-2"><Badge
+                                                    variant={m.status === 'ACTIVE' ? 'default' : 'secondary'}>{m.status}</Badge>
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <div className="flex gap-2">
+                                                        <Button size="sm" variant="outline"
+                                                                onClick={() => navigate(`/member/${m.id}`)}>
+                                                            <Eye className="mr-2 h-4 w-4"/>Podgląd
+                                                        </Button>
+                                                        {m.status === 'WAITING' && (
+                                                            <>
+                                                                <Button size="sm" variant="default"
+                                                                        onClick={() => approveMember(m.id)}><UserCheck
+                                                                    className="mr-2 h-4 w-4"/>Zatwierdź</Button>
+                                                                <Button size="sm" variant="destructive"
+                                                                        onClick={() => rejectMember(m.id)}><UserX
+                                                                    className="mr-2 h-4 w-4"/>Odrzuć</Button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {!loading && filtered.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6}
+                                                    className="px-3 py-4 text-center text-muted-foreground">Brak wyników
+                                                </td>
+                                            </tr>
+                                        )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -320,27 +364,62 @@ export function TeamManagementPage() {
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div className="space-y-1">
                                         <label className="text-sm font-medium">Nazwa zespołu</label>
-                                        <Input value={teamForm.name} onChange={(e) => setTeamForm((t) => ({ ...t, name: e.target.value }))} />
+                                        <Input value={teamForm.name}
+                                               onChange={(e) => setTeamForm((t) => ({...t, name: e.target.value}))}/>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-sm font-medium">Miasto</label>
-                                        <Input value={teamForm.city} onChange={(e) => setTeamForm((t) => ({ ...t, city: e.target.value }))} />
+                                        <Input value={teamForm.city}
+                                               onChange={(e) => setTeamForm((t) => ({...t, city: e.target.value}))}/>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-sm font-medium">Kod dołączenia</label>
-                                        <Input value={teamForm.code} onChange={(e) => setTeamForm((t) => ({ ...t, code: e.target.value }))} />
+                                        <Input value={teamForm.code}
+                                               onChange={(e) => setTeamForm((t) => ({...t, code: e.target.value}))}/>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-sm font-medium">Rok założenia</label>
-                                        <Input type="number" value={teamForm.founded} onChange={(e) => setTeamForm((t) => ({ ...t, founded: Number(e.target.value || 0) }))} />
+                                        <Input type="number" value={teamForm.founded}
+                                               onChange={(e) => setTeamForm((t) => ({
+                                                   ...t,
+                                                   founded: Number(e.target.value || 0)
+                                               }))}/>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Status zespołu</label>
+                                        <Select value={teamForm.status}
+                                                onValueChange={(v) => setTeamForm((t) => ({...t, status: v}))}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Wybierz status"/>
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                position="popper"
+                                                className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg [&_[data-radix-select-viewport]]:bg-white dark:[&_[data-radix-select-viewport]]:bg-slate-900"
+                                            >
+                                                <SelectItem value="ACTIVE">Aktywny</SelectItem>
+                                                <SelectItem value="INACTIVE">Nieaktywny</SelectItem>
+                                                <SelectItem value="ARCHIVED">Zarchiwizowany</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium">Kategoria zespołu</label>
+                                        <Input value={teamForm.category}
+                                               onChange={(e) => setTeamForm((t) => ({...t, category: e.target.value}))}
+                                               placeholder="np. Senior, Junior, Youth"/>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button type="button" onClick={handleSaveTeam}>
-                                        <Wrench className="mr-2 h-4 w-4" />Zapisz zmiany (mock)
+                                        <Wrench className="mr-2 h-4 w-4"/>Zapisz zmiany (mock)
                                     </Button>
                                     <Button type="button" variant="outline" onClick={handleResetTeam}>
                                         Usuń zespół (mock)
+                                    </Button>
+                                    <Button type="button" variant="outline"
+                                            onClick={() => navigate('/matches-management')}>
+                                        Zarządzaj meczami
                                     </Button>
                                 </div>
                             </CardContent>

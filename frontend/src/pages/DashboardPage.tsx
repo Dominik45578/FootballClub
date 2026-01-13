@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { User, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
+import { User, Users, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { OFFLINE } from '@/lib/auth'
@@ -56,6 +56,10 @@ export function DashboardPage() {
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Panel klubu piłkarskiego</h1>
                     <div className="flex gap-3">
+                        <Button onClick={() => navigate('/join-team')}>
+                            <Users className="mr-2 h-4 w-4" />
+                            Dołącz do zespołu
+                        </Button>
                         <Button variant="secondary" onClick={handleProfile}>
                             <User className="mr-2 h-4 w-4" />
                             Profil
