@@ -3,6 +3,7 @@ package com.polibuda.footballclub.user.dto.response.restricted;
 
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.database.TeamRole;
+import com.polibuda.footballclub.user.dto.response.summary.AbstractSummaryResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +15,11 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamMemberListItemDto {
+public class TeamMemberListItemDto implements AbstractSummaryResponse {
 
     private Long teamMemberId;
     private Long memberId;
+    private Long teamId;
     private String firstName;
     private String lastName;
     private Set<TeamRole> roles;

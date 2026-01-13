@@ -52,8 +52,8 @@ public class JwtAccessServiceImpl implements JwtAccessService {
     }
 
     @Override
-    public String extractUsername(String token) {
-        return extractClaims(token).getSubject();
+    public Long extractUsername(String token) {
+        return Long.parseLong(extractClaims(token).getSubject());
     }
 
     @Override

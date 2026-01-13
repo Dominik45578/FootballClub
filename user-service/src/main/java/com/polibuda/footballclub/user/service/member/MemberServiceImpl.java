@@ -1,16 +1,20 @@
 package com.polibuda.footballclub.user.service.member;
 
+import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.user.dto.request.NewMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.MemberProfileResponse;
 import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import com.polibuda.footballclub.user.entity.Member;
+import com.polibuda.footballclub.user.exceptions.business.MemberAlreadyExistExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.MemberNotFoundException;
 import com.polibuda.footballclub.user.repository.MemberRepository;
+import com.polibuda.footballclub.user.service.IdentityGrpcClient;
 import com.polibuda.footballclub.user.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -32,6 +36,8 @@ import java.util.stream.Collectors;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final IdentityGrpcClient grpcService;
+    //private final MemberService memberService;
 
     @Override
     @Transactional(readOnly = true)
@@ -57,6 +63,7 @@ public class MemberServiceImpl implements MemberService {
         if (request.getPhoneNumber() != null) member.setPhoneNumber(request.getPhoneNumber());
 
         Member saved = memberRepository.save(member);
+        grpcService.grantRoles(userId,UserRole.ROLE_MEMBER);
         log.info("USER_EVENT: Profile updated for user {}", userId);
         return mapToProfileResponse(saved);
     }
@@ -99,21 +106,29 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public ResponseEntity<Boolean> addMember(NewMemberRequestDTO request, Long userId) {
-        if(memberRepository.existsByUserId(userId) || memberRepository.existsById(userId)) {
+
+        if(memberRepository.existsByUserId(userId)) {
             log.error("USER_EVENT: Member already exists for user {}", userId);
             return ResponseEntity.badRequest().build();
         }
+        try{
+            memberRepository.save(Member.builder()
+                    .birthDate(request.getBirthDate())
+                    .pesel(request.getPesel())
+                    .phoneNumber(request.getPhoneNumber())
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .userId(userId)
+                    .build());
+            grpcService.grantRoles(userId,UserRole.ROLE_MEMBER);
+            log.info("USER_EVENT: Member added for user {}", userId);
+            log.info("USER_EVENT: ROLE_MEMBER added for user {}", userId);
+            return ResponseEntity.ok(Boolean.TRUE);
+        }catch (DataIntegrityViolationException e){
+            log.error("User already exists for user {}", userId);
+            throw new MemberAlreadyExistExceptions("Member already exists : "+ e.getMessage());
+        }
 
-       memberRepository.save(Member.builder()
-                       .birthDate(request.getBirthDate())
-                       .pesel(request.getPesel())
-               .phoneNumber(request.getPhoneNumber())
-               .firstName(request.getFirstName())
-               .lastName(request.getLastName())
-                       .id(userId)
-                       .userId(userId)
-               .build());
-        return ResponseEntity.ok(Boolean.TRUE);
     }
 
     @Override
@@ -123,6 +138,7 @@ public class MemberServiceImpl implements MemberService {
           log.error("USER_EVENT: Member not found for user {}", userId);
           return new ResponseEntity<>(Boolean.FALSE,HttpStatus.NOT_FOUND);
       }
+      grpcService.removeRoles(userId,UserRole.ROLE_MEMBER);
       memberRepository.deleteById(userId);
       return ResponseEntity.ok(Boolean.TRUE);
     }

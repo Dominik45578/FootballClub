@@ -25,13 +25,13 @@ import java.util.Set;
 @AllArgsConstructor
 public class Member extends AbstractAuditableEntity {
 
-    @Column(name = "user_id", nullable = false, unique = true)
-    private Long userId ;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id ;
+
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId ;
 
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;

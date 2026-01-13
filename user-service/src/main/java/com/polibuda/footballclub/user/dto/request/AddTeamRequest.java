@@ -2,12 +2,14 @@ package com.polibuda.footballclub.user.dto.request;
 
 import com.polibuda.footballclub.common.database.TeamCategory;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 
 @Builder
 @Data
+@AllArgsConstructor
 public class AddTeamRequest {
     @NotBlank(message = "Nazwa teamu jest wymagana")
     String name;

@@ -2,12 +2,15 @@ package com.polibuda.footballclub.user.repository;
 
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.entity.TeamMember;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
@@ -30,4 +33,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
     // Spring Data JPA potrafi to rozparsować (Member -> UserId), ale warto dodać EntityGraph dla wydajności
     @EntityGraph(attributePaths = {"member", "team"})
     Optional<TeamMember> findByTeamIdAndMemberUserId(Long teamId, Long userId);
+
+    Page<TeamMember> findByStatus(TeamMemberStatus status,  Pageable pageable);
 }

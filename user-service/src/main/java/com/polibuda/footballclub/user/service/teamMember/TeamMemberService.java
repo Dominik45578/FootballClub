@@ -1,10 +1,17 @@
 package com.polibuda.footballclub.user.service.teamMember;
 
+import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
+import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
+import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
+import com.polibuda.footballclub.user.entity.TeamMember;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Set;
 
 public interface TeamMemberService {
-
+    TeamMemberSearchResponse getTeamsMemberByStatus(TeamMemberStatus status , Pageable pageable);
     /**
      * Akcja gracza: Dołączenie do zespołu przy użyciu unikalnego kodu.
      * Tworzy relację ze statusem WAITING_FOR_VERIFICATION.
@@ -23,6 +30,7 @@ public interface TeamMemberService {
      */
     void approveMember(Long requesterUserId, Long teamMemberId);
 
+    TeamMemberListItemDto getTeamMemberById(Long teamMemberId);
     /**
      * Akcja trenera: Odrzucenie aplikacji LUB usunięcie/archiwizacja obecnego gracza.
      * WAITING -> DELETE

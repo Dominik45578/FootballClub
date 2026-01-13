@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package com.polibuda.identify;
+
+option java_multiple_files = true;
+option java_package = "com.polibuda.identify.grpc";
+option java_outer_classname = "UserRolesProto";
+
+service UserRoleService {
+  rpc RemoveRoles (RemoveRolesRequest) returns (RemoveRolesResponse);
+  rpc GrantRoles (GrantRolesRequest) returns (GrantRolesResponse);
+  rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
+}
+
+message GrantRolesRequest {
+
+  int64 user_id = 1;
+  repeated string roles = 2;
+}
+
+message GrantRolesResponse {
+  RoleAssignmentStatus status = 1;
+  string message = 2;
+}
+
+enum RoleAssignmentStatus {
+  STATUS_UNKNOWN = 0; //  0 to zawsze default/unknown
+  SUCCESS = 1;        // Role dodane poprawnie
+  FAILURE_ROLLBACK_REQUIRED = 2; // Błąd krytyczny (np. brak usera w systemie ), wymagany rollback lokalny
+  FAILURE_RETRYABLE = 3; // Błąd tymczasowy, można ponowić
+}
+
+
+message GetUserRolesRequest {
+  int64 user_id = 1;
+}
+
+message GetUserRolesResponse {
+  int64 user_id = 1;
+  repeated string roles = 2;
+}
+
+message RemoveRolesRequest{
+  int64 user_id = 1;
+  repeated string roles =2;
+}
+
+message RemoveRolesResponse {
+  RoleAssignmentStatus status = 1;
+  string message = 2;
+}

@@ -101,8 +101,8 @@ public class AuthServiceImpl implements AuthService {
             if (!jwtService.validateToken(request.getRefreshToken())) {
                 return RefreshTokenResponse.builder().success(false).message("Invalid token").build();
             }
-            String username = jwtService.extractUsername(request.getRefreshToken());
-            User user = userRepository.findByUsername(username).orElseThrow();
+            Long username = jwtService.extractUsername(request.getRefreshToken());
+            User user = userRepository.findById(username).orElseThrow();
             String newToken = jwtService.generateToken(user);
 
             return RefreshTokenResponse.builder().success(true).token(newToken).timestamp(LocalDateTime.now()).build();

@@ -8,7 +8,7 @@ public interface JwtAccessService {
     
     boolean validateToken(String token);
     
-    String extractUsername(String token);
+    Long extractUsername(String token);
     
     Long extractUserId(String token);
 }

@@ -2,6 +2,7 @@ package com.polibuda.footballclub.common;
 
 public enum UserRole {
     ROLE_USER,
+    ROLE_MEMBER,
     ROLE_PLAYER,
     ROLE_ADMIN,
     ROLE_COACH,

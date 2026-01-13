@@ -101,3 +101,6 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.data.redis: INFO
 
+grpc:
+  server:
+    port: ${GRPCIDENTIFY_GRPC_PORT:9092}

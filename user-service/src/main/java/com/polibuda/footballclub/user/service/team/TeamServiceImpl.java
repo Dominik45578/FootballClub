@@ -1,6 +1,8 @@
 package com.polibuda.footballclub.user.service.team;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
+import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
@@ -92,6 +94,7 @@ public class TeamServiceImpl implements TeamService {
 
 
     @Override
+    @Transactional
     public boolean addTeam(AddTeamRequest team) {
         if(teamRepository.existsByCode(team.getCode())){
             throw new TeamAlreadyExistExceptions();
@@ -143,9 +146,26 @@ public class TeamServiceImpl implements TeamService {
 
 
     @Override
+    @Transactional
     public boolean deleteTeam(Long teamId) {
-        teamRepository.deleteById(teamId);
-        return true;
+        if(!teamRepository.existsById(teamId)){
+            log.error("Team id {} does not exist", teamId);
+            throw new TeamNotFoundException(teamId);
+        }
+        try{
+            Team team = teamRepository.findById(teamId).orElseThrow(() -> new TeamNotFoundException(teamId));
+            Set<TeamMember> members = team.getMembers();
+            for(TeamMember member : members){
+                member.setStatus(TeamMemberStatus.ARCHIVED);
+                teamMemberRepository.save(member);
+            }
+            team.setStatus(TeamStatus.ARCHIVED);
+            teamRepository.save(team);
+            return true;
+        }catch (Exception e){
+            log.error("Problem while deleting team {}", teamId, e);
+            return false;
+        }
     }
 
     // --- Mappers (Private Methods for Encapsulation) ---

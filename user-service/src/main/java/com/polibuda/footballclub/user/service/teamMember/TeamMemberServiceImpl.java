@@ -3,11 +3,12 @@ package com.polibuda.footballclub.user.service.teamMember;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
+import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
+import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
 import com.polibuda.footballclub.user.entity.Member;
 import com.polibuda.footballclub.user.entity.Team;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
-import com.polibuda.footballclub.user.exceptions.business.BusinessLogicException;
 import com.polibuda.footballclub.user.exceptions.business.InvalidTeamCodeException;
 import com.polibuda.footballclub.user.exceptions.business.UserAlreadyInTeamException;
 import com.polibuda.footballclub.user.exceptions.business.UserAlreadyVerified;
@@ -19,8 +20,16 @@ import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,6 +39,22 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public TeamMemberSearchResponse getTeamsMemberByStatus(TeamMemberStatus status, Pageable pageable) {
+       Page<TeamMember> page = teamMemberRepository.findByStatus(status,pageable);
+       List<TeamMemberListItemDto> mapped = page.stream().map(this::mapToTeamMemberDto).toList();
+       return TeamMemberSearchResponse.builder()
+               .status(status)
+               .content(mapped)
+               .pageSize(page.getSize())
+               .pageNumber(page.getNumber())
+               .totalPages(page.getTotalPages())
+               .totalElements(page.getTotalElements())
+               .build();
+    }
+
 
     @Override
     @Transactional
@@ -68,6 +93,15 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         target.setStatus(TeamMemberStatus.ACTIVE);
         teamMemberRepository.save(target);
         log.info("COACH_EVENT: User {} approved member {} in team {}", requesterUserId, target.getMember().getId(), target.getTeam().getId());
+    }
+
+    @Override
+    public TeamMemberListItemDto getTeamMemberById(Long teamMemberId) {
+        if(!teamMemberRepository.existsById(teamMemberId)) {
+            throw new MemberNotFoundException(teamMemberId);
+        }
+        TeamMember teamMember = teamMemberRepository.findById(teamMemberId).orElseThrow();
+        return mapToTeamMemberDto(teamMember);
     }
 
     @Override
@@ -137,5 +171,17 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         if (!requester.isCoach()) {
             throw new InsufficientPermissionsException("Contextual Permission Denied: Role COACH required in this team.");
         }
+    }
+
+    private TeamMemberListItemDto mapToTeamMemberDto(TeamMember teamMember) {
+        return TeamMemberListItemDto.builder()
+                .memberId(teamMember.getId())
+                .teamMemberId(teamMember.getId())
+                .teamId(teamMember.getTeam().getId())
+                .firstName(teamMember.getMember().getFirstName())
+                .lastName(teamMember.getMember().getLastName())
+                .status(teamMember.getStatus())
+                .roles(teamMember.getRoles())
+                .build();
     }
 }

@@ -2,6 +2,8 @@ package com.polibuda.footballclub.user.controller;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
+import com.polibuda.footballclub.common.database.TeamStatus;
+import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
@@ -36,7 +38,7 @@ public class TeamController {
             @RequestParam(defaultValue = "ALL_TEAMS") TeamFetchMode mode,
             @RequestParam(required = false) Long teamId,
             @RequestParam(required = false) String name,
-            @PageableDefault(size = 20) Pageable pageable
+                @PageableDefault(size = 20) Pageable pageable
     ) {
         // Ułatwienie dla frontendu: Jeśli podano ID, a nie zmieniono trybu, wymuszamy tryb SPECIFIC
         if (teamId != null && mode == TeamFetchMode.ALL_TEAMS) {
@@ -55,16 +57,16 @@ public class TeamController {
         return ResponseEntity.ok(teamService.getTeamDetails(teamId));
     }
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
-    @DeleteMapping("/{teamid}")
+    @DeleteMapping("/del/{teamId}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
-        return ResponseEntity.ok().build();
+        return teamService.deleteTeam(teamId) ?  ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
-    @PutMapping("/{teamid}")
-    public ResponseEntity<Void> addTeam(@PathVariable Long teamId,
-                                        @RequestHeader(MutationHeaderClaims.X_ROLES) Set<String> roles) {
-        return ResponseEntity.ok().build();
+    @PutMapping("/new")
+    public ResponseEntity<Void> addTeam(
+                                        @RequestBody AddTeamRequest request) {
+        return teamService.addTeam(request) ?  ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")

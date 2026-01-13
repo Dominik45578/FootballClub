@@ -36,3 +36,8 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
     open-in-view: false
+
+grpc:
+  football-data:
+    host: ${IDENTIFY_NAME:localhost}
+    port: ${IDENTIFY_GRPC_PORT:9092}
