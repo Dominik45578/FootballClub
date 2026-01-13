@@ -1,11 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { StartPage } from './pages/StartPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { Toaster } from '@/components/ui/sonner'
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import { getMemberStatus, type MemberStatus, ensureMemberStatus } from './lib/userApi'
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
 const TeamSearchPage = lazy(() => import('./pages/TeamSearchPage').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
@@ -23,6 +24,14 @@ const MemberSearchPage = lazy(() => import('./pages/MemberSearchPage').then(m =>
 const MemberPublicProfilePage = lazy(() => import('./pages/MemberPublicProfilePage').then(m => ({ default: (m as any).default || (m as any).MemberPublicProfilePage })));
 const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
 
+
+const ProfileRoute = ({ children }: { children: React.ReactElement }) => {
+    const [status, setStatus] = useState<MemberStatus>(getMemberStatus())
+    useEffect(() => {
+        ensureMemberStatus().then(setStatus).catch(() => setStatus(getMemberStatus()))
+    }, [])
+    return status === 'member' ? <Navigate to="/member-profile" replace /> : children
+}
 
 function App() {
     return (
@@ -56,7 +65,7 @@ function App() {
                 <Route path="/member-profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberProfilePage /> </Suspense>} />
                 <Route path="/members" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberSearchPage /> </Suspense>} />
                 <Route path="/member/:memberId" element={<Suspense fallback={<div>Ładowanie...</div>}> <MemberPublicProfilePage /> </Suspense>} />
-                <Route path="/profile" element={<Suspense fallback={<div>Ładowanie...</div>}> <ProfilePage /> </Suspense>} />
+                <Route path="/profile" element={<ProfileRoute><Suspense fallback={<div>Ładowanie...</div>}> <ProfilePage /> </Suspense></ProfileRoute>} />
                 <Route path="/new-password" element={<Suspense fallback={<div>Ładowanie...</div>}> <NewPasswordPage /> </Suspense>} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
 

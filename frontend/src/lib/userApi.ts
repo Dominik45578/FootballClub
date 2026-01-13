@@ -88,11 +88,12 @@ const mockTeamDetails: TeamDetails = {
 }
 
 // Helper for fetch wrapper
-type ApiRequestOptions = RequestInit & { dontRedirectOnAuthError?: boolean }
+type ApiRequestOptions = RequestInit & { dontRedirectOnAuthError?: boolean; skipAuthHeader?: boolean }
 
 async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
-  const { dontRedirectOnAuthError, ...rest } = opts
-  const headers = { ...(rest.headers || {}), ...authHeader(), 'Content-Type': 'application/json' }
+  const { dontRedirectOnAuthError, skipAuthHeader, ...rest } = opts
+  const auth = skipAuthHeader ? {} : authHeader()
+  const headers = { ...(rest.headers || {}), ...auth, 'Content-Type': 'application/json' }
   const res = await fetch(url, { ...rest, headers, credentials: 'include' })
   if (!res.ok) {
     if ((res.status === 401 || res.status === 403) && !dontRedirectOnAuthError) {
@@ -130,6 +131,26 @@ export function resetMemberStatusMock() {
 
 export function getMemberStatus(): MemberStatus {
   return OFFLINE ? 'member' : readMemberStatus()
+}
+
+// Sync member status with backend; if profile is accessible mark as member, otherwise keep guest/pending
+export async function ensureMemberStatus(): Promise<MemberStatus> {
+  if (OFFLINE) return 'member'
+  const current = readMemberStatus()
+  if (current === 'member') return 'member'
+  try {
+    await getMyProfile({ allowUnauth: true })
+    writeMemberStatus('member')
+    return 'member'
+  } catch (err: any) {
+    // If still unauthorized/forbidden, keep pending if we were pending, otherwise guest
+    if (current === 'pending') {
+      writeMemberStatus('pending')
+      return 'pending'
+    }
+    writeMemberStatus('guest')
+    return 'guest'
+  }
 }
 
 export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
@@ -215,7 +236,7 @@ export async function activateAccount(code: string, email?: string): Promise<{ s
     if (!ok) throw new Error('Nieprawidłowy kod aktywacyjny (8 znaków alfanumerycznych)')
     return Promise.resolve({ success: true })
   }
-  return fetchJson(`${AUTH_BASE}/activate`, { method: 'POST', body: JSON.stringify({ code, email }) })
+  return fetchJson(`${AUTH_BASE}/activate`, { method: 'POST', body: JSON.stringify({ code, email }), skipAuthHeader: true })
 }
 
 export async function resendActivation(email?: string): Promise<{ sent: boolean }> {
@@ -224,9 +245,10 @@ export async function resendActivation(email?: string): Promise<{ sent: boolean 
     return Promise.resolve({ sent: true })
   }
 
-  const res = await fetchJson(`${AUTH_BASE}/activation/resend`, {
-    method: 'POST',
-    body: JSON.stringify({ email }),
+  const qs = email ? `?email=${encodeURIComponent(email)}` : ''
+  const res = await fetchJson(`${AUTH_BASE}/activate/resend${qs}`, {
+    method: 'GET',
+    skipAuthHeader: true,
   })
   return { sent: !!(res?.sent ?? res?.success ?? res?.status ?? true) }
 }
@@ -255,7 +277,7 @@ export async function removeTeamMember(teamMemberId: number) {
 // Auth flows (identify service)
 export async function register(payload: RegisterPayload): Promise<RegisterResponse> {
   if (OFFLINE) return Promise.resolve({ success: true, message: 'Zarejestrowano lokalnie (mock)' })
-  return fetchJson(`${AUTH_BASE}/register`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<RegisterResponse>
+  return fetchJson(`${AUTH_BASE}/register`, { method: 'POST', body: JSON.stringify(payload), skipAuthHeader: true }) as Promise<RegisterResponse>
 }
 
 export async function login(payload: { email: string; password: string }) {

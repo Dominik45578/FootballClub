@@ -3,7 +3,7 @@ import { User, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-reac
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { OFFLINE } from '@/lib/auth'
-import { apiLogout, getMemberStatus, type MemberStatus } from '@/lib/userApi'
+import { apiLogout, getMemberStatus, type MemberStatus, ensureMemberStatus } from '@/lib/userApi'
 import { useEffect, useState } from 'react'
 
 export function DashboardPage() {
@@ -27,7 +27,28 @@ export function DashboardPage() {
     const status: MemberStatus = getMemberStatus()
     const showApply = !OFFLINE && status === 'guest'
     const showPending = !OFFLINE && status === 'pending'
-    const isMember = OFFLINE ? true : status === 'member'
+    const canManageTeam = OFFLINE
+
+    const handleProfile = async () => {
+        try {
+            const status = await ensureMemberStatus()
+            if (status === 'member') {
+                navigate('/member-profile')
+                return
+            }
+            toast.error('Brak uprawnień do profilu członka')
+        } catch {
+            toast.error('Brak uprawnień do profilu członka')
+        }
+    }
+
+    const handleTeamManagement = () => {
+        if (!canManageTeam) {
+            toast.error('Brak uprawnień do zarządzania zespołem')
+            return
+        }
+        navigate('/team-management')
+    }
 
     return (
         <div className="min-h-screen bg-background">
@@ -35,7 +56,7 @@ export function DashboardPage() {
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Panel klubu piłkarskiego</h1>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={() => navigate('/member-profile')}>
+                        <Button variant="secondary" onClick={handleProfile}>
                             <User className="mr-2 h-4 w-4" />
                             Profil
                         </Button>
@@ -75,7 +96,7 @@ export function DashboardPage() {
                     {/* Button A */}
                     <HoverableCTA onClick={() => navigate('/team-search')}>
                         <div className="flex items-center gap-4">
-                            <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+                            <Search className="h-7 w-7 text-muted-foreground shrink-0" />
                             <div>
                                 <h4 className="text-lg font-semibold">Wyszukiwanie zespołów</h4>
                                 <p className="text-sm text-muted-foreground mt-1">Przejrzyj i wyszukaj drużyny</p>
@@ -86,7 +107,7 @@ export function DashboardPage() {
                     {/* Button B */}
                     <HoverableCTA onClick={() => navigate('/matches')}>
                         <div className="flex items-center gap-4">
-                            <CalendarClock className="h-5 w-5 text-muted-foreground shrink-0" />
+                            <CalendarClock className="h-7 w-7 text-muted-foreground shrink-0" />
                             <div>
                                 <h4 className="text-lg font-semibold">Mecze</h4>
                                 <p className="text-sm text-muted-foreground mt-1">Zobacz harmonogram i szczegóły</p>
@@ -96,9 +117,9 @@ export function DashboardPage() {
                 </section>
 
                 <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-2">
-                    <HoverableCTA onClick={() => navigate('/team-management')} disabled={!isMember} className="md:col-span-2">
+                    <HoverableCTA onClick={handleTeamManagement} disabled={!canManageTeam} className="md:col-span-2">
                         <div className="flex items-center gap-4">
-                            <Settings2 className="h-5 w-5 text-muted-foreground shrink-0" />
+                            <Settings2 className="h-7 w-7 text-muted-foreground shrink-0" />
                             <div>
                                 <h4 className="text-lg font-semibold">Zarządzanie zespołem</h4>
                                 <p className="text-sm text-muted-foreground mt-1">Panel trenera/admina</p>
