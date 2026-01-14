@@ -12,6 +12,7 @@ import com.polibuda.footballclub.identify.repository.UserRepository;
 import com.polibuda.identify.grpc.RoleAssignmentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,9 +82,7 @@ public class UserRoleManageService {
         return true;
     }
 
-    public UserResponseDTO updateUserRoles(UpdateUserRoleRequestDTO request, Long userId){
-        return getUserDTO(userId);
-    }
+
 
     /**
      * Nadaje role.
@@ -114,9 +113,6 @@ public class UserRoleManageService {
                 skipped.add(roleName);
             }
         }
-
-        // JPA Dirty Checking zapisze zmiany przy zamknięciu transakcji
-        // user.getRoles() jest kolekcją zarządzaną
 
         String msg = String.format("Success: %s. Skipped: %s", added, skipped);
         log.info("Updated roles for user {}: {}", userId, msg);
@@ -149,8 +145,6 @@ public class UserRoleManageService {
             }
         }
 
-        // JPA Dirty Checking zapisze zmiany przy zamknięciu transakcji
-        // user.getRoles() jest kolekcją zarządzaną
 
         String msg = String.format("Success: %s. Skipped: %s", removed, skipped);
         log.info("Updated roles for user {}: {}", userId, msg);

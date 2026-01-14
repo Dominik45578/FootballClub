@@ -2,6 +2,8 @@ package com.polibuda.footballclub.user.service.teamMember;
 
 import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.database.TeamRole;
+import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
@@ -11,10 +13,7 @@ import com.polibuda.footballclub.user.entity.Member;
 import com.polibuda.footballclub.user.entity.Team;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
-import com.polibuda.footballclub.user.exceptions.business.InvalidTeamCodeException;
-import com.polibuda.footballclub.user.exceptions.business.RoleAssigmentExceptions;
-import com.polibuda.footballclub.user.exceptions.business.UserAlreadyInTeamException;
-import com.polibuda.footballclub.user.exceptions.business.UserAlreadyVerified;
+import com.polibuda.footballclub.user.exceptions.business.*;
 import com.polibuda.footballclub.user.exceptions.notFound.MemberNotFoundException;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamMemberNotFoundException;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamNotFoundException;
@@ -75,6 +74,9 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         Team team = teamRepository.findByCode(request.getTeamCode())
                 .orElseThrow(() -> new InvalidTeamCodeException(request.getTeamCode()));
 
+        if(team.getStatus() != TeamStatus.ACTIVE){
+            throw new TeamNotIntendedToJoinExceptions("Team code is not active");
+        }
         if (teamMemberRepository.existsByTeamIdAndMemberId(team.getId(), member.getId())) {
             throw new UserAlreadyInTeamException(team.getCode());
         }
@@ -86,6 +88,10 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .build();
 
         teamMemberRepository.save(newMembership);
+        IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(userId, UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
+        if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
+            throw new RoleAssigmentExceptions("Problem was occurred while grants role from user : " + userId);
+        }
         log.info("USER_EVENT: Member {} requested to join team {}", member.getId(), team.getId());
     }
 
@@ -102,6 +108,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         }
 
         target.setStatus(TeamMemberStatus.ACTIVE);
+        target.addRole(Set.of(TeamRole.ROLE_TEAM_MEMBER));
         IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(target.getMember().getUserId(), UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
         if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
             throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + target.getMember().getUserId());
@@ -170,7 +177,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .build();
 
         teamMemberRepository.save(newMember);
-       IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(newMember.getMember().getUserId(), UserRole.ROLE_PLAYER);
+       IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(newMember.getMember().getUserId(), UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
         if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
             throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + candidate.getUserId());
         }
@@ -236,6 +243,9 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         // 3. Validate Role within Context
         if (!requester.isCoach()) {
             throw new InsufficientPermissionsException("Operation requires COACH permissions.");
+        }
+        if(!requester.getStatus().equals(TeamMemberStatus.ACTIVE)){
+            throw new InsufficientPermissionsException("Operation requires ACTIVE COACH permissions.");
         }
     }
 

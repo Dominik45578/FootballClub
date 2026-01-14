@@ -34,15 +34,5 @@ public class RoleController {
     ) {
         return userRoleManageService.updateUser(updateUserRequest,userId) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
-    @PatchMapping("/me")
-    public ResponseEntity<UserResponseDTO> changeRoles(
-            @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId,
-            @RequestBody UpdateUserRoleRequestDTO request
-            ){
-        return ResponseEntity.ok(userRoleManageService.updateUserRoles(request, userId));
-    }
-
-
-
 
 }

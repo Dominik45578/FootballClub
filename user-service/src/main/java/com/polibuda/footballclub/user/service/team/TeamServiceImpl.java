@@ -223,6 +223,7 @@ public class TeamServiceImpl implements TeamService {
                 .teamName(team.getName())
                 .category(team.getCategory())
                 .status(team.getStatus())
+                .createdAt(team.getCreatedAt())
                 .numberOfMembers(team.getMembers() != null ? team.getMembers().size() : 0)
                 .build();
     }
@@ -262,6 +263,9 @@ public class TeamServiceImpl implements TeamService {
                 ));
         if (!requester.isCoach()) {
             throw new InsufficientPermissionsException("Operation requires COACH permissions.");
+        }
+        if(!requester.getStatus().equals(TeamMemberStatus.ACTIVE)){
+            throw new InsufficientPermissionsException("Operation requires ACTIVE COACH permissions.");
         }
     }
 }

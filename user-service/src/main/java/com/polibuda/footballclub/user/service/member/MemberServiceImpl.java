@@ -95,6 +95,7 @@ public class MemberServiceImpl implements MemberService {
                         .id(m.getId())
                         .firstName(m.getFirstName())
                         .lastName(m.getLastName())
+                        .joinDate(m.getCreatedAt())
                         .age(calculateAge(m.getBirthDate())) // Wyliczamy wiek zamiast wysyłać datę
                         .build())
                 .collect(Collectors.toList());
@@ -171,6 +172,7 @@ public class MemberServiceImpl implements MemberService {
                 .height(member.getHeight())
                 .weight(member.getWeight())
                 .age(calculateAge(member.getBirthDate()))
+                .joinDate(member.getCreatedAt())
                 .build();
     }
 
@@ -190,6 +192,7 @@ public class MemberServiceImpl implements MemberService {
                 .firstName(member.getFirstName())
                 .lastName(member.getLastName())
                 .age(calculateAge(member.getBirthDate()))
+               .joinDate(member.getCreatedAt())
                 .build();
     }
 }

@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class JoinTeamRequest {
 
     @NotBlank(message = "Kod zespołu nie może być pusty")
-    @Size(min = 10, max = 16, message = "Kod zespołu musi mieć od 10 do 16 znaków")
+    @Size(min = 6, max = 32, message = "Kod zespołu musi mieć od 6 do 32 znaków")
     private String teamCode;
 }

@@ -38,18 +38,16 @@ public class TeamMember extends AbstractAuditableEntity {
             name = "team_member_roles",
             joinColumns = @JoinColumn(name = "team_member_id")
     )
-    @Column(name = "role")
+    @Column(name = "role", length = 128)
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Set<TeamRole> roles = new HashSet<>();
 
-    // ZMIANA: Zamiast boolean isActive -> Status
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default
     private TeamMemberStatus status = TeamMemberStatus.WAITING_FOR_VERIFICATION;
 
-    // Helper methods (Logic)
     public boolean isCaptain() {
         return roles.contains(TeamRole.ROLE_TEAM_CAPTAIN);
     }

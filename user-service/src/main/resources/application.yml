@@ -12,6 +12,25 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
 
 spring:
+  rabbitmq:
+    host: ${RABBIT_CONTAINER:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
+    listener:
+      simple:
+        # Automatic acknowledgment mode
+        acknowledge-mode: auto
+        # Number of concurrent consumers
+        concurrency: 1
+        max-concurrency: 5
+        # Retry configuration
+        retry:
+          enabled: true
+          initial-interval: 3000  # 3 seconds
+          max-attempts: 3
+          max-interval: 10000     # 10 seconds
+          multiplier: 2.0
   application:
     name: ${USER_SERVICE_NAME:user-service}
   autoconfigure:

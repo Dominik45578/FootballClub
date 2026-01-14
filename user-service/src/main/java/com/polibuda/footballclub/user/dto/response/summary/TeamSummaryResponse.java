@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,4 +21,5 @@ public class TeamSummaryResponse implements AbstractSummaryResponse {
     private TeamCategory category;
     private TeamStatus status;
     private Integer numberOfMembers; // Opcjonalnie: licznik graczy
+    private Instant createdAt;
 }

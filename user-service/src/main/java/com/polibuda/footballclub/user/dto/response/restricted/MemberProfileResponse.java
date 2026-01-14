@@ -22,6 +22,7 @@ public class MemberProfileResponse {
     private String maskedPesel; 
     
     private LocalDate birthDate;
+    private Instant joinDate;
     private String phoneNumber;
     private Double height;
     private Double weight;

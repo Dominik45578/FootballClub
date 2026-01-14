@@ -12,7 +12,7 @@ import java.util.Set;
 @Builder
 public class UpdateTeamMemberRequestDTO {
 
-    private long  teamMemberId;
+    private long teamMemberId;
 
     private Set<TeamRole> newRoles;
     private Set<TeamRole> removedRoles;
