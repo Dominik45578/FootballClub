@@ -1,5 +1,4 @@
-import { authHeader, logout, OFFLINE } from './auth'
-import { setToken, setUserId } from './auth'
+import { authHeader, logout, OFFLINE, refreshAuth, setToken, setUserId } from './auth'
 // Centralny klient API z trybem OFFLINE (mocki)
 const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
@@ -106,7 +105,13 @@ async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
     err.status = res.status
     throw err
   }
-  return res.status === 204 ? null : res.json()
+
+  // Bezpieczne parsowanie - jeśli brak treści lub nie-json, zwracamy null
+  const contentType = res.headers.get('content-type') || ''
+  const contentLength = res.headers.get('content-length')
+  const hasBody = (contentLength && Number(contentLength) > 0) || contentType.includes('application/json')
+  if (res.status === 204 || !hasBody) return null
+  return res.json()
 }
 
 export type MemberStatus = 'guest' | 'pending' | 'member'
@@ -153,14 +158,28 @@ export async function ensureMemberStatus(): Promise<MemberStatus> {
   }
 }
 
-export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string }) {
+export async function applyForMembership(payload: { firstName?: string; lastName?: string; phone?: string; position?: string; note?: string; pesel?: string; birthDate?: string; height?: number; weight?: number }) {
   if (OFFLINE) {
     writeMemberStatus('pending')
     return Promise.resolve({ status: 'pending', submitted: payload })
   }
-  const res = await fetchJson(`${USER_BASE}/members/apply`, { method: 'POST', body: JSON.stringify(payload) })
-  writeMemberStatus('pending')
-  return res ?? { status: 'pending' }
+
+  // Mapuj pola z prostego formularza do NewMemberRequestDTO oczekiwanego przez backend
+  const body: any = {
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    pesel: payload.pesel,
+    birthDate: payload.birthDate ?? null,
+    phoneNumber: payload.phone,
+    height: payload.height,
+    weight: payload.weight,
+  }
+
+  // Użyj istniejącej funkcji addMember (która robi PUT /user/members/join)
+  const res = await addMember(body)
+  if (res === true) writeMemberStatus('member')
+  else writeMemberStatus('pending')
+  return res
 }
 
 export async function apiLogout(): Promise<void> {
@@ -216,7 +235,10 @@ export async function createTeam(payload: { name: string; code?: string; city?: 
     mockTeams.push(newTeam)
     return Promise.resolve(newTeam)
   }
-  return fetchJson(`${USER_BASE}/teams`, { method: 'POST', body: JSON.stringify(payload) })
+  // Backend exposes PUT /user/teams/new which returns 200/400 (no body)
+  await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(payload) })
+  // If no exception thrown — success
+  return true
 }
 
 export async function joinTeam(teamCode: string, opts?: { allowUnauth?: boolean }): Promise<void> {
@@ -225,6 +247,13 @@ export async function joinTeam(teamCode: string, opts?: { allowUnauth?: boolean 
     return Promise.resolve()
   }
   await fetchJson(`${USER_BASE}/team-management/join`, { method: 'POST', body: JSON.stringify({ teamCode }), dontRedirectOnAuthError: opts?.allowUnauth })
+  // Po dołączeniu do zespołu token może wymagać odświeżenia (np. nowe role/claims) — wywołaj endpoint refresh
+  try {
+    await refreshAuth().catch(() => {})
+  } catch (e) {
+    // Nie blokujemy flowu, jeśli odświeżenie nie powiedzie się
+    console.warn('Token refresh failed after joinTeam', e)
+  }
 }
 
 // Dodaje nowego członka/zgłoszenie członka — zgodne z NewMemberRequestDTO na backendzie (PUT /user/members/join)
@@ -238,6 +267,14 @@ export async function addMember(payload: { firstName: string; lastName: string; 
   // jeśli backend zwróciło boolean true i to oznacza, że zostało dodane/poprawnie wysłane
   if (res === true) writeMemberStatus('member')
   else if (res === false) writeMemberStatus('pending')
+  // Po zostaniu memberem — odśwież token (może dodać role/claimy)
+  if (res === true) {
+    try {
+      await refreshAuth().catch(() => {})
+    } catch (e) {
+      console.warn('Token refresh failed after addMember', e)
+    }
+  }
   return res
 }
 
@@ -329,3 +366,10 @@ export async function setNewPassword(payload: NewPasswordPayload): Promise<NewPa
   if (OFFLINE) return Promise.resolve({ status: true, message: 'Hasło zmienione (mock)' })
   return fetchJson(`${PASSWORD_BASE}/new-password`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<NewPasswordResponse>
 }
+
+// Zapobiegaj ostrzeżeniom TS o nieużywanych eksportach (dev/build), bez efektu ubocznego w runtime
+;(function _keepUserApiExportsAlive() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _refs = [applyForMembership, getMemberProfile, login, refreshToken]
+  void _refs
+})()
