@@ -235,7 +235,10 @@ export async function createTeam(payload: { name: string; code?: string; city?: 
     mockTeams.push(newTeam)
     return Promise.resolve(newTeam)
   }
-  return fetchJson(`${USER_BASE}/teams`, { method: 'POST', body: JSON.stringify(payload) })
+  // Backend exposes PUT /user/teams/new which returns 200/400 (no body)
+  await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(payload) })
+  // If no exception thrown — success
+  return true
 }
 
 export async function joinTeam(teamCode: string, opts?: { allowUnauth?: boolean }): Promise<void> {

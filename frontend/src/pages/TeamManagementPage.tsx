@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam } from '@/lib/userApi'
+import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams } from '@/lib/userApi'
 import { OFFLINE } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -472,12 +472,32 @@ export function TeamManagementPage() {
                                 <div className="flex gap-2">
                                     <Button onClick={async () => {
                                         try {
-                                            const res: any = await createTeam({ name: createForm.name, code: createForm.code || undefined, city: createForm.city || undefined, founded: createForm.founded, status: createForm.status, category: createForm.category || undefined })
-                                            // Przy mocku może to być TeamSummary lub pełniejsze dane
-                                            const newTeam = { id: (res.id ?? res.teamId ?? teamForm.id), name: (res.name ?? res.teamName ?? createForm.name), code: createForm.code, city: createForm.city, founded: createForm.founded, status: createForm.status, category: createForm.category }
-                                            setTeamForm(newTeam)
-                                            toast.success('Utworzono zespół')
-                                            setTab('team')
+                                            const res: any = await createTeam({ name: createForm.name, code: createForm.code || undefined, city: createForm.city || undefined, founded: createForm.founded, status: createForm.status, category: createForm.category })
+                                            // Backend zwraca boolean true przy sukcesie (no body). Obsłuż oba przypadki.
+                                            if (res === true) {
+                                                const newTeam = { id: teamForm.id ?? 0, name: createForm.name, code: createForm.code, city: createForm.city, founded: createForm.founded, status: createForm.status, category: createForm.category }
+                                                setTeamForm(newTeam)
+                                                toast.success('Utworzono zespół')
+                                                // Auto-refresh: pobierz listę moich zespołów i spróbuj znaleźć nowo utworzony obiekt aby uzyskać prawdziwe ID
+                                                try {
+                                                    const list = await getTeams({ mode: 'MY_TEAMS', page: 0, size: 20 })
+                                                    const found = list.items.find((t: any) => (t.teamName ?? t.name) === createForm.name || (t.code ?? t.code) === createForm.code)
+                                                    if (found) {
+                                                        const foundId = found.teamId ?? (found as any).id ?? (found as any).teamId
+                                                        setTeamForm((t) => ({ ...t, id: foundId }))
+                                                    }
+                                                } catch (e) {
+                                                    // ignore refresh errors
+                                                    console.warn('Auto-refresh getTeams failed', e)
+                                                }
+                                                setTab('team')
+                                            } else {
+                                                // Gdy backend zwróci obiekt (future-proof)
+                                                const newTeam = { id: (res?.id ?? res?.teamId ?? teamForm.id), name: (res?.name ?? res?.teamName ?? createForm.name), code: createForm.code, city: createForm.city, founded: createForm.founded, status: createForm.status, category: createForm.category }
+                                                setTeamForm(newTeam)
+                                                toast.success('Utworzono zespół')
+                                                setTab('team')
+                                            }
                                         } catch (err: any) {
                                             toast.error('Nie udało się utworzyć zespołu', { description: err?.message })
                                         }
