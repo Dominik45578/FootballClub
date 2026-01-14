@@ -107,14 +107,21 @@ export function MemberApplyPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground">Data urodzenia</label>
-                                <DateInput value={birthDate || null} onChange={(v) => setBirthDate(v ?? '')} required id="birthDate" placeholder="Wybierz datę" />
+                                <DateInput
+                                    value={birthDate || null}
+                                    onChange={(v) => setBirthDate(v ?? '')}
+                                    required
+                                    id="birthDate"
+                                    placeholder="Wybierz datę"
+                                    inputClassName="mt-1 block w-full rounded-md border border-border shadow-sm p-2"
+                                />
                                 {errors.birthDate && <p className="text-xs text-destructive mt-1">{errors.birthDate}</p>}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-muted-foreground">Telefon (opcjonalnie)</label>
+                                <label className="block text-sm font-medium text-muted-foreground">Telefon</label>
                                 <input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+48123456789" className="mt-1 block w-full rounded-md border border-border shadow-sm p-2" />
                             </div>
                             <div>

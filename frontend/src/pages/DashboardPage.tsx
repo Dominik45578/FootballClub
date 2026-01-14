@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { UserPlus, Users, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { OFFLINE } from '@/lib/auth'
+import { OFFLINE, getUserRoles, hasRole } from '@/lib/auth'
 import { apiLogout, getMemberStatus, type MemberStatus, ensureMemberStatus } from '@/lib/userApi'
 import { useEffect, useState } from 'react'
 
@@ -27,7 +27,22 @@ export function DashboardPage() {
     const status: MemberStatus = getMemberStatus()
     const showApply = !OFFLINE && status === 'guest'
     const showPending = !OFFLINE && status === 'pending'
-    const canManageTeam = OFFLINE
+
+    // Only allow team management for admin or any coach role (e.g. ROLE_TEAM_HEAD_COACH, ROLE_TEAM_ASSISTANT_COACH)
+    const userCanManageTeam = () => {
+        if (OFFLINE) return true
+        try {
+            // Quick check for explicit ADMIN
+            if (hasRole('ADMIN')) return true
+            const roles = getUserRoles()
+            // allow any role that contains 'COACH' (normalized roles use ROLE_ prefix, e.g. ROLE_TEAM_HEAD_COACH)
+            if (roles.some(r => r.toUpperCase().includes('COACH'))) return true
+        } catch (e) {
+            // if anything goes wrong, default to not allowing management
+        }
+        return false
+    }
+    const canManageTeam = userCanManageTeam()
 
     const handleProfile = async () => {
         try {
@@ -43,7 +58,7 @@ export function DashboardPage() {
     }
 
     const handleTeamManagement = () => {
-        if (!canManageTeam) {
+        if (!userCanManageTeam()) {
             toast.error('Brak uprawnień do zarządzania zespołem')
             return
         }

@@ -9,6 +9,8 @@ type Props = {
   id?: string
   placeholder?: string
   required?: boolean
+  // optional className forwarded to the internal input to allow matching styles
+  inputClassName?: string
 }
 
 function pad(n: number) { return n < 10 ? `0${n}` : `${n}` }
@@ -16,7 +18,7 @@ function toISO(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pa
 function startOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth(), 1) }
 function endOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth()+1, 0) }
 
-export default function DateInput({ value, onChange, id, placeholder, required }: Props) {
+export default function DateInput({ value, onChange, id, placeholder, required, inputClassName }: Props) {
   const [open, setOpen] = useState(false)
   const [internal, setInternal] = useState<string | null>(value ?? null)
   const [viewMonth, setViewMonth] = useState<Date>(() => internal ? new Date(internal) : new Date())
@@ -313,7 +315,8 @@ export default function DateInput({ value, onChange, id, placeholder, required }
         onPointerDown={(e) => { e.stopPropagation(); suppressCloseRef.current = Date.now() + 250; setOpen(true) }}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="w-full px-3 py-2 text-sm rounded-md border border-border focus:ring-1 focus:ring-accent focus:outline-none"
+        // allow callers to override / extend input classes to match surrounding inputs
+        className={`${"w-full px-3 py-2 text-sm rounded-md border border-border focus:ring-1 focus:ring-accent focus:outline-none"} ${inputClassName ?? ''}`}
         style={{ color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
         ref={inputRef}
       />

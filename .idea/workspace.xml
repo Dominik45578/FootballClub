@@ -4,11 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Sending password reset mail works">
-      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Improve frontend role handling">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/favicon.png" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/public/favicon.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/input.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/input.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/select.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/select.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/src/main/java/com/polibuda/footballclub/gateway/config/CorsGlobalConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/src/main/java/com/polibuda/footballclub/gateway/config/CorsGlobalConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -230,7 +238,7 @@
       </set>
     </option>
   </component>
-  <component name="RunManager" selected="Docker.Docker_standalone">
+  <component name="RunManager" selected="Docker.Docker">
     <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" runType="Run single request">
       <method v="2" />
     </configuration>
@@ -544,7 +552,8 @@
     <MESSAGE value="Login with backend works" />
     <MESSAGE value="Implement logout functionality and enhance member status handling" />
     <MESSAGE value="Sending password reset mail works" />
-    <option name="LAST_COMMIT_MESSAGE" value="Sending password reset mail works" />
+    <MESSAGE value="Improve frontend role handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improve frontend role handling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

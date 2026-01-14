@@ -228,16 +228,20 @@ export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
 }
 
 // Tworzy nowy zespół (POST /user/teams)
-export async function createTeam(payload: { name: string; code?: string; city?: string; founded?: number; status?: string; category?: string }) {
+export async function createTeam(payload: { name: string; code?: string; status?: string; category?: string; description?: string }) {
   if (OFFLINE) {
     const nextId = (mockTeams.length ? Math.max(...mockTeams.map(t => t.teamId)) : 0) + 1
     const newTeam: TeamSummary = { teamId: nextId, teamName: payload.name, category: payload.category, myStatus: 'MEMBER', numberOfMembers: 1 }
+    // attach description on mock as optional property (not part of TeamSummary type).
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    newTeam.description = payload.description
     mockTeams.push(newTeam)
     return Promise.resolve(newTeam)
   }
-  // Backend exposes PUT /user/teams/new which returns 200/400 (no body)
-  await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(payload) })
-  // If no exception thrown — success
+  // Backend expects PUT /user/teams/new with AddTeamRequest
+  const body = { name: payload.name, category: payload.category, code: payload.code, description: payload.description }
+  await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(body) })
   return true
 }
 

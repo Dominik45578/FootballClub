@@ -39,6 +39,12 @@ public class CorsGlobalConfig {
         ));
 
 
+        // 4. Nagłówki, które frontend może odczytać z odpowiedzi (Stałe z Twojej klasy)
+        // Np. po zalogowaniu może chcieć odczytać ID użytkownika (opcjonalne)
+        cors.setExposedHeaders(List.of(
+                MutationHeaderClaims.X_USER_ID, MutationHeaderClaims.X_EMAIL , HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
+                HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS
+        ));
 
         cors.setAllowCredentials(true);
         cors.setMaxAge(3600L);
