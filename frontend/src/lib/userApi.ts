@@ -10,6 +10,15 @@ const AUTH_BASE = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/auth`
 const PASSWORD_BASE = `${AUTH_BASE}/password`
 const LOGOUT_URL = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/logout`
 
+// Debug: wypisz skonfigurowane URL-e, przy imporcie modułu (pomaga zweryfikować czy frontend używa właściwego API_PREFIX/AUTH_URL)
+if (typeof window !== 'undefined') {
+  try {
+    console.info('[userApi] resolved endpoints', { AUTH_URL, API_PREFIX, USER_BASE, AUTH_BASE, LOGOUT_URL })
+  } catch (e) {
+    // noop
+  }
+}
+
 export type RegisterPayload = { username: string; password: string; email: string }
 export type RegisterResponse = { success: boolean; message?: string; timestamp?: string }
 
@@ -267,7 +276,168 @@ export async function addMember(payload: { firstName: string; lastName: string; 
     writeMemberStatus('pending')
     return Promise.resolve(true)
   }
-  const res = await fetchJson(`${USER_BASE}/members/join`, { method: 'PUT', body: JSON.stringify(payload) })
+  // Pozwól nieautoryzowanym użytkownikom wysyłać wniosek o członkostwo (backend przyjmuje również anonimowe zgłoszenia)
+  // skipAuthHeader: true - nie dołączamy nagłówka Authorization
+  // dontRedirectOnAuthError: true - nie wymuszamy przekierowania przy 401/403
+  // Ustaw redirect: 'manual' aby przeglądarka nie podążała za ewentualnym przekierowaniem do /auth/login
+  // (które powoduje 405 przy PUT). Pozwoli to frontendowi wykryć konieczność logowania.
+
+  // Wykonaj fetch ręcznie z redirect: 'manual', aby przechwycić ewentualne przekierowania do /auth/login
+  // Jeśli AUTH_URL wskazuje inny origin niż bieżący (np. gateway w innym hoście),
+  // to fetch będzie cross-origin i może powodować CORS errors podczas developmentu.
+  // W takim wypadku użyj relatywnego prefiksu API (API_PREFIX, np. '/api') aby Vite proxy przechwyciło żądanie.
+  let url = `${USER_BASE}/members/join`
+  try {
+    if (typeof window !== 'undefined' && AUTH_URL) {
+      const authOrigin = new URL(AUTH_URL, window.location.href).origin
+      const appOrigin = window.location.origin
+      // jeśli originy różne i proxy nie wyłączone, korzystaj z relatywnego endpointu
+      if (authOrigin && authOrigin !== appOrigin && (import.meta.env.VITE_DISABLE_PROXY !== 'true')) {
+        url = `${API_PREFIX}/user/members/join`
+      }
+    }
+  } catch (e) {
+    // jeśli analiza URL się nie powiedzie, zachowaj domyślny USER_BASE
+  }
+
+  const init: RequestInit = {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    redirect: 'manual' as RequestRedirect,
+  }
+
+  // Do not attach Authorization header here (skipAuthHeader behavior)
+  // Try multiple candidate URLs in case dev proxy isn't active or AUTH_URL differs.
+  const candidates: string[] = []
+  // push normalized order: current computed url first
+  candidates.push(url)
+  // ensure relative API path is attempted
+  const rel = `${API_PREFIX}/user/members/join`
+  if (!candidates.includes(rel)) candidates.push(rel)
+  // push explicit USER_BASE path
+  const userBaseCandidate = `${AUTH_URL}${USE_GATEWAY_PREFIX ? API_PREFIX : ''}/user/members/join`
+  if (!candidates.includes(userBaseCandidate)) candidates.push(userBaseCandidate)
+  // also try AUTH_URL + /user/members/join without prefix
+  const altAuth = `${AUTH_URL}/user/members/join`
+  if (!candidates.includes(altAuth)) candidates.push(altAuth)
+
+  let raw: Response | null = null
+  const attemptLogs: Array<{ url: string; ok?: boolean; status?: number; error?: any }> = []
+  let lastErr: any = null
+  let usedUrl: string | null = null
+  for (const candidate of candidates) {
+    try {
+      // Log request details before sending (method, headers, body)
+      try {
+        const bodyPreview = typeof init.body === 'string' ? init.body : JSON.stringify(init.body)
+        console.log('[userApi.addMember] attempting fetch', { candidate, method: init.method, headers: init.headers, body: bodyPreview })
+      } catch (e) {
+        console.log('[userApi.addMember] attempting fetch', candidate)
+      }
+
+      raw = await fetch(candidate, init)
+      usedUrl = candidate
+      attemptLogs.push({ url: candidate, ok: raw.ok, status: raw.status })
+      // break on any response (we'll handle status below)
+      break
+    } catch (fetchErr) {
+      const ferr: any = fetchErr
+      console.warn('[userApi.addMember] fetch attempt failed', { candidate, message: ferr?.message ?? String(ferr) })
+      attemptLogs.push({ url: candidate, error: ferr })
+      lastErr = ferr
+      // try next candidate
+    }
+  }
+
+  if (!raw) {
+    console.error('[userApi.addMember] all fetch attempts failed', attemptLogs)
+    // Diagnostic: try one more time without credentials (omit cookies) to see if CORS/credentials cause failure
+    try {
+      const initNoCred = { ...init, credentials: 'omit' as RequestCredentials }
+      console.log('[userApi.addMember] diagnostic retry without credentials to', rel)
+      const diagRes = await fetch(rel, initNoCred)
+      console.log('[userApi.addMember] diagnostic response', { ok: diagRes.ok, status: diagRes.status })
+      // if diagnostic returned something, set raw so we can handle it below
+      raw = diagRes
+      usedUrl = rel
+      attemptLogs.push({ url: rel + ' (no-credentials)', ok: diagRes.ok, status: diagRes.status })
+    } catch (diagErr) {
+      console.warn('[userApi.addMember] diagnostic retry without credentials failed', diagErr)
+      attemptLogs.push({ url: rel + ' (no-credentials)', error: diagErr })
+    }
+    const err: any = new Error('Network or CORS error (all attempts failed)')
+    err.status = 0
+    err.attempts = attemptLogs
+    err.original = lastErr
+    if (!raw) throw err
+  }
+
+  // If backend responds with 405 Method Not Allowed, try POST as a fallback (some deployments proxy/expect POST)
+  if (raw.status === 405) {
+    try {
+      console.warn('[userApi.addMember] received 405, retrying with POST')
+      const initPost = { ...init, method: 'POST' as RequestInit['method'] }
+      try {
+        // retry against the same URL that returned 405 (usedUrl) or fall back to original url
+        const retryTarget = usedUrl || url
+        console.log('[userApi.addMember] retrying POST to', retryTarget, { method: initPost.method, headers: initPost.headers })
+        raw = await fetch(retryTarget, initPost)
+      } catch (fetchErr) {
+        console.error('[userApi.addMember] retry fetch failed', fetchErr)
+        const ferr: any = fetchErr
+        const err: any = new Error(ferr?.message || 'Network or CORS error on retry')
+        err.status = 0
+        err.original = ferr
+        throw err
+      }
+    } catch (e) {
+      console.warn('[userApi.addMember] retry with POST failed', e)
+    }
+  }
+
+  // debug logging to help diagnose why server responds unexpectedly
+  try {
+    const locationHeader = raw.headers.get('location')
+    // Use the actual URL we sent the request to (usedUrl) for clearer debug
+    const debugUrl = usedUrl || url
+    console.log('[userApi.addMember] request', { url: debugUrl, method: init.method, headers: init.headers, body: init.body })
+    console.log('[userApi.addMember] response status', raw.status, 'location:', locationHeader)
+    // try to read response text safely for logging
+    const clone = raw.clone()
+    const text = await clone.text().catch(() => '')
+    if (text) console.debug('[userApi.addMember] response body:', text)
+  } catch (logErr) {
+    // ignore logging errors
+    console.warn('[userApi.addMember] logging failed', logErr)
+  }
+
+  // Jeśli serwer zwróciło redirect (3xx), prawdopodobnie kieruje do /auth/login
+  if (raw.status >= 300 && raw.status < 400) {
+    const location = raw.headers.get('location') || ''
+    const err: any = new Error(location.includes('/auth') || location.includes('/login') ? 'Wymagane zalogowanie' : `Unexpected redirect (${raw.status})`)
+    err.status = raw.status
+    err.location = location
+    throw err
+  }
+
+  if (!raw.ok) {
+    const text = await raw.text().catch(() => '')
+    // log the body text for debugging
+    console.error('[userApi.addMember] non-ok response', { status: raw.status, body: text })
+    const message = text || raw.statusText
+    const err: any = new Error(message)
+    err.status = raw.status
+    err.responseText = text
+    throw err
+  }
+
+  // Parsuj odpowiedź (JSON) - jeśli brak body zwróć null
+  const contentType = raw.headers.get('content-type') || ''
+  const hasJson = contentType.includes('application/json')
+  const res = (raw.status === 204 || !hasJson) ? null : await raw.json()
+
   // jeśli backend zwróciło boolean true i to oznacza, że zostało dodane/poprawnie wysłane
   if (res === true) writeMemberStatus('member')
   else if (res === false) writeMemberStatus('pending')

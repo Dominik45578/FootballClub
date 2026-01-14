@@ -64,8 +64,25 @@ export function MemberApplyPage() {
             toast.success('Wniosek wysłany')
             navigate('/dashboard')
         } catch (err: any) {
-            const msg = err?.message || 'Nie udało się wysłać wniosku'
-            toast.error('Błąd', { description: msg })
+            // Lepsza obsługa błędów związanych z autoryzacją / przekierowaniem
+            console.error('addMember error:', err)
+            const status = err?.status
+            const location = err?.location || ''
+            const rawMessage = err?.message || ''
+            // Network/CORS/fetch failure -> status 0
+            if (status === 0) {
+                const detail = err?.original?.message || err?.responseText || err?.message || ''
+                toast.error('Błąd połączenia', { description: `Nie można połączyć się z serwerem — możliwy problem sieciowy lub CORS. ${detail ? `Szczegóły: ${detail}` : 'Sprawdź konsolę (userApi.addMember) i czy backend jest uruchomiony.'}` })
+                return
+            }
+            if ((status >= 300 && status < 400 && location) || status === 401 || status === 403 || (status === 405 && typeof rawMessage === 'string' && rawMessage.includes('/auth')) ) {
+                toast.error('Wymagane zalogowanie', { description: 'Aby złożyć wniosek o członkostwo, zaloguj się.' })
+                navigate('/login')
+            } else {
+                const msg = rawMessage || 'Nie udało się wysłać wniosku'
+                // pokażemy więcej informacji w toście, by ułatwić debugowanie
+                toast.error('Błąd', { description: `(${status ?? '??'}) ${msg}` })
+            }
         } finally {
             setSubmitting(false)
         }
