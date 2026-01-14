@@ -4,9 +4,11 @@ import { StartPage } from './pages/StartPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { Toaster } from '@/components/ui/sonner'
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { toast } from 'sonner'
 import ActivateAccountPage from './pages/ActivateAccountPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import { getMemberStatus, type MemberStatus, ensureMemberStatus } from './lib/userApi'
+import { hasOnlyRoleUser } from './lib/auth'
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
 const TeamSearchPage = lazy(() => import('./pages/TeamSearchPage').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
@@ -30,6 +32,18 @@ const ProfileRoute = ({ children }: { children: React.ReactElement }) => {
     useEffect(() => {
         ensureMemberStatus().then(setStatus).catch(() => setStatus(getMemberStatus()))
     }, [])
+
+    // Jeśli frontend wykryje, że użytkownik ma tylko rolę USER -> pokaż toast i pozostaw użytkownika na tej samej stronie (UX-only)
+    useEffect(() => {
+        if (hasOnlyRoleUser()) {
+            toast.error('Niewystarczające uprawnienia')
+        }
+    // uruchom tylko raz przy montowaniu
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    // renderuj normalnie — backend powinien ostatecznie zweryfikować dostęp
+
     return status === 'member' ? <Navigate to="/member-profile" replace /> : children
 }
 

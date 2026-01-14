@@ -1,5 +1,4 @@
-// Prostý mock auth dla deva.
-const OFFLINE = import.meta.env.VITE_OFFLINE === 'true'
+export const OFFLINE = import.meta.env.VITE_OFFLINE === 'true'
 const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
 // Prefiks API do gateway (np. /api); dla bezpośredniego połączenia z identity zostanie pominięty
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
@@ -40,6 +39,30 @@ function clearProdAuth() {
   localStorage.removeItem(USER_ID_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
   clearCookieToken()
+}
+
+function fetchJson(url: string, opts: RequestInit & { dontRedirectOnAuthError?: boolean; skipAuthHeader?: boolean } = {}) {
+  const { dontRedirectOnAuthError, skipAuthHeader, ...rest } = opts as any
+  const auth = skipAuthHeader ? {} : authHeader()
+  const headers = { ...(rest.headers || {}), ...auth, 'Content-Type': 'application/json' }
+  return fetch(url, { ...rest, headers, credentials: 'include' }).then(async (res) => {
+    if (!res.ok) {
+      if ((res.status === 401 || res.status === 403) && !dontRedirectOnAuthError) {
+        // przy problemach z autoryzacją - wyczyść auth po stronie klienta
+        try { clearProdAuth() } catch { }
+      }
+      const text = await res.text().catch(() => '')
+      const message = text || res.statusText
+      const err: any = new Error(message)
+      err.status = res.status
+      throw err
+    }
+    const contentType = res.headers.get('content-type') || ''
+    const contentLength = res.headers.get('content-length')
+    const hasBody = (contentLength && Number(contentLength) > 0) || contentType.includes('application/json')
+    if (res.status === 204 || !hasBody) return null
+    return res.json()
+  })
 }
 
 export async function login(email?: string, password?: string): Promise<{ success: boolean; token?: string; refreshToken?: string; userId?: number; message?: string }> {
@@ -142,71 +165,108 @@ export function getUserId(): number | null {
   return null
 }
 
+// --- NEW: role helpers for UI (UX-only) ---
+export function getUserRoles(): string[] {
+  if (OFFLINE) return []
+  const token = getToken()
+  const payload = parseJwtPayload(token)
+  if (!payload) return []
+  // możliwe klucze: roles (array), authorities, role
+  let rolesRaw: any = payload.roles ?? payload.authorities ?? payload.authority ?? payload.role ?? null
+  if (!rolesRaw) return []
+  let roles: string[] = []
+  if (Array.isArray(rolesRaw)) {
+    roles = rolesRaw.map((r) => String(r))
+  } else if (typeof rolesRaw === 'string') {
+    // może być 'ROLE_USER' lub 'ROLE_USER ROLE_OTHER' lub CSV
+    roles = rolesRaw.split(/[ ,]+/).filter(Boolean)
+  } else {
+    try {
+      roles = JSON.parse(String(rolesRaw))
+      if (!Array.isArray(roles)) roles = [String(rolesRaw)]
+    } catch {
+      roles = [String(rolesRaw)]
+    }
+  }
+  // Normalizacja: dodaj prefix ROLE_ jeśli go brakuje
+  roles = roles.map((r) => (r.startsWith('ROLE_') ? r : `ROLE_${r}`))
+  return roles
+}
+
+export function hasRole(roleName: string): boolean {
+  const roles = getUserRoles()
+  const normalized = roleName.startsWith('ROLE_') ? roleName : `ROLE_${roleName}`
+  return roles.some((r) => r === normalized)
+}
+
+export function hasOnlyRoleUser(): boolean {
+  const roles = getUserRoles()
+  if (roles.length === 0) return true // brak tokena traktujemy jako nieuprzywilejowany
+  if (roles.length === 1) {
+    const r = roles[0]
+    return r === 'ROLE_USER' || r === 'USER'
+  }
+  return false
+}
+
 export function authHeader(): Record<string, string> {
   const headers: Record<string, string> = {}
   const token = getToken()
-  if (token) headers['Authorization'] = `Bearer ${token}`
-  const uid = getUserId()
-  if (uid) headers['X-User-Id'] = String(uid)
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
   return headers
 }
 
+// --- helpers/exports missing earlier ---
 export function setToken(token: string) {
   if (OFFLINE) {
-    localStorage.setItem(DEV_TOKEN_KEY, token)
-  } else {
-    setProdAuth(token)
+    // keep dev token in dev storage
+    const userId = Number(localStorage.getItem(DEV_USER_ID_KEY) ?? 1)
+    setDevAuth(token, userId)
+    return
   }
+  setProdAuth(token)
 }
 
-export function setUserId(userId: number) {
+export function setUserId(id: number) {
   if (OFFLINE) {
-    localStorage.setItem(DEV_USER_ID_KEY, String(userId))
-  } else {
-    localStorage.setItem(USER_ID_KEY, String(userId))
+    localStorage.setItem(DEV_USER_ID_KEY, String(id))
+    return
   }
-}
-
-export function setRefreshToken(refreshToken: string) {
-  if (OFFLINE) return
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  localStorage.setItem(USER_ID_KEY, String(id))
 }
 
 export function getRefreshToken(): string | null {
-  if (OFFLINE) return null
   return localStorage.getItem(REFRESH_TOKEN_KEY)
 }
 
-export function clearRefreshToken() {
-  if (OFFLINE) return
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
+export function setRefreshToken(token?: string) {
+  if (!token) return
+  localStorage.setItem(REFRESH_TOKEN_KEY, token)
 }
-
-export { OFFLINE }
 
 function setCookieToken(token: string) {
-  document.cookie = `${COOKIE_TOKEN_KEY}=${token}; path=/; SameSite=Lax`
-}
-
-function clearCookieToken() {
-  document.cookie = `${COOKIE_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`
+  try {
+    if (typeof document === 'undefined') return
+    // ustaw cookie na 1 dzień
+    const maxAge = 24 * 60 * 60
+    document.cookie = `${COOKIE_TOKEN_KEY}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`
+  } catch { /* ignore */ }
 }
 
 function readCookieToken(): string | null {
-  const cookies = document.cookie?.split(';') ?? []
-  for (const c of cookies) {
-    const [k, v] = c.trim().split('=')
-    if (k === COOKIE_TOKEN_KEY) return v || null
-  }
-  return null
+  try {
+    if (typeof document === 'undefined') return null
+    const v = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE_TOKEN_KEY}=`))
+    if (!v) return null
+    return decodeURIComponent(v.split('=')[1] || '')
+  } catch { return null }
 }
 
-async function fetchJson(url: string, opts: RequestInit = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) }
-  const res = await fetch(url, { ...opts, headers, credentials: 'include' })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(text || res.statusText)
-  }
-  return res.status === 204 ? null : res.json()
+function clearCookieToken() {
+  try {
+    if (typeof document === 'undefined') return
+    document.cookie = `${COOKIE_TOKEN_KEY}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`
+  } catch { /* ignore */ }
 }
