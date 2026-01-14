@@ -24,8 +24,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("SELECT DISTINCT t FROM Team t JOIN t.members tm WHERE tm.member.userId = :userId")
     Page<Team> findTeamsByMemberUserId(@Param("userId") Long userId, Pageable pageable);
 
-    // 3. Pobranie konkretnego z dociągnięciem członków (optymalizacja N+1)
-    @EntityGraph(attributePaths = {"members", "members.member"})
+    @EntityGraph(attributePaths = {"members", "members.member", "members.roles"})
     Optional<Team> findById(Long id);
 
     boolean existsTeamsByName(@NotBlank(message = "Nazwa teamu jest wymagana") String name);

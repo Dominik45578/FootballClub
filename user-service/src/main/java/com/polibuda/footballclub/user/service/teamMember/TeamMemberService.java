@@ -2,6 +2,7 @@ package com.polibuda.footballclub.user.service.teamMember;
 
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
+import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
@@ -50,4 +51,5 @@ public interface TeamMemberService {
      * @param request Obiekt zawierający ID kandydata (znalezionego wcześniej w searchMembers)
      */
     void addMemberManually(Long requesterUserId, Long teamId, ManualAddMemberRequest request);
+    void updateTeamMember(ManageTeamMemberRequest request, Long requesterUserId);
 }

@@ -71,7 +71,8 @@ public class RedisServiceImpl implements RedisService {
     public void unblockUser(Long userId) {
         synchronized (this) {
             if(sessionsRepository.findByUserId(userId).isPresent()){
-                sessionsRepository.deleteByUserId(userId);
+               BlockedUser bu =  sessionsRepository.findByUserId(userId).orElseThrow(()->new RuntimeException("User not found"));
+                sessionsRepository.delete(bu);
             }
         }
     }

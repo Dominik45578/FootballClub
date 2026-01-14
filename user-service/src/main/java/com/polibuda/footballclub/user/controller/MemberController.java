@@ -55,7 +55,7 @@ public class MemberController {
         return memberService.addMember(request,userId);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/del")
     public ResponseEntity<Boolean> deleteMember(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
     ){

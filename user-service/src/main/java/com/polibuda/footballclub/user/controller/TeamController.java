@@ -59,6 +59,7 @@ public class TeamController {
         TeamDetailsResponse teamDetails = teamService.getTeamDetails(teamId);
         return teamDetails == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(teamDetails);
     }
+
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @DeleteMapping("/del/{teamId}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId
@@ -70,8 +71,9 @@ public class TeamController {
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @PutMapping("/new")
     public ResponseEntity<Void> addTeam(
-                                        @RequestBody AddTeamRequest request) {
-        return teamService.addTeam(request) ?  ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+                                        @RequestBody AddTeamRequest request
+                                          , @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId  ) {
+        return teamService.addTeam(request, userId) ?  ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")

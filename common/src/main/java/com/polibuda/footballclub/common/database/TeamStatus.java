@@ -6,5 +6,6 @@ import lombok.ToString;
 public enum TeamStatus {
     ACTIVE,
     ARCHIVED,
-    SUSPENDED // opcjonalnie, na przyszłość`
+    SUSPENDED, // opcjonalnie, na przyszłość`
+    CREATED
 }

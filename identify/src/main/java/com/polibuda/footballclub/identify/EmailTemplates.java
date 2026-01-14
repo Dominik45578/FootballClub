@@ -38,20 +38,24 @@ public class EmailTemplates {
 
 
     public static String generateAccountUnlockedEmail(String username) {
-        String title = "Twoje konto zostało zablokowane";
+        String title = "Twoje konto zostało odblokowane";
         String content = """
             <p>Cześć <strong>{{USERNAME}}</strong>,</p>
-            <div style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 20px; border-radius: 5px; margin: 25px 0; text-align: center;">
-                <span style="font-size: 40px;">&#128683;</span>
-                <h3 style="margin: 10px 0;">Dostęp odblokowany</h3>
-                <p style="color: #721c24;">
-                    Twoje konto zostało odblokowane przez administratora
+            <div style="border: 1px solid #c3e6cb; background-color: #d4edda; color: #155724; padding: 20px; border-radius: 5px; margin: 25px 0; text-align: center;">
+                <span style="font-size: 40px;">&#128275;</span>
+                <h3 style="margin: 10px 0;">Dostęp przywrócony</h3>
+                <p style="color: #155724;">
+                    Twoje konto zostało odblokowane przez administratora.
                 </p>
             </div>
-            <p>Od tego momentu będziesz mógł ponownie logować się do systemu.</p>
-            <p>Jeśli uważasz, że to pomyłka, skontaktuj się z działem wsparcia.</p>
+            <p>Od tego momentu możesz ponownie logować się do systemu i korzystać ze wszystkich funkcji Football Club System.</p>
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="#" style="background-color: {{COLOR}}; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Zaloguj się teraz</a>
+            </div>
+            <p style="margin-top: 25px; font-size: 14px; color: #666;">Jeśli masz pytania dotyczące Twojego konta, skontaktuj się z działem wsparcia.</p>
             """
-                .replace("{{USERNAME}}", username);
+                .replace("{{USERNAME}}", username)
+                .replace("{{COLOR}}", COLOR_PRIMARY);
 
         return wrapHtml(title, content);
     }

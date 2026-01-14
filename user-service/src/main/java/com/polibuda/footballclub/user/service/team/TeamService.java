@@ -38,7 +38,7 @@ public interface TeamService {
      */
     TeamDetailsResponse getTeamDetails(Long teamId);
     TeamSummaryResponse getTeamProfile(Long teamId);
-    boolean addTeam(AddTeamRequest team);
+    boolean addTeam(AddTeamRequest team, Long requesterUserId);
     boolean updateTeam(UpdateTeamRequestDTO request, Long requesterUserId);
     boolean updateMembership(UpdateTeamMemberRequestDTO request, Long requesterUserId);
     boolean deleteTeam(Long teamId, Long requesterUserId);

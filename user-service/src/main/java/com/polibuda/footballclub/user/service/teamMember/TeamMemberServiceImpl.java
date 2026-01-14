@@ -3,6 +3,7 @@ package com.polibuda.footballclub.user.service.teamMember;
 import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
+import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
@@ -33,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -46,7 +48,6 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
-    private final IdentityGrpcClient identityGrpcClient;
     private final IdentityGrpcClient grpcService;
     private final SpringSecurityService springSecurityService;
 
@@ -101,7 +102,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         }
 
         target.setStatus(TeamMemberStatus.ACTIVE);
-        IdentityGrpcClient.RoleGrantResult response =  identityGrpcClient.grantRoles(target.getMember().getUserId(), UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
+        IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(target.getMember().getUserId(), UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
         if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
             throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + target.getMember().getUserId());
         }
@@ -176,6 +177,33 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         log.info("COACH_EVENT: Manual add of user {} to team {} by coach {}", candidate.getUserId(), teamId, requesterUserId);
     }
 
+    @Override
+    public void updateTeamMember(ManageTeamMemberRequest request, Long requesterUserId) {
+        try{
+            TeamMember tm = teamMemberRepository.findById(request.getTeamMemberId()).orElseThrow(() -> new TeamMemberNotFoundException(request.getTeamMemberId()));
+            validateCoachPermissions(tm.getTeam().getId(), requesterUserId);
+            teamMemberRepository.save(checkRequest(request , tm));
+        }catch(TeamMemberNotFoundException e){
+            throw new TeamMemberNotFoundException(request.getTeamMemberId());
+        }catch (IllegalArgumentException e){
+            throw new InsufficientPermissionsException("You do not have permission to manage this team member"+request.getTeamMemberId());
+        }
+    }
+
+
+    private TeamMember checkRequest(ManageTeamMemberRequest request, TeamMember member){
+        if(request.getNewStatus()!=null){
+            member.setStatus(request.getNewStatus());
+        }
+        if(request.getNewRoles()!=null){
+            member.addRole(request.getNewRoles());
+        }
+        if(request.getRemoverRoles()!=null){
+            member.removeRole(request.getRemoverRoles());
+        }
+        return  member;
+    }
+
     // --- Private Helpers ---
 
     private TeamMember getTargetTeamMember(Long teamMemberId) {
@@ -220,6 +248,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .lastName(teamMember.getMember().getLastName())
                 .status(teamMember.getStatus())
                 .roles(teamMember.getRoles())
+                .sienceDate(teamMember.getCreatedAt())
                 .build();
     }
 }

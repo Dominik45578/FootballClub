@@ -18,8 +18,5 @@ public class TeamSummaryResponse implements AbstractSummaryResponse {
     private String teamName;
     private TeamCategory category;
     private TeamStatus status;
-
-    private TeamMemberStatus myStatus;
-    
     private Integer numberOfMembers; // Opcjonalnie: licznik graczy
 }

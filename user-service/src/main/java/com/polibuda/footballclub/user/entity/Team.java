@@ -30,7 +30,7 @@ public class Team extends AbstractAuditableEntity {
     private String name;
 
     @Column(nullable = false, unique = true, length = 16)
-    @Size(min = 10, max = 16) 
+    @Size(min = 6 , max = 32)
     private String code;
 
     @Enumerated(EnumType.STRING)

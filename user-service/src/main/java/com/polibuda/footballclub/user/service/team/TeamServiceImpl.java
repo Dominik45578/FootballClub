@@ -15,12 +15,15 @@ import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchRe
 import com.polibuda.footballclub.user.entity.Team;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
+import com.polibuda.footballclub.user.exceptions.business.BadEndpointException;
 import com.polibuda.footballclub.user.exceptions.business.TeamAlreadyExistExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamMemberNotFoundException;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamNotFoundException;
+import com.polibuda.footballclub.user.model.SecurityService;
 import com.polibuda.footballclub.user.model.SpringSecurityService;
 import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
+import com.polibuda.footballclub.user.service.IdentityGrpcClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.BeanDefinitionDsl;
@@ -44,6 +47,7 @@ public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final SpringSecurityService springSecurityService;
+    private final IdentityGrpcClient identityGrpcClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -88,6 +92,7 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new TeamNotFoundException(teamId));
 
+
         TeamDetailsResponse res =  mapToDetails(team);
         return res;
     }
@@ -102,17 +107,21 @@ public class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional
-    public boolean addTeam(AddTeamRequest team) {
+    public boolean addTeam(AddTeamRequest team, Long requesterUserId) {
         if(teamRepository.existsByCode(team.getCode())){
             throw new TeamAlreadyExistExceptions();
         }
         try{
+            if(springSecurityService.hasRole(UserRole.ROLE_COACH) && !springSecurityService.hasRole(UserRole.ROLE_ADMIN)){
+
+            }
             teamRepository.save(
                     Team.builder()
                             .name(team.getName())
                             .category(team.getCategory())
                             .code(team.getCode())
                             .description(team.getDescription())
+                            .status(team.getStatus())
                             .build()
             );
             return true;
@@ -127,6 +136,9 @@ public class TeamServiceImpl implements TeamService {
     public boolean updateTeam(UpdateTeamRequestDTO request, Long requesterUserId) {
         if(!teamRepository.existsById(request.getId())){
             return false;
+        }
+        if(request.getStatus()== TeamStatus.ARCHIVED){
+            throw new BadEndpointException("You cannot archive team there- use endpoint created form this order");
         }
 
         Team team = teamRepository.findById(request.getId()).orElseThrow(() -> new TeamNotFoundException(request.getId()));
@@ -210,6 +222,7 @@ public class TeamServiceImpl implements TeamService {
                 .teamId(team.getId())
                 .teamName(team.getName())
                 .category(team.getCategory())
+                .status(team.getStatus())
                 .numberOfMembers(team.getMembers() != null ? team.getMembers().size() : 0)
                 .build();
     }
@@ -222,8 +235,9 @@ public class TeamServiceImpl implements TeamService {
                         .memberId(tm.getMember().getId())
                         .firstName(tm.getMember().getFirstName())
                         .lastName(tm.getMember().getLastName())
-                        .roles(tm.getRoles())
+                        .roles(Set.copyOf(tm.getRoles()))
                         .status(tm.getStatus())
+                        .sienceDate(tm.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
 

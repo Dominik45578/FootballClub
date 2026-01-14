@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -22,6 +24,7 @@ public class TeamMemberListItemDto implements AbstractSummaryResponse {
     private Long teamId;
     private String firstName;
     private String lastName;
+    private Instant sienceDate;
     private Set<TeamRole> roles;
     private TeamMemberStatus status;
 }

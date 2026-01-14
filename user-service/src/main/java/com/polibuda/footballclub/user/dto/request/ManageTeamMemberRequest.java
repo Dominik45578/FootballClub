@@ -24,5 +24,6 @@ public class ManageTeamMemberRequest {
     private TeamMemberStatus newStatus;
 
     // Opcjonalne: przy okazji zmiany statusu można nadać role
-    private Set<TeamRole> roles;
+    private Set<TeamRole> newRoles;
+    private Set<TeamRole> removerRoles;
 }
