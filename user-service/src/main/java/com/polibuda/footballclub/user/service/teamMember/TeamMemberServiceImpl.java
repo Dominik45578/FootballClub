@@ -165,6 +165,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .member(candidate)
                 .team(team)
                 .status(TeamMemberStatus.ACTIVE)
+                .roles(request.getInitialRoles())
                 .build();
 
         teamMemberRepository.save(newMember);

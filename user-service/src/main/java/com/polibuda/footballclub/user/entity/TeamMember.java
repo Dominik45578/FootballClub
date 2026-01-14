@@ -57,4 +57,11 @@ public class TeamMember extends AbstractAuditableEntity {
     public boolean isCoach() {
         return roles.contains(TeamRole.ROLE_TEAM_HEAD_COACH) || roles.contains(TeamRole.ROLE_TEAM_ASSISTANT_COACH);
     }
+
+    public void addRole(Set<TeamRole> roles) {
+        this.roles.addAll(roles);
+    }
+    public void removeRole(Set<TeamRole> roles) {
+        this.roles.removeAll(roles);
+    }
 }

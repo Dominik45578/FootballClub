@@ -4,4 +4,7 @@ public class TeamMemberNotFoundException extends ResourceNotFoundException {
     public TeamMemberNotFoundException(Long teamId, Long memberId) {
         super("Member " + memberId + " is not part of team " + teamId);
     }
+    public TeamMemberNotFoundException(Long teamMemberId) {
+        super("TeamMember " + teamMemberId + " is not found");
+    }
 }

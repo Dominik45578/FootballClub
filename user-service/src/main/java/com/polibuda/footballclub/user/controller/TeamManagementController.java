@@ -4,6 +4,7 @@ import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
+import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
 import com.polibuda.footballclub.user.service.teamMember.TeamMemberService;
@@ -53,7 +54,7 @@ public class TeamManagementController {
      * Dostęp: Tylko COACH lub ADMIN.
      */
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
-    @DeleteMapping("/{teamMemberId}")
+    @DeleteMapping("/{teamMemberId}/del")
     public ResponseEntity<Void> removeMember(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId,
             @PathVariable Long teamMemberId) {

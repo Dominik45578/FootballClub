@@ -4,6 +4,7 @@ import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
+import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -54,12 +56,14 @@ public class TeamController {
      */
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetailsResponse> getTeamDetails(@PathVariable Long teamId) {
-        return ResponseEntity.ok(teamService.getTeamDetails(teamId));
+        return teamService.getTeamDetails(teamId) == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(teamService.getTeamDetails(teamId));
     }
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @DeleteMapping("/del/{teamId}")
-    public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
-        return teamService.deleteTeam(teamId) ?  ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId
+    ,@RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
+    ) {
+        return teamService.deleteTeam(teamId,userId) ?  ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
@@ -72,8 +76,19 @@ public class TeamController {
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @PatchMapping("/update")
     public ResponseEntity<Boolean> updateTeam(
-            @RequestBody UpdateTeamRequestDTO request
+            @RequestBody UpdateTeamRequestDTO request,
+           @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
             ){
-        return teamService.updateTeam(request) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        return teamService.updateTeam(request,userId) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
+
+    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
+    @PatchMapping("/membership/update")
+    public ResponseEntity<Boolean> updateMembership(
+            @RequestBody UpdateTeamMemberRequestDTO request,
+            @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
+    ){
+        return teamService.updateMembership(request, userId)?ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    }
+
 }

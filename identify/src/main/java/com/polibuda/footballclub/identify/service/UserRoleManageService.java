@@ -1,5 +1,10 @@
 package com.polibuda.footballclub.identify.service;
 
+import com.polibuda.footballclub.common.UserRole;
+import com.polibuda.footballclub.common.dto.UpdateUserRequest;
+import com.polibuda.footballclub.common.dto.UpdateUserRoleRequestDTO;
+import com.polibuda.footballclub.common.dto.UserResponseDTO;
+import com.polibuda.footballclub.common.dto.UserRoleDTO;
 import com.polibuda.footballclub.identify.entity.Role;
 import com.polibuda.footballclub.identify.entity.User;
 import com.polibuda.footballclub.identify.repository.RoleRepository;
@@ -10,10 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,6 +38,47 @@ public class UserRoleManageService {
                         .map(Role::getName)
                         .toList()) // Java 16+ toList()
                 .orElse(Collections.emptyList());
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO getUserDTO(long userId) {
+        User user =  userRepository.findByIdWithRoles(userId).orElseThrow();
+        Set<UserRoleDTO> roles =  user.getRoles().stream().map(this::mapToDTO).collect(Collectors.toSet());
+        return UserResponseDTO.builder()
+                .userEmail(user.getEmail())
+                .userName(user.getUsername())
+                .createdAt(LocalDateTime.from(user.getCreatedAt()))
+                .userRole(roles)
+                .build();
+    }
+
+    @Transactional
+    public boolean updateUser(UpdateUserRequest request, Long userId){
+        if(request == null){
+            return false;
+        }
+        if(!userRepository.existsById(userId)){
+            return false;
+        }
+        User user = userRepository.findById(userId).orElseThrow();
+        if(request.getUsername() != null){
+            User newUser = userRepository.findByUsername(request.getUsername()).orElseThrow(null);
+            if(newUser != null)
+                return false;
+            user.setUsername(request.getUsername());
+        }
+        if(request.getEmail() != null){
+            User newUser = userRepository.findByEmail(request.getEmail()).orElseThrow(null);
+            if(newUser != null)
+                return false;
+            user.setEmail(request.getEmail());
+        }
+        userRepository.save(user);
+        return true;
+    }
+
+    public UserResponseDTO updateUserRoles(UpdateUserRoleRequestDTO request, Long userId){
+        return getUserDTO(userId);
     }
 
     /**
@@ -108,6 +153,12 @@ public class UserRoleManageService {
 
         return new RoleAssignmentResult(RoleAssignmentStatus.SUCCESS, msg);
 
+    }
+    private UserRoleDTO mapToDTO(Role role) {
+        return UserRoleDTO.builder()
+                .description(role.getDescription())
+                .role(role.getName())
+                .build();
     }
 
     public record RoleAssignmentResult(RoleAssignmentStatus status, String message) {}

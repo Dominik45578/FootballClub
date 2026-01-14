@@ -5,6 +5,8 @@ import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
+import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
+import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
@@ -14,6 +16,7 @@ import com.polibuda.footballclub.user.entity.Team;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
 import com.polibuda.footballclub.user.exceptions.business.TeamAlreadyExistExceptions;
+import com.polibuda.footballclub.user.exceptions.notFound.TeamMemberNotFoundException;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamNotFoundException;
 import com.polibuda.footballclub.user.model.SpringSecurityService;
 import com.polibuda.footballclub.user.repository.TeamMemberRepository;
@@ -120,14 +123,41 @@ public class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional
-    public boolean updateTeam(UpdateTeamRequestDTO request) {
+    public boolean updateTeam(UpdateTeamRequestDTO request, Long requesterUserId) {
         if(!teamRepository.existsById(request.getId())){
             return false;
         }
-        Team team = teamRepository.findById(request.getId()).orElseThrow(() -> new TeamNotFoundException(request.getId()));
 
+        Team team = teamRepository.findById(request.getId()).orElseThrow(() -> new TeamNotFoundException(request.getId()));
+        validateCoachPermissions(team.getId(),requesterUserId);
         teamRepository.save(checkDtoAndSetChanges(request,team));
         return true;
+    }
+
+    @Transactional
+    @Override
+    public boolean updateMembership(UpdateTeamMemberRequestDTO request,  Long requesterUserId) {
+       if(!teamMemberRepository.existsById(request.getTeamMemberId())){
+           return false;
+       }
+
+       TeamMember target = teamMemberRepository.findById(request.getTeamMemberId()).orElseThrow(() -> new TeamMemberNotFoundException(request.getTeamMemberId()));
+       validateCoachPermissions(target.getTeam().getId(),requesterUserId);
+        teamMemberRepository.save(checkDtoAndSetChanges(request,target));
+        return true;
+    }
+
+    private TeamMember checkDtoAndSetChanges(UpdateTeamMemberRequestDTO request, TeamMember membership){
+        if(request.getNewRoles()!=null){
+            membership.addRole(request.getNewRoles());
+        }
+        if(request.getRemovedRoles()!=null){
+            membership.removeRole(request.getRemovedRoles());
+        }
+        if(request.getStatus()!=null){
+            membership.setStatus(request.getStatus());
+        }
+        return membership;
     }
 
     private Team checkDtoAndSetChanges(UpdateTeamRequestDTO request,Team team){
@@ -150,13 +180,14 @@ public class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional
-    public boolean deleteTeam(Long teamId) {
+    public boolean deleteTeam(Long teamId, Long requesterUserId) {
         if(!teamRepository.existsById(teamId)){
             log.error("Team id {} does not exist", teamId);
             throw new TeamNotFoundException(teamId);
         }
         try{
             Team team = teamRepository.findById(teamId).orElseThrow(() -> new TeamNotFoundException(teamId));
+            validateCoachPermissions(team.getId(),requesterUserId);
             Set<TeamMember> members = team.getMembers();
             for(TeamMember member : members){
                 member.setStatus(TeamMemberStatus.ARCHIVED);

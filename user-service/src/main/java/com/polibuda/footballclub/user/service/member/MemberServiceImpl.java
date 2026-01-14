@@ -3,14 +3,17 @@ package com.polibuda.footballclub.user.service.member;
 import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.user.dto.request.NewMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
+import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.MemberProfileResponse;
 import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import com.polibuda.footballclub.user.entity.Member;
+import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.business.MemberAlreadyExistExceptions;
 import com.polibuda.footballclub.user.exceptions.business.RoleAssigmentExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.MemberNotFoundException;
 import com.polibuda.footballclub.user.repository.MemberRepository;
+import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.service.IdentityGrpcClient;
 import com.polibuda.footballclub.user.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final IdentityGrpcClient grpcService;
+    private final TeamMemberRepository teamMemberRepository;
     //private final MemberService memberService;
 
     @Override
@@ -68,6 +72,7 @@ public class MemberServiceImpl implements MemberService {
         log.info("USER_EVENT: Profile updated for user {}", userId);
         return mapToProfileResponse(saved);
     }
+
 
     @Override
     @Transactional(readOnly = true)
