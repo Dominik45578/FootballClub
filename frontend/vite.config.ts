@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-const OFFLINE = process.env.VITE_OFFLINE === 'true'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -19,7 +18,9 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
-    ...(OFFLINE ? {} : {
+    // Always proxy /api to local backend during development to avoid CORS issues.
+    // If you need to disable proxy for some reason, set VITE_DISABLE_PROXY=true in env.
+    ...(process.env.VITE_DISABLE_PROXY === 'true' ? {} : {
       proxy: {
         '/api': {
           target: 'http://localhost:12001',
