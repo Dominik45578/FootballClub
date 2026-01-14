@@ -4,11 +4,12 @@ import com.polibuda.footballclub.common.actions.UserTokenActions;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.gateway.model.UserContext;
 import com.polibuda.footballclub.gateway.properties.GatewayAuthProperties;
-import com.polibuda.footballclub.gateway.redis.RedisToken;
+import com.polibuda.footballclub.gateway.service.IdentityGrpcClient;
 import com.polibuda.footballclub.gateway.service.RedisRequestCounterService;
 import com.polibuda.footballclub.gateway.service.RedisTokenService;
 import com.polibuda.footballclub.gateway.utils.JwtClaimExtractor;
 import com.polibuda.footballclub.gateway.utils.WebFluxResponseHelper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -32,6 +33,7 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
     private final RedisTokenService redisTokenService;
     private final RedisRequestCounterService requestCounterService;
     private final GatewayAuthProperties gatewayAuthProperties;
+    private final IdentityGrpcClient identityGrpcClient;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -73,7 +75,9 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
                             "Token Error", "This token is blocked!");
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-
+                    return isUserBlocked(exchange,userId);
+                }))
+                .switchIfEmpty(Mono.defer(() -> {
                     return checkRateLimitAndIncrement(exchange, userId)
                             .flatMap(rateLimitPassed -> {
                                 if (!Boolean.TRUE.equals(rateLimitPassed)) {
@@ -148,6 +152,15 @@ public class UserValidationGlobalFilter implements GlobalFilter, Ordered {
                 .build();
 
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
+    }
+
+    private Mono<Void> isUserBlocked(ServerWebExchange exchange, String userId){
+        UserContext user;
+        IdentityGrpcClient.UserBlockedResult result = identityGrpcClient.isUserBlocked(Long.parseLong(userId));
+        if (result.isBlocked()) {
+            return responseHelper.writeError(exchange, HttpStatus.UNAUTHORIZED, "Token Error", "This token is blocked!");
+        }
+        return Mono.empty();
     }
 
     @Override

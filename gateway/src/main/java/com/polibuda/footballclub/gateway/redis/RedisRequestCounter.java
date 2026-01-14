@@ -28,7 +28,7 @@ public class RedisRequestCounter implements Serializable {
 
     @TimeToLive(unit = TimeUnit.SECONDS)
     @Builder.Default
-    private Long timeToLive = 3600L;
+    private Long timeToLive = 1800L;
 
     @Builder.Default
     private Instant lastRequestTime = Instant.now();

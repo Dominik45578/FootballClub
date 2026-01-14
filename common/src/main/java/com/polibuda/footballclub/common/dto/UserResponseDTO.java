@@ -9,7 +9,7 @@ import java.util.Set;
 @Builder
 @Data
 public class UserResponseDTO {
-    private String userId;
+    private Long userId;
     private String userName;
     private String userEmail;
     private LocalDateTime createdAt;

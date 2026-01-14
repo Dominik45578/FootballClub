@@ -56,7 +56,8 @@ public class TeamController {
      */
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetailsResponse> getTeamDetails(@PathVariable Long teamId) {
-        return teamService.getTeamDetails(teamId) == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(teamService.getTeamDetails(teamId));
+        TeamDetailsResponse teamDetails = teamService.getTeamDetails(teamId);
+        return teamDetails == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(teamDetails);
     }
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @DeleteMapping("/del/{teamId}")

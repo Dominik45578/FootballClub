@@ -15,25 +15,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
-@RestController("auth/me")
+@RestController
+@RequestMapping("/auth")
 @AllArgsConstructor
 public class RoleController {
     UserRoleManageService userRoleManageService;
 
-    @GetMapping()
+    @GetMapping("/me")
     public UserResponseDTO me(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
     ) {
        return userRoleManageService.getUserDTO(userId);
     }
-    @PostMapping()
+    @PostMapping("/me")
     public ResponseEntity<Boolean> update(
             @RequestBody UpdateUserRequest updateUserRequest,
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
     ) {
         return userRoleManageService.updateUser(updateUserRequest,userId) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
-    @PatchMapping()
+    @PatchMapping("/me")
     public ResponseEntity<UserResponseDTO> changeRoles(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId,
             @RequestBody UpdateUserRoleRequestDTO request

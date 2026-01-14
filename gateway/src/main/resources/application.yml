@@ -97,3 +97,8 @@ logging:
     org.springframework.security: INFO
     org.springframework.web.reactive: INFO
     com.polibuda.footballclub.gateway: DEBUG
+
+grpc:
+  identify:
+    host: ${IDENTIFY_NAME:identify}
+    port: ${IDENTIFY_GRPC_PORT:9092}

@@ -9,4 +9,7 @@ public interface RedisService {
     Optional<RedisUser> findCode(String email, UserAccountAction action);
     void deleteCode(String email, UserAccountAction action);
     boolean validateCode(String email, String codeToCheck, UserAccountAction action);
+    boolean isUserBlocked(Long userId);
+    void blockUser(Long userId);
+    void unblockUser(Long userId);
 }

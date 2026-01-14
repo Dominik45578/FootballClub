@@ -1,8 +1,11 @@
 package com.polibuda.footballclub.identify.service.redis;
 
 import com.polibuda.footballclub.common.actions.UserAccountAction;
+import com.polibuda.footballclub.common.actions.UserSessionActions;
+import com.polibuda.footballclub.identify.redis.BlockedUser;
 import com.polibuda.footballclub.identify.redis.RedisUser;
 import com.polibuda.footballclub.identify.repository.RedisUserRepository;
+import com.polibuda.footballclub.identify.repository.RedisUserSessionsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import java.util.Optional;
 public class RedisServiceImpl implements RedisService {
 
     private final RedisUserRepository redisUserRepository;
+    private final RedisUserSessionsRepository sessionsRepository;
 
     @Override
     public void saveCode(String email, String code, UserAccountAction action) {
@@ -47,5 +51,28 @@ public class RedisServiceImpl implements RedisService {
         return findCode(email, action)
                 .map(ru -> ru.getVerificationCode().equals(codeToCheck))
                 .orElse(false);
+    }
+
+    @Override
+    public boolean isUserBlocked(Long userId) {
+      return  sessionsRepository.existsById(BlockedUser.generateId(userId, UserSessionActions.USER_BLOCKED));
+    }
+
+    @Override
+    public void blockUser(Long userId) {
+            sessionsRepository.save(BlockedUser.builder()
+                    .userId(userId)
+                    .id(BlockedUser.generateId(userId , UserSessionActions.USER_BLOCKED))
+                    .userSessionActions(UserSessionActions.USER_BLOCKED)
+                    .build());
+    }
+
+    @Override
+    public void unblockUser(Long userId) {
+        synchronized (this) {
+            if(sessionsRepository.findByUserId(userId).isPresent()){
+                sessionsRepository.deleteByUserId(userId);
+            }
+        }
     }
 }

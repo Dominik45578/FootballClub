@@ -1,11 +1,156 @@
 package com.polibuda.footballclub.identify;
 
+import java.util.Map;
+import java.util.regex.Pattern;
+
 public class EmailTemplates {
 
-    // Kolory systemu (możesz dostosować do brandingu)
+    // Kolory systemu
     private static final String COLOR_PRIMARY = "#007bff"; // Niebieski
     private static final String COLOR_BG = "#f4f4f4";      // Jasnoszary
     private static final String COLOR_TEXT = "#333333";    // Ciemnoszary
+    private static final String COLOR_DANGER = "#dc3545";  // Czerwony (dla blokad)
+
+    // --- NOWE METODY ---
+
+    /**
+     * 1. Wiadomość o zablokowaniu konta
+     * Parametry: username, adminName (kto zablokował)
+     */
+    public static String generateAccountBlockedEmail(String username) {
+        String title = "Twoje konto zostało zablokowane";
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <div style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 20px; border-radius: 5px; margin: 25px 0; text-align: center;">
+                <span style="font-size: 40px;">&#128683;</span>
+                <h3 style="margin: 10px 0;">Dostęp zablokowany</h3>
+                <p style="color: #721c24;">
+                    Twoje konto zostało zablokowane przez administratora
+                </p>
+            </div>
+            <p>Od tego momentu nie będziesz mógł logować się do systemu ani wykonywać żadnych operacji.</p>
+            <p>Jeśli uważasz, że to pomyłka, skontaktuj się z działem wsparcia.</p>
+            """
+                .replace("{{USERNAME}}", username);
+
+        return wrapHtml(title, content);
+    }
+
+
+    public static String generateAccountUnlockedEmail(String username) {
+        String title = "Twoje konto zostało zablokowane";
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <div style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 20px; border-radius: 5px; margin: 25px 0; text-align: center;">
+                <span style="font-size: 40px;">&#128683;</span>
+                <h3 style="margin: 10px 0;">Dostęp odblokowany</h3>
+                <p style="color: #721c24;">
+                    Twoje konto zostało odblokowane przez administratora
+                </p>
+            </div>
+            <p>Od tego momentu będziesz mógł ponownie logować się do systemu.</p>
+            <p>Jeśli uważasz, że to pomyłka, skontaktuj się z działem wsparcia.</p>
+            """
+                .replace("{{USERNAME}}", username);
+
+        return wrapHtml(title, content);
+    }
+
+    /**
+     * 2. Update profilu - nowe role
+     * Parametry: Map<String, String> (Nazwa Roli -> Opis)
+     */
+    public static String generateRolesUpdatedEmail(String username, Map<String, String> newRoles) {
+        String title = "Aktualizacja uprawnień konta";
+
+        // Budowanie listy ról HTML
+        StringBuilder rolesHtml = new StringBuilder();
+        rolesHtml.append("<div style='background-color: #e9ecef; padding: 15px; border-radius: 5px; margin: 20px 0;'>");
+        rolesHtml.append("<p style='margin-top: 0; font-weight: bold;'>Twoje nowe role:</p>");
+        rolesHtml.append("<ul style='padding-left: 20px; margin-bottom: 0;'>");
+
+        for (Map.Entry<String, String> entry : newRoles.entrySet()) {
+            rolesHtml.append("<li style='margin-bottom: 10px;'>")
+                    .append("<strong>").append(entry.getKey()).append("</strong>: ")
+                    .append(entry.getValue())
+                    .append("</li>");
+        }
+
+        rolesHtml.append("</ul></div>");
+
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <p>Informujemy, że Twój profil w Football Club System został zaktualizowany przez administratora.</p>
+            <p>Zmieniono Twoje uprawnienia w systemie. Poniżej znajduje się lista aktualnie przypisanych ról:</p>
+            
+            {{ROLES_LIST}}
+            
+            <p>Zmiany są widoczne natychmiast po ponownym zalogowaniu.</p>
+            """
+                .replace("{{USERNAME}}", username)
+                .replace("{{ROLES_LIST}}", rolesHtml.toString());
+
+        return wrapHtml(title, content);
+    }
+
+    /**
+     * 3. Weryfikacja zmiany adresu email
+     * Parametry: username, code
+     */
+    public static String generateEmailChangeVerificationEmail(String username, String code) {
+        String title = "Potwierdź zmianę adresu email";
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <p>Otrzymaliśmy prośbę o zmianę adresu email przypisanego do Twojego konta.</p>
+            <p>Aby zatwierdzić nowy adres email, wprowadź poniższy kod weryfikacyjny w aplikacji:</p>
+            
+            <div style="background-color: #e9ecef; border-left: 5px solid {{COLOR}}; padding: 20px; text-align: center; margin: 20px 0;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333;">{{CODE}}</span>
+            </div>
+            
+            <p>Kod jest ważny przez 15 minut.</p>
+            <p><strong>Uwaga:</strong> Jeśli nie zlecałeś tej zmiany, zignoruj tę wiadomość. Twój obecny adres email pozostanie bez zmian.</p>
+            """
+                .replace("{{USERNAME}}", username)
+                .replace("{{CODE}}", code)
+                .replace("{{COLOR}}", COLOR_PRIMARY);
+
+        return wrapHtml(title, content);
+    }
+
+    /**
+     * 4. Potwierdzenie zmiany adresu email (info na stary i nowy)
+     * Parametry: username, oldEmail, newEmail
+     */
+    public static String generateEmailChangeConfirmedEmail(String username, String oldEmail, String newEmail) {
+        String title = "Adres email został zmieniony";
+
+        // Maskowanie starego i nowego maila dla bezpieczeństwa
+        String maskedOld = maskEmail(oldEmail);
+        String maskedNew = maskEmail(newEmail);
+
+        String content = """
+            <p>Cześć <strong>{{USERNAME}}</strong>,</p>
+            <div style="text-align: center; margin: 20px 0;">
+                <span style="font-size: 40px; color: #28a745;">&#10004;</span>
+            </div>
+            <p>Twój główny adres email w Football Club System został pomyślnie zmieniony.</p>
+            
+            <div style="background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 5px; color: #856404; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Stary adres:</strong> <span style="font-family: monospace;">{{OLD_EMAIL}}</span></p>
+                <p style="margin: 5px 0;"><strong>Nowy adres:</strong> <span style="font-family: monospace;">{{NEW_EMAIL}}</span></p>
+            </div>
+            
+            <p>Od teraz wszelkie powiadomienia oraz linki do resetowania hasła będą wysyłane na nowy adres.</p>
+            """
+                .replace("{{USERNAME}}", username)
+                .replace("{{OLD_EMAIL}}", maskedOld)
+                .replace("{{NEW_EMAIL}}", maskedNew);
+
+        return wrapHtml(title, content);
+    }
+
+    // --- STARE METODY (BEZ ZMIAN) ---
 
     /**
      * Szablon powitalny z kodem weryfikacyjnym
@@ -91,7 +236,7 @@ public class EmailTemplates {
             """
                 .replace("{{USERNAME}}", username)
                 .replace("{{CODE}}", code)
-                .replace("{{COLOR}}", COLOR_PRIMARY); // Użycie głównego koloru systemu
+                .replace("{{COLOR}}", COLOR_PRIMARY);
 
         return wrapHtml(title, content);
     }
@@ -120,6 +265,8 @@ public class EmailTemplates {
         return wrapHtml(title, content);
     }
 
+    // --- METODY POMOCNICZE ---
+
     /**
      * Metoda prywatna "opakowująca" treść w ładny layout (Header + Footer)
      */
@@ -145,11 +292,8 @@ public class EmailTemplates {
                             <h1>Football Club System</h1>
                         </div>
                         
-                        <!-- Główna treść -->
                         <h2 style="color: #333; font-size: 20px;">{{TITLE}}</h2>
                         {{CONTENT}}
-                        <!-- Koniec głównej treści -->
-
                         <div class="footer">
                             <p>&copy; 2025 Football Club System. Wszelkie prawa zastrzeżone.</p>
                             <p>Wiadomość wygenerowana automatycznie. Prosimy na nią nie odpowiadać.</p>
@@ -163,5 +307,17 @@ public class EmailTemplates {
                 .replace("{{TEXT_COLOR}}", COLOR_TEXT)
                 .replace("{{TITLE}}", title)
                 .replace("{{CONTENT}}", bodyContent);
+    }
+
+    /**
+     * Metoda maskująca email (np. jan***@gmail.com)
+     * Zostawia pierwsze 3 znaki, resztę do znaku @ zamienia na gwiazdkę.
+     */
+    private static String maskEmail(String email) {
+        if (email == null || email.length() < 4) return "****";
+        // Wzorzec: zostaw 3 znaki, maskuj wszystko do @
+        return Pattern.compile("(?<=.{3}).(?=[^@]*?@)")
+                .matcher(email)
+                .replaceAll("*");
     }
 }

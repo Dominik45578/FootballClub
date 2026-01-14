@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -21,9 +22,12 @@ public class RedisToken implements Serializable {
     private String token;            // ID (klucz)
     @NotBlank
     private String userId;
-    private UserTokenActions reason = UserTokenActions.TOKEN_BLOCKED_BY_LOGOUT;
     @Builder.Default
-    private Long timeToLive = 3600L;        // TTL w sekundach
+    private UserTokenActions reason = UserTokenActions.TOKEN_BLOCKED_BY_LOGOUT;
+
+    @TimeToLive
+    @Builder.Default
+    private Long timeToLive = 1800L;        // TTL w sekundach
     @Builder.Default
     private Long blockedAt = Instant.now().getEpochSecond();
 

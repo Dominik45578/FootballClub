@@ -88,7 +88,8 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new TeamNotFoundException(teamId));
 
-        return mapToDetails(team);
+        TeamDetailsResponse res =  mapToDetails(team);
+        return res;
     }
 
     @Override
@@ -213,7 +214,8 @@ public class TeamServiceImpl implements TeamService {
                 .build();
     }
 
-    private TeamDetailsResponse mapToDetails(Team team) {
+    @Transactional
+    protected TeamDetailsResponse mapToDetails(Team team) {
         List<TeamMemberListItemDto> members = team.getMembers().stream()
                 .map(tm -> TeamMemberListItemDto.builder()
                         .teamMemberId(tm.getId())

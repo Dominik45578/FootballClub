@@ -39,6 +39,8 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+      identify:
+        condition: service_started
     networks:
       - services-network
 
@@ -51,6 +53,9 @@ services:
       GATEWAY_IDENTITY_CLIENT_ID: web-client
       SPRING_DATA_REDIS_HOST: ${REDIS_CONTAINER}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      GRPC_IDENTIFY_PORT: 9092
+      GRPC_IDENTIFY_HOST: identify
+
 
   # ==========================================
   # IDENTIFY SERVICE

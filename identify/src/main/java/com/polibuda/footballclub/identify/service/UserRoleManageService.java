@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,12 @@ public class UserRoleManageService {
         User user =  userRepository.findByIdWithRoles(userId).orElseThrow();
         Set<UserRoleDTO> roles =  user.getRoles().stream().map(this::mapToDTO).collect(Collectors.toSet());
         return UserResponseDTO.builder()
+                .userId(user.getId())
                 .userEmail(user.getEmail())
                 .userName(user.getUsername())
-                .createdAt(LocalDateTime.from(user.getCreatedAt()))
+                .createdAt(user.getCreatedAt()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime())
                 .userRole(roles)
                 .build();
     }

@@ -10,6 +10,7 @@ service UserRoleService {
   rpc RemoveRoles (RemoveRolesRequest) returns (RemoveRolesResponse);
   rpc GrantRoles (GrantRolesRequest) returns (GrantRolesResponse);
   rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
+  rpc IsBlocked (UserBlockedRequest) returns (UserBlockedResponse);
 }
 
 message GrantRolesRequest {
@@ -48,4 +49,12 @@ message RemoveRolesRequest{
 message RemoveRolesResponse {
   RoleAssignmentStatus status = 1;
   string message = 2;
+}
+
+message UserBlockedResponse{
+  bool isBlocked =1;
+}
+
+message UserBlockedRequest{
+  int64 userId =1;
 }

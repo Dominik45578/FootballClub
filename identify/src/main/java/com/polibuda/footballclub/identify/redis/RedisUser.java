@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("User") // W Redisie klucz będzie wyglądał np.: "User:jan@wp.pl:RESET_PASSWORD"
+@RedisHash(value = "User", timeToLive = 15*60) // W Redisie klucz będzie wyglądał np.: "User:jan@wp.pl:RESET_PASSWORD"
 public class RedisUser {
 
     @Id

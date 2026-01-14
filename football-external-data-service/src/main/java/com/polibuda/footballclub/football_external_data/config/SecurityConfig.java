@@ -38,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").hasRole(UserRoleAuth.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "external/manage/").hasRole(UserRoleAuth.COACH.name())
                         .requestMatchers(HttpMethod.PUT, "external/manage/").hasRole(UserRoleAuth.COACH.name())
-                        .anyRequest().hasRole(UserRoleAuth.PLAYER .name())
+                        .anyRequest().hasRole(UserRoleAuth.MEMBER .name())
                 );
         return http.build();
     }

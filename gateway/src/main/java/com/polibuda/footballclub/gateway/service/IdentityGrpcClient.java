@@ -1,4 +1,4 @@
-package com.polibuda.footballclub.user.service;
+package com.polibuda.footballclub.gateway.service;
 
 import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.identify.grpc.*;
@@ -24,7 +24,7 @@ public class IdentityGrpcClient {
      * Wysyła żądanie nadania ról.
      * Zwraca wynik operacji, który pozwala podjąć decyzję o ewentualnym rollbacku.
      */
-    public UserBlockedResult blockUser(Long userId){
+    public UserBlockedResult isUserBlocked(Long userId){
         log.debug("gRPC Client : checking user status {}", userId);
         try{
             UserBlockedRequest request = UserBlockedRequest.newBuilder()
