@@ -92,6 +92,7 @@ services:
 
       EMAIL_NAME: ${EMAIL_NAME}
       EMAIL_PASS_CODE: ${EMAIL_PASS_CODE}
+      GRPC_SERVER_PORT: 9092
 
   # ==========================================
   # USER SERVICE
@@ -111,6 +112,8 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
+      identify:
+        condition: service_started
     networks:
       - services-network
     environment:
@@ -127,6 +130,9 @@ services:
       SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
       SPRING_RABBITMQ_USERNAME: ${RABBIT_USERNAME}
       SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
+      GRPC_IDENTIFY_PORT: 9092
+      GRPC_IDENTIFY_HOST: identify
+
 
   # ==========================================
   # NOTIFICATION SERVICE

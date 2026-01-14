@@ -74,8 +74,8 @@ public class IdentityGrpcClient {
         };
     }
 
-    public RoleGrantResult removeRoles(Long userId, UserRole... roles) {
-        log.debug("gRPC Client: Granting roles {} to user {}", roles, userId);
+    public RoleRemoveResult removeRoles(Long userId, UserRole... roles) {
+        log.debug("gRPC Client: Removing roles {} to user {}", roles, userId);
         List<String> mapped = Stream.of(roles).map(Enum::name).toList();
 
         try {
@@ -86,18 +86,19 @@ public class IdentityGrpcClient {
 
             RemoveRolesResponse response = identityStub.removeRoles(request);
 
-            return new RoleGrantResult(
+            return new RoleRemoveResult(
                     mapStatus(response.getStatus()),
                     response.getMessage()
             );
 
         } catch (Exception e) {
             log.error("gRPC call failed for grantRoles", e);
-            return new RoleGrantResult(RoleAssignmentStatusDTO.FAILURE_RETRYABLE, e.getMessage());
+            return new RoleRemoveResult(RoleAssignmentStatusDTO.FAILURE_RETRYABLE, e.getMessage());
         }
     }
 
     public record RoleGrantResult(RoleAssignmentStatusDTO status, String message) {}
+    public record RoleRemoveResult(RoleAssignmentStatusDTO status, String message) {}
 
     public enum RoleAssignmentStatusDTO {
         UNKNOWN, SUCCESS, FAILURE_ROLLBACK_REQUIRED, FAILURE_RETRYABLE

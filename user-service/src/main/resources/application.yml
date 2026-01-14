@@ -38,6 +38,6 @@ spring:
     open-in-view: false
 
 grpc:
-  football-data:
-    host: ${IDENTIFY_NAME:localhost}
+  identify:
+    host: ${IDENTIFY_NAME:}
     port: ${IDENTIFY_GRPC_PORT:9092}

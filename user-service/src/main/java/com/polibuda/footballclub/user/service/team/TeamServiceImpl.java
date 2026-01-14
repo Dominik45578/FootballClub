@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.user.service.team;
 
+import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.database.TeamStatus;
@@ -14,6 +15,7 @@ import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
 import com.polibuda.footballclub.user.exceptions.business.TeamAlreadyExistExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamNotFoundException;
+import com.polibuda.footballclub.user.model.SpringSecurityService;
 import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final SpringSecurityService springSecurityService;
 
     @Override
     @Transactional(readOnly = true)
@@ -201,12 +204,17 @@ public class TeamServiceImpl implements TeamService {
                 .build();
     }
 
-    private void validateCoachPermissions(Long teamId, Long userId) {
-        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberId(teamId,userId)
-                .orElseThrow(() -> new InsufficientPermissionsException("You are not part of this team context."));
+    public void validateCoachPermissions(Long teamId, Long userId) {
+        if (springSecurityService.hasRole(UserRole.ROLE_ADMIN)) {
+            return;
+        }
 
+        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberUserId(teamId, userId)
+                .orElseThrow(() -> new InsufficientPermissionsException(
+                        String.format("User %d is not a member of team %d", userId, teamId)
+                ));
         if (!requester.isCoach()) {
-            throw new InsufficientPermissionsException("Contextual Permission Denied: Role COACH required in this team.");
+            throw new InsufficientPermissionsException("Operation requires COACH permissions.");
         }
     }
 }

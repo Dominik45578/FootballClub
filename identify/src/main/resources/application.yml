@@ -103,4 +103,4 @@ logging:
 
 grpc:
   server:
-    port: ${GRPCIDENTIFY_GRPC_PORT:9092}
+    port: ${IDENTIFY_GRPC_PORT:9092}

@@ -8,6 +8,7 @@ import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import com.polibuda.footballclub.user.entity.Member;
 import com.polibuda.footballclub.user.exceptions.business.MemberAlreadyExistExceptions;
+import com.polibuda.footballclub.user.exceptions.business.RoleAssigmentExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.MemberNotFoundException;
 import com.polibuda.footballclub.user.repository.MemberRepository;
 import com.polibuda.footballclub.user.service.IdentityGrpcClient;
@@ -120,7 +121,10 @@ public class MemberServiceImpl implements MemberService {
                     .lastName(request.getLastName())
                     .userId(userId)
                     .build());
-            grpcService.grantRoles(userId,UserRole.ROLE_MEMBER);
+           IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(userId,UserRole.ROLE_MEMBER);
+            if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
+                throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + userId);
+            }
             log.info("USER_EVENT: Member added for user {}", userId);
             log.info("USER_EVENT: ROLE_MEMBER added for user {}", userId);
             return ResponseEntity.ok(Boolean.TRUE);
@@ -138,7 +142,10 @@ public class MemberServiceImpl implements MemberService {
           log.error("USER_EVENT: Member not found for user {}", userId);
           return new ResponseEntity<>(Boolean.FALSE,HttpStatus.NOT_FOUND);
       }
-      grpcService.removeRoles(userId,UserRole.ROLE_MEMBER);
+      IdentityGrpcClient.RoleRemoveResult response =  grpcService.removeRoles(userId,UserRole.ROLE_MEMBER);
+        if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
+            throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " +userId);
+        }
       memberRepository.deleteById(userId);
       return ResponseEntity.ok(Boolean.TRUE);
     }

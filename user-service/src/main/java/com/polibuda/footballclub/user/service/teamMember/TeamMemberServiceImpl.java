@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.user.service.teamMember;
 
+import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
@@ -10,19 +11,25 @@ import com.polibuda.footballclub.user.entity.Team;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import com.polibuda.footballclub.user.exceptions.InsufficientPermissionsException;
 import com.polibuda.footballclub.user.exceptions.business.InvalidTeamCodeException;
+import com.polibuda.footballclub.user.exceptions.business.RoleAssigmentExceptions;
 import com.polibuda.footballclub.user.exceptions.business.UserAlreadyInTeamException;
 import com.polibuda.footballclub.user.exceptions.business.UserAlreadyVerified;
 import com.polibuda.footballclub.user.exceptions.notFound.MemberNotFoundException;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamMemberNotFoundException;
 import com.polibuda.footballclub.user.exceptions.notFound.TeamNotFoundException;
+import com.polibuda.footballclub.user.model.SpringSecurityService;
 import com.polibuda.footballclub.user.repository.MemberRepository;
 import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
+import com.polibuda.footballclub.user.service.IdentityGrpcClient;
+import com.polibuda.identify.grpc.RemoveRolesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +46,9 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
+    private final IdentityGrpcClient identityGrpcClient;
+    private final IdentityGrpcClient grpcService;
+    private final SpringSecurityService springSecurityService;
 
     @Override
     @Transactional(readOnly = true)
@@ -91,6 +101,10 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         }
 
         target.setStatus(TeamMemberStatus.ACTIVE);
+        IdentityGrpcClient.RoleGrantResult response =  identityGrpcClient.grantRoles(target.getMember().getUserId(), UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
+        if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
+            throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + target.getMember().getUserId());
+        }
         teamMemberRepository.save(target);
         log.info("COACH_EVENT: User {} approved member {} in team {}", requesterUserId, target.getMember().getId(), target.getTeam().getId());
     }
@@ -110,8 +124,18 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         TeamMember target = getTargetTeamMember(teamMemberId);
         validateCoachPermissions(target.getTeam().getId(), requesterUserId);
 
+        List<TeamMember> userTeams = teamMemberRepository.findByMemberUserId(target.getMember().getUserId());
+        Long teamsCount = userTeams.parallelStream().filter(m -> m.getStatus() == TeamMemberStatus.ACTIVE).count();
+
         if (target.getStatus() == TeamMemberStatus.WAITING_FOR_VERIFICATION) {
             teamMemberRepository.delete(target);
+            if(teamsCount==1){
+                IdentityGrpcClient.RoleRemoveResult response = grpcService.removeRoles(target.getMember().getUserId(), UserRole.ROLE_PLAYER);
+                if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
+                    throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + target.getMember().getUserId());
+                }
+                log.info("User lost ROLE_PLAYER because does not have active membership {}", target.getMember().getUserId());
+            }//bo 1 teraz usuniemy
             log.info("COACH_EVENT: Application rejected for member {}", target.getId());
         } else {
             target.setStatus(TeamMemberStatus.ARCHIVED);
@@ -144,7 +168,11 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .build();
 
         teamMemberRepository.save(newMember);
-        log.info("COACH_EVENT: Manual add of user {} to team {} by coach {}", candidate.getId(), teamId, requesterUserId);
+       IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(newMember.getMember().getUserId(), UserRole.ROLE_PLAYER);
+        if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
+            throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + candidate.getUserId());
+        }
+        log.info("COACH_EVENT: Manual add of user {} to team {} by coach {}", candidate.getUserId(), teamId, requesterUserId);
     }
 
     // --- Private Helpers ---
@@ -164,12 +192,21 @@ public class TeamMemberServiceImpl implements TeamMemberService {
      * @PreAuthorize sprawdza "Czy jestem trenerem w ogóle?",
      * Ta metoda sprawdza "Czy jestem trenerem TEGO zespołu?".
      */
-    private void validateCoachPermissions(Long teamId, Long userId) {
-        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberUserId(teamId, userId)
-                .orElseThrow(() -> new InsufficientPermissionsException("You are not part of this team context."));
+    public void validateCoachPermissions(Long teamId, Long userId) {
+        // 1. Check Admin Override
+        if (springSecurityService.hasRole(UserRole.ROLE_ADMIN)) {
+            return;
+        }
 
+        // 2. Fetch Team Member Context
+        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberUserId(teamId, userId)
+                .orElseThrow(() -> new InsufficientPermissionsException(
+                        String.format("User %d is not a member of team %d", userId, teamId)
+                ));
+
+        // 3. Validate Role within Context
         if (!requester.isCoach()) {
-            throw new InsufficientPermissionsException("Contextual Permission Denied: Role COACH required in this team.");
+            throw new InsufficientPermissionsException("Operation requires COACH permissions.");
         }
     }
 
