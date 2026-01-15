@@ -9,6 +9,8 @@ type Props = {
   id?: string
   placeholder?: string
   required?: boolean
+  // allow disabling the control from parent
+  disabled?: boolean
   // optional className forwarded to the internal input to allow matching styles
   inputClassName?: string
 }
@@ -18,10 +20,22 @@ function toISO(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pa
 function startOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth(), 1) }
 function endOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth()+1, 0) }
 
-export default function DateInput({ value, onChange, id, placeholder, required, inputClassName }: Props) {
+function parseSafeDate(s?: string | null): Date | null {
+  if (!s) return null
+  try {
+    const d = new Date(s)
+    if (isNaN(d.getTime())) return null
+    return d
+  } catch (e) {
+    return null
+  }
+}
+
+export default function DateInput({ value, onChange, id, placeholder, required, inputClassName, disabled }: Props) {
   const [open, setOpen] = useState(false)
   const [internal, setInternal] = useState<string | null>(value ?? null)
-  const [viewMonth, setViewMonth] = useState<Date>(() => internal ? new Date(internal) : new Date())
+  // use a safe parser for initial view month
+  const [viewMonth, setViewMonth] = useState<Date>(() => parseSafeDate(internal) ?? new Date())
   const [monthOpen, setMonthOpen] = useState(false)
   const [yearOpen, setYearOpen] = useState(false)
   const [popupStyle, setPopupStyle] = useState<Record<string,string>>({})
@@ -39,7 +53,11 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
   const suppressCloseRef = useRef<number>(0)
 
   useEffect(() => setInternal(value ?? null), [value])
-  useEffect(() => { if (internal) setViewMonth(new Date(internal)) }, [internal])
+  // set viewMonth only when parsed date is valid
+  useEffect(() => {
+    const parsed = parseSafeDate(internal)
+    if (parsed) setViewMonth(parsed)
+  }, [internal])
 
   // compute overlay and text color based on popup background so hover always 'brightens'
   useEffect(() => {
@@ -175,6 +193,29 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
   const prevMonth = () => setViewMonth(m => new Date(m.getFullYear(), m.getMonth()-1, 1))
   const nextMonth = () => setViewMonth(m => new Date(m.getFullYear(), m.getMonth()+1, 1))
 
+  // helper to render year buttons (avoids complex IIFE inside JSX)
+  const renderYearButtons = () => {
+    const current = new Date().getFullYear()
+    const start = current - 60
+    const end = current + 2
+    const years: number[] = []
+    for (let y = end; y >= start; y--) years.push(y)
+    return years.map(y => (
+      <button
+        key={y}
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => { setViewMonth(new Date(y, viewMonth.getMonth(), 1)); setYearOpen(false) }}
+        onMouseEnter={() => setHoveredYear(y)}
+        onMouseLeave={() => setHoveredYear(null)}
+        className={`block w-full text-left px-2 py-1 rounded transition-colors duration-150 hover:bg-accent/10`}
+        style={{ color: textColor, boxShadow: hoveredYear === y ? `inset 0 0 0 9999px ${hoverOverlayColor}` : undefined, transition: 'box-shadow 150ms ease' }}
+      >
+        {y}
+      </button>
+    ))
+  }
+
   const monthStart = startOfMonth(viewMonth)
   const monthEnd = endOfMonth(viewMonth)
   const startWeekDay = monthStart.getDay()
@@ -231,27 +272,7 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
               <button type="button" onPointerDown={(e)=>{ e.stopPropagation(); suppressCloseRef.current = Date.now() + 250 }} onClick={() => { setYearOpen(v => !v); setMonthOpen(false) }} className="rounded-md border border-border px-2 py-0.5 text-sm" style={{ background: 'transparent' }}>{viewMonth.getFullYear()}</button>
               {yearOpen && (
                 <div className="absolute left-0 z-40 mt-1 border border-border rounded-md shadow p-1 max-h-60 overflow-auto flex flex-col text-sm bg-card" style={{ minWidth: 96, backgroundColor: 'var(--card, #fff)' }}>
-                  {(() => {
-                    const current = new Date().getFullYear()
-                    const start = current - 60
-                    const end = current + 2
-                    const years: number[] = []
-                    for (let y = end; y >= start; y--) years.push(y)
-                    return years.map(y => (
-                      <button
-                        key={y}
-                        type="button"
-                        onPointerDown={(e)=>e.stopPropagation()}
-                        onClick={() => { setViewMonth(new Date(y, viewMonth.getMonth(), 1)); setYearOpen(false) }}
-                        onMouseEnter={() => setHoveredYear(y)}
-                        onMouseLeave={() => setHoveredYear(null)}
-                        className={`block w-full text-left px-2 py-1 rounded transition-colors duration-150 hover:bg-accent/10`}
-                        style={{ color: textColor, boxShadow: hoveredYear === y ? `inset 0 0 0 9999px ${hoverOverlayColor}` : undefined, transition: 'box-shadow 150ms ease' }}
-                      >
-                        {y}
-                      </button>
-                     ))
-                   })()}
+                  {renderYearButtons()}
                  </div>
                )}
             </div>
@@ -310,6 +331,7 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
         id={id}
         placeholder={placeholder}
         required={required}
+        disabled={disabled}
         readOnly
         value={safeFormatDisplay(internal)}
         onPointerDown={(e) => { e.stopPropagation(); suppressCloseRef.current = Date.now() + 250; setOpen(true) }}
@@ -339,7 +361,9 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
 
 function safeFormatDisplay(internal: string | null) {
   try {
-    return internal ? new Date(internal).toLocaleDateString() : ''
+    const parsed = parseSafeDate(internal)
+    if (!parsed) return ''
+    return parsed.toLocaleDateString()
   } catch (e) {
     console.error('DateInput format error', e)
     return ''
