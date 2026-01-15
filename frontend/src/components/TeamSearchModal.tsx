@@ -35,8 +35,15 @@ export default function TeamSearchModal({ open, onOpenChange, onSelect }: Props)
   const fetchClubs = async () => {
     setLoading(true)
     try {
-      const res = await getTeams({ mode: 'ALL_TEAMS', name, page, size })
+      const res = await getTeams({ mode: 'ALL_TEAMS', name, page, size }, { allowUnauth: true })
       setClubs({ items: res.items, total: res.total ?? res.items.length })
+      // @ts-ignore
+      const fromMock = (res as any).fromMock
+      // @ts-ignore
+      const err = (res as any).error
+      if (fromMock && err) {
+        console.warn('[TeamSearchModal] backend returned mock fallback', err)
+      }
     } finally {
       setLoading(false)
     }

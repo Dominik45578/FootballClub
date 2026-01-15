@@ -218,7 +218,7 @@ export function TeamManagementPage() {
         try {
             // Jeśli wybrano konkretny zespół — pobierz jego szczegóły (zawiera pole members)
             if (selectedTeamId) {
-                const details = await getTeamDetails(selectedTeamId, { forceReal: true })
+                const details = await getTeamDetails(selectedTeamId, { forceReal: true, allowUnauth: true })
                 console.debug('[TeamManagementPage] getTeamDetails response', { selectedTeamId, details })
                 const rawList: any[] = (details && (details as any).members) ? (details as any).members : []
                 const mappedFromDetails: Member[] = rawList.map((it: any) => {
@@ -239,7 +239,7 @@ export function TeamManagementPage() {
 
             // Najpierw spróbuj użyć centralnego endpointu GET /user/team-management/get (TeamManagementController#getTeamMembers)
             try {
-                const res = await getTeamMembers(status && status !== 'ALL' ? status : undefined)
+                const res = await getTeamMembers(status && status !== 'ALL' ? status : undefined, undefined, undefined, { allowUnauth: true })
                 console.debug('[TeamManagementPage] getTeamMembers response (primary)', res)
                 const items = res.items ?? []
                 const mappedFromGlobal: Member[] = items.map((it: any) => {
@@ -279,7 +279,7 @@ export function TeamManagementPage() {
                     // równoległe pobranie szczegółów zespołów
                     const promises = teams.map((t: any) => {
                         const id = t.teamId ?? t.id
-                        return id ? getTeamDetails(Number(id), { forceReal: true }).catch((e) => {
+                        return id ? getTeamDetails(Number(id), { forceReal: true, allowUnauth: true }).catch((e) => {
                             console.warn('[TeamManagementPage] getTeamDetails failed for team', id, e)
                             return null
                         }) : null
@@ -330,7 +330,7 @@ export function TeamManagementPage() {
 
             // Ostateczny fallback: spróbuj GET /user/team-management/get (jeśli powyższe zawiedzie)
             try {
-                const res2 = await getTeamMembers(status && status !== 'ALL' ? status : undefined)
+                const res2 = await getTeamMembers(status && status !== 'ALL' ? status : undefined, undefined, undefined, { allowUnauth: true })
                 console.debug('[TeamManagementPage] getTeamMembers response (final fallback)', res2)
                 const items2 = res2.items ?? []
                 const mapped2: Member[] = items2.map((it: any) => {
@@ -422,7 +422,7 @@ export function TeamManagementPage() {
             // clear description so mock isn't visible while loading
             setTeamForm((prev) => ({ ...prev, description: '' }))
             try {
-                const details = await getTeamDetails(selectedTeamId, { forceReal: true })
+                const details = await getTeamDetails(selectedTeamId, { forceReal: true, allowUnauth: true })
                 if (!mounted) return
                 setTeamForm((prev: TeamForm) => ({
                     id: details.id ?? selectedTeamId,
@@ -462,7 +462,7 @@ export function TeamManagementPage() {
             toast.success('Zapisano zespół', { description: `${teamForm.name || 'Bez nazwy'}` })
             // Odśwież szczegóły
             try {
-                const refreshed = await getTeamDetails(id, { forceReal: true })
+                const refreshed = await getTeamDetails(id, { forceReal: true, allowUnauth: true })
                 setTeamForm((prev) => ({ ...prev, name: refreshed.name ?? prev.name, code: (refreshed as any).code ?? prev.code, category: (refreshed as any).category ?? prev.category, description: (refreshed as any).description ?? prev.description }))
             } catch (_) {
                 // ignore refresh failures
@@ -475,7 +475,7 @@ export function TeamManagementPage() {
         // jeśli mamy wybrany zespół — pobierz jego aktualne dane z backendu
         if (selectedTeamId) {
             try {
-                const details = await getTeamDetails(selectedTeamId, { forceReal: true })
+                const details = await getTeamDetails(selectedTeamId, { forceReal: true, allowUnauth: true })
                 setTeamForm({
                     id: details.id ?? selectedTeamId,
                     name: details.name ?? '',
@@ -763,7 +763,7 @@ export function TeamManagementPage() {
                                 <TeamSearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelect={async (teamId) => {
                                     setIsSearchOpen(false)
                                     try {
-                                        const details = await getTeamDetails(teamId, { forceReal: true })
+                                        const details = await getTeamDetails(teamId, { forceReal: true, allowUnauth: true })
                                         setSelectedTeamId(teamId)
                                         setTeamForm((prev: TeamForm) => ({
                                             id: details.id ?? teamId,
@@ -1043,12 +1043,12 @@ export function TeamManagementPage() {
             if (!Array.isArray(allTeams) || allTeams.length === 0) return current
 
             const teamDetailsPromises = allTeams.map((t: any) => {
-                const id = t.teamId ?? t.id
-                return id ? getTeamDetails(Number(id), { forceReal: true }).catch((e) => {
-                    console.warn('[TeamManagementPage] getTeamDetails failed for ALL_TEAMS team', id, e)
-                    return null
-                }) : null
-            }).filter(Boolean) as Promise<any>[]
+                 const id = t.teamId ?? t.id
+                return id ? getTeamDetails(Number(id), { forceReal: true, allowUnauth: true }).catch((e) => {
+                     console.warn('[TeamManagementPage] getTeamDetails failed for ALL_TEAMS team', id, e)
+                     return null
+                 }) : null
+             }).filter(Boolean) as Promise<any>[]
 
             const settled = await Promise.all(teamDetailsPromises)
             const collected: Member[] = []

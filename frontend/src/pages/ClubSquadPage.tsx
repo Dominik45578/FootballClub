@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { getClubSquad, getClubs } from '@/lib/externalApi'
+import { getClubs } from '@/lib/externalApi'
+import { getTeamMembers, getTeamDetails } from '@/lib/userApi'
 
 const positionLabels: Record<string, string> = {
   Goalkeeper: 'Bramkarz',
@@ -43,28 +44,62 @@ export function ClubSquadPage() {
       setLoading(true)
       setError(null)
       try {
-        const squad = await getClubSquad(idNum)
-        setPlayers(squad && squad.length > 0 ? squad : [])
-        // Best-effort: fetch club name from list (mock) to show header
-        const clubs = await getClubs({ page: 0, size: 50 })
-        const found = clubs.items.find((c) => (c.id ?? c.teamId) === idNum)
-        setClubName(found?.name ?? found?.teamName ?? `Klub ${idNum}`)
-        if (!squad || squad.length === 0) {
-          // fallback: pokaż przykładowych graczy zamiast pustki
-          const fallback = await getClubSquad(-1)
-          setPlayers(fallback)
-          setError(null)
+        // Pobierz nazwę z listy klubów (bez ryzykownych wywołań które mogą wymusić logowanie)
+        try {
+          const clubs = await getClubs({ page: 0, size: 50 })
+          const found = clubs.items.find((c) => (c.id ?? c.teamId) === idNum)
+          setClubName(found?.name ?? found?.teamName ?? `Klub ${idNum}`)
+        } catch (err) {
+          setClubName(`Klub ${idNum}`)
         }
-      } catch (e: any) {
-        setError(e?.message || 'Nie udało się wczytać składu')
-        const fallback = await getClubSquad(-1)
-        setPlayers(fallback)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [clubId])
+
+        // Pobierz szczegóły zespołu (zawierające pole members) — użyj allowUnauth aby nie przekierowywać do /login przy 401/403
+        try {
+          const details = await getTeamDetails(idNum, { allowUnauth: true })
+          if (details?.name) setClubName(details.name)
+          const rawMembers: any[] = (details && (details as any).members) ? (details as any).members : []
+          // mapuj członków na format tabeli
+          const mapped = (rawMembers || []).map((m: any) => ({
+            id: m.teamMemberId ?? m.memberId ?? m.id,
+            name: `${m.firstName ?? m.name ?? ''}${m.lastName ? ' ' + m.lastName : ''}`.trim() || m.fullName || m.username || '—',
+            number: (m.number ?? m.playerNumber ?? m.shirtNumber ?? m.jerseyNumber) || undefined,
+            // Spróbuj odczytać pozycję z różnych pól; jeśli brak, zostaw undefined
+            position: (m.position ?? m.positionName ?? m.role ?? undefined) as any,
+            age: m.age ?? (m.birthDate ? Math.max(0, new Date().getFullYear() - new Date(m.birthDate).getFullYear()) : undefined) ?? undefined,
+            status: m.status ?? undefined,
+            roles: Array.isArray(m.roles) ? m.roles : (m.member?.roles ?? []),
+          }))
+          // Pokaż osoby z rolą TEAM_PLAYER niezależnie od statusu — UI filtruje po pozycji, więc tu pozostawiamy wszystkich
+          setPlayers(mapped)
+        } catch (e) {
+          // fallback: jeśli getTeamDetails zawiedzie, spróbuj globalnego endpointu getTeamMembers
+          const resp = await getTeamMembers(undefined, 0, 1000, { allowUnauth: true })
+          const members = (resp?.items ?? resp ?? [])
+          const mapped = (members || []).map((m: any) => ({
+            id: m.teamMemberId ?? m.memberId ?? m.id,
+            name: `${m.firstName ?? m.name ?? ''}${m.lastName ? ' ' + m.lastName : ''}`.trim() || m.username || '—',
+            number: (m.number ?? m.shirtNumber ?? m.jerseyNumber) || undefined,
+            position: (m.position ?? m.positionName) || undefined,
+            age: m.age ?? m.years ?? undefined,
+          }))
+          setPlayers(mapped)
+        }
+         setError(null)
+        // fallback do mocków jeśli nic nie zwrócono
+        if (!players || players.length === 0) {
+          const fallback = await (await import('@/lib/externalApi')).getClubSquad(-1)
+          setPlayers(fallback)
+        }
+       } catch (e: any) {
+         setError(e?.message || 'Nie udało się wczytać składu')
+         const fallback = await (await import('@/lib/externalApi')).getClubSquad(-1)
+         setPlayers(fallback)
+       } finally {
+         setLoading(false)
+       }
+     }
+     load()
+   }, [clubId])
 
   const filtered = useMemo(
     () => players.filter((p) => positionFilter === 'ALL' || p.position === positionFilter),

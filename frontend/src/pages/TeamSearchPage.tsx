@@ -15,6 +15,7 @@ export function TeamSearchPage() {
     const [size] = useState(5)
     const [loading, setLoading] = useState(false)
     const [clubs, setClubs] = useState<{ items: any[]; total: number }>({ items: [], total: 0 })
+    const [backendError, setBackendError] = useState<{ status?: number | null; message?: string | null; respText?: string | null; location?: string | null } | null>(null)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -26,8 +27,9 @@ export function TeamSearchPage() {
     const fetchClubs = async () => {
         setLoading(true)
         try {
-            const res = await getTeams({ mode: 'ALL_TEAMS', name, page, size })
+            const res = await getTeams({ mode: 'ALL_TEAMS', name, page, size }, { allowUnauth: true })
             setClubs({ items: res.items, total: res.total ?? res.items.length })
+            setBackendError((res as any).fromMock ? (res as any).error ?? null : null)
         } finally {
             setLoading(false)
         }
@@ -68,6 +70,15 @@ export function TeamSearchPage() {
                     </CardHeader>
                     <CardContent className="space-y-6 overflow-hidden">
                         <div className="grid gap-3 md:grid-cols-3">
+                            {backendError && (
+                                <div className="col-span-3 p-3 rounded border bg-yellow-50 text-sm">
+                                    Backend odrzucił żądanie (status: {backendError.status ?? '—'}). Wyświetlane są dane mockowe.
+                                    <div className="mt-2 flex gap-2">
+                                        <Button size="sm" onClick={() => { setPage(0); fetchClubs() }}><RotateCw className="mr-2 h-4 w-4"/>Spróbuj ponownie</Button>
+                                        <div className="text-muted-foreground">{backendError.message ?? backendError.respText ?? ''}</div>
+                                    </div>
+                                </div>
+                            )}
                             <div>
                                 <label className="text-sm font-medium">Nazwa</label>
                                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="np. Real" />

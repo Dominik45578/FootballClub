@@ -112,12 +112,25 @@ async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
   const auth = skipAuthHeader ? {} : authHeader()
   const method = (rest.method || 'GET').toString().toUpperCase()
   const requestHasBody = !!rest.body
+  // Debug: pokaż czy mamy token/auth header oraz istotne opcje. Uwaga: nie logujemy całego tokena (security)
+  try {
+    // eslint-disable-next-line no-console
+    console.debug('[fetchJson] request', { url, method, hasAuth: !!Object.keys(auth).length, dontRedirectOnAuthError, skipAuthHeader })
+  } catch (e) {
+    // noop
+  }
   // Do not set Content-Type for GET/HEAD to avoid CORS preflight. Set it only for requests with body or methods that usually send JSON.
   const headers: any = { ...(rest.headers as any || {}), ...auth }
   if (requestHasBody || (method !== 'GET' && method !== 'HEAD')) {
     headers['Content-Type'] = 'application/json'
   }
   const res = await fetch(url, { ...rest, headers, credentials: 'include' })
+  try {
+    // eslint-disable-next-line no-console
+    console.debug('[fetchJson] response', { url, status: res.status, ok: res.ok })
+  } catch (e) {
+    // noop
+  }
   if (!res.ok) {
     if ((res.status === 401 || res.status === 403) && !dontRedirectOnAuthError) {
       logout()
@@ -234,7 +247,7 @@ export async function updateMyProfile(payload: { height?: number; weight?: numbe
   return fetchJson(`${USER_BASE}/members/me`, { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
-export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }, opts?: { allowUnauth?: boolean; forceReal?: boolean }): Promise<{ items: TeamSummary[]; total?: number }>{
+export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }, opts?: { allowUnauth?: boolean; forceReal?: boolean; skipAuthHeader?: boolean }): Promise<{ items: TeamSummary[]; total?: number }>{
   // Use mock data only when explicitly enabled (VITE_ENABLE_MOCKS=true) and OFFLINE is true,
   // unless VITE_FORCE_REAL_API=true or caller passed opts.forceReal === true.
   const callerForceReal = !!opts?.forceReal
@@ -253,7 +266,7 @@ export async function getTeams(params?: { mode?: string; teamId?: number; name?:
   const relUrl = `${API_PREFIX}/user/teams?${qs.toString()}`
   const fullApiUrl = `${USER_BASE}/teams?${qs.toString()}`
   try {
-    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.allowUnauth })
+    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.skipAuthHeader })
     return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
   } catch (e) {
     console.warn('[userApi.getTeams] relative fetch failed, trying full URL', { relUrl, err: e })
@@ -275,7 +288,7 @@ export async function getTeams(params?: { mode?: string; teamId?: number; name?:
   }
 }
 
-export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolean }): Promise<TeamDetails> {
+export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolean; allowUnauth?: boolean; skipAuthHeader?: boolean }): Promise<TeamDetails> {
   const callerForceReal = !!opts?.forceReal
   if (OFFLINE && !FORCE_REAL_API && ENABLE_MOCKS && !callerForceReal) {
     console.debug('[userApi.getTeamDetails] returning MOCK details', { teamId })
@@ -286,9 +299,9 @@ export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolea
   const fullUrl = `${USER_BASE}/teams/${teamId}`
 
   // Try relative (proxy) first to avoid CORS issues in dev
-  console.debug('[userApi.getTeamDetails] attempting relative fetch (no auth header) to reduce preflight', { relUrl })
+  console.debug('[userApi.getTeamDetails] attempting relative fetch (no auth header) to reduce preflight if requested', { relUrl, skipAuthHeaderRequested: !!opts?.skipAuthHeader })
   try {
-    const data = await fetchJson(relUrl, { skipAuthHeader: true })
+    const data = await fetchJson(relUrl, { skipAuthHeader: !!opts?.skipAuthHeader, dontRedirectOnAuthError: opts?.allowUnauth })
     console.debug('[userApi.getTeamDetails] relative fetch (no auth) success', { teamId, relUrl, data })
     // Normalize description from multiple possible fields
     if (data) {
@@ -303,7 +316,7 @@ export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolea
   // try relative with auth header
   try {
     console.debug('[userApi.getTeamDetails] attempting relative fetch (with auth)', { relUrl })
-    const dataAuth = await fetchJson(relUrl)
+    const dataAuth = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
     console.debug('[userApi.getTeamDetails] relative fetch (with auth) success', { teamId, relUrl, dataAuth })
     if (dataAuth) {
       const desc = (dataAuth as any).description ?? (dataAuth as any).teamDescription ?? (dataAuth as any).summary ?? (dataAuth as any).desc ?? (dataAuth as any).about ?? (dataAuth as any).details?.description ?? null
@@ -317,7 +330,7 @@ export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolea
   // Try full URL (direct to gateway/identity)
   console.debug('[userApi.getTeamDetails] attempting full fetch', { fullUrl })
   try {
-    const data2 = await fetchJson(fullUrl)
+    const data2 = await fetchJson(fullUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
     console.debug('[userApi.getTeamDetails] full fetch success', { teamId, fullUrl, data2 })
     if (data2) {
       const desc = (data2 as any).description ?? (data2 as any).teamDescription ?? (data2 as any).summary ?? (data2 as any).desc ?? (data2 as any).about ?? (data2 as any).details?.description ?? null
@@ -599,9 +612,38 @@ export async function searchMembers(query: string, page = 0, size = 10, opts?: {
   return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
 }
 
-export async function getMemberProfile(id: number) {
+export async function getMemberProfile(id: number, opts?: { allowUnauth?: boolean; skipAuthHeader?: boolean }) {
   if (OFFLINE) return Promise.resolve({ id, firstName: 'Jan', lastName: 'Kowalski', age: 36 })
-  return fetchJson(`${USER_BASE}/members?id=${id}`)
+
+  const relUrl = `${API_PREFIX}/user/members?id=${id}`
+  const fullUrl = `${USER_BASE}/members?id=${id}`
+
+  // Prefer relative path without auth header to allow public access and avoid CORS in dev
+  try {
+    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.skipAuthHeader })
+    return data
+  } catch (e) {
+    console.warn('[userApi.getMemberProfile] relative fetch (no auth) failed, trying relative with auth', { relUrl, err: e })
+  }
+
+  try {
+    const dataAuth = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
+    return dataAuth
+  } catch (e) {
+    console.warn('[userApi.getMemberProfile] relative fetch with auth failed, trying full URL', { fullUrl, err: e })
+  }
+
+  try {
+    const data2 = await fetchJson(fullUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
+    return data2
+  } catch (e2) {
+    console.error('[userApi.getMemberProfile] all attempts failed', { fullUrl, err: e2 })
+    if (opts?.allowUnauth) {
+      console.warn('[userApi.getMemberProfile] returning mock because allowUnauth is true and backend fetch failed')
+      return { id, firstName: 'Jan', lastName: 'Kowalski', age: 36 }
+    }
+    throw e2
+  }
 }
 
 // Aktywacja konta - do testów UI
@@ -660,7 +702,7 @@ export async function removeTeamMember(teamMemberId: number) {
 }
 
 // Pobierz listę członków zespołu (może przyjmować opcjonalny parametr status: ACTIVE | WAITING | ...)
-export async function getTeamMembers(status?: string, page?: number, size?: number, opts?: { allowUnauth?: boolean }): Promise<{ items: any[]; total?: number }> {
+export async function getTeamMembers(status?: string, page?: number, size?: number, opts?: { allowUnauth?: boolean; skipAuthHeader?: boolean }): Promise<{ items: any[]; total?: number }> {
    if (OFFLINE && ENABLE_MOCKS) {
      // jeśli mockTeamDetails ma members, zwróć je, inaczej zwróć wygenerowany mock
      const items = (mockTeamDetails && mockTeamDetails.members) ? mockTeamDetails.members : [{ teamMemberId: 1, memberId: 11, firstName: 'Jan', lastName: 'Kowalski', roles: ['PLAYER'], status: 'ACTIVE' }]
@@ -677,7 +719,7 @@ export async function getTeamMembers(status?: string, page?: number, size?: numb
    const fullUrl = `${USER_BASE}/team-management/get${qs.toString() ? '?' + qs.toString() : ''}`
 
    try {
-    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.allowUnauth })
+    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.skipAuthHeader })
     // Normalizuj możliwe kształty odpowiedzi: content, items, members, teamMembers, lub bezpośrednia tablica
     const itemsArray = data?.content ?? data?.items ?? data?.members ?? data?.teamMembers ?? (Array.isArray(data) ? data : [])
     const total = data?.totalElements ?? data?.total ?? (Array.isArray(itemsArray) ? itemsArray.length : undefined)

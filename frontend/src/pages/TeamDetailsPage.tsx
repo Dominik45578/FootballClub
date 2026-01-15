@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button'
 import { getTeamDetails, type TeamDetails } from '@/lib/userApi'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function TeamDetailsPage() {
     const { teamId } = useParams();
@@ -42,6 +43,7 @@ export function TeamDetailsPage() {
             <main className="container py-8">
                 {loading && <div>Ładowanie...</div>}
                 {error && <div className="text-red-500">{error}</div>}
+
                 {!teamId && !loading && !error && (
                     <div className="p-4 bg-card rounded-lg shadow text-center">
                         <p>Nie wybrano zespołu. Przejdź do wyszukiwarki, aby wybrać zespół.</p>
@@ -52,34 +54,53 @@ export function TeamDetailsPage() {
                         </div>
                     </div>
                 )}
-                {team && (
-                    <>
-                        <div className="flex items-start flex-wrap gap-3 overflow-hidden">
-                            <div>
-                                <h2 className="text-xl font-bold">{team.name} {teamId ? `(ID: ${teamId})` : ''}</h2>
-                                <p>Kod zespołu: {team.code}</p>
-                                <p>Kategoria: {team.category}</p>
-                                <p>Data utworzenia: {team.createdAt}</p>
-                            </div>
-                            {teamId && (
-                                <Button variant="default" size="lg" className="shrink-0 px-6" onClick={() => navigate(`/club/${teamId}/squad`)}>
-                                    Zobacz skład zespołu
-                                </Button>
-                            )}
-                        </div>
-                        <h3 className="mt-4 text-lg font-bold">Członkowie:</h3>
-                        <ul>
-                            {team.members?.map((member, index) => (
-                                <li key={index} className="p-2 border-b">
-                                    {member.firstName} {member.lastName} - {member.roles?.join(', ') || member.status}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </main>
-        </div>
-    );
-}
 
-export default TeamDetailsPage;
+                {team && (
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center justify-between gap-4 flex-wrap">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-teal-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold">
+                                            {String(team.name || '').split(' ').map(s => s.charAt(0)).slice(0,2).join('').toUpperCase() || 'FC'}
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-xl">{team.name}</CardTitle>
+                                            <div className="text-sm text-muted-foreground">{team.category ? `Kategoria: ${team.category}` : ''}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <Button variant="outline" onClick={() => navigate('/teams')}>Powrót</Button>
+                                        {teamId && (
+                                            <Button onClick={() => navigate(`/club/${teamId}/squad`)}>Skład zespołu</Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="md:col-span-2">
+                                        <p className="text-sm text-muted-foreground mb-2">Opis</p>
+                                        <div className="rounded-md border border-border p-4 bg-background text-sm">
+                                            {team.description ?? 'Brak opisu zespołu'}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-sm text-muted-foreground">Informacje</div>
+                                        <div className="grid grid-cols-1 gap-1 text-sm">
+                                            <div><span className="font-medium">Utworzono:</span> {team.createdAt ?? '—'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Sekcja składów została ukryta zgodnie z prośbą */}
+                     </div>
+                 )}
+             </main>
+         </div>
+     );
+ }
+
+ export default TeamDetailsPage;
