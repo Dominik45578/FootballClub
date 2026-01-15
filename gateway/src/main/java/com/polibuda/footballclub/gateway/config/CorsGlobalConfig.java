@@ -69,22 +69,22 @@ public class CorsGlobalConfig {
                 HttpMethod.OPTIONS.name()
         ));
 
-        cors.setAllowedHeaders(List.of(
-                HttpHeaders.AUTHORIZATION,
-                HttpHeaders.CONTENT_TYPE,
-                "X-Requested-With"
-        ));
+//        cors.setAllowedHeaders(List.of(
+//                HttpHeaders.AUTHORIZATION,
+//                HttpHeaders.CONTENT_TYPE,
+//                "X-Requested-With"
+//        ));
 
-
-        cors.setExposedHeaders(List.of(
-                MutationHeaderClaims.X_USER_ID,
-                MutationHeaderClaims.X_ROLES,
-                MutationHeaderClaims.X_SCOPE,
-                MutationHeaderClaims.X_USERNAME,
-                MutationHeaderClaims.X_EMAIL,
-                MutationHeaderClaims.X_NON_BLOCKED,
-                MutationHeaderClaims.X_ACTIVATED
-        ));
+//
+//        cors.setExposedHeaders(List.of(
+//                MutationHeaderClaims.X_USER_ID,
+//                MutationHeaderClaims.X_ROLES,
+//                MutationHeaderClaims.X_SCOPE,
+//                MutationHeaderClaims.X_USERNAME,
+//                MutationHeaderClaims.X_EMAIL,
+//                MutationHeaderClaims.X_NON_BLOCKED,
+//                MutationHeaderClaims.X_ACTIVATED
+//        ));
 
         cors.setAllowCredentials(true);
         cors.setMaxAge(3600L);
