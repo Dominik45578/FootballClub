@@ -33,7 +33,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/auth/login",
             "/auth/register",
-            "/auth/activate",
+            "/auth/activate/**",
             "/auth/refresh",
             "/auth/password/**",
             "/actuator/**",

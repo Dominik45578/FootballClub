@@ -65,7 +65,7 @@ function fetchJson(url: string, opts: RequestInit & { dontRedirectOnAuthError?: 
   })
 }
 
-export async function login(email?: string, password?: string): Promise<{ success: boolean; token?: string; refreshToken?: string; userId?: number; message?: string }> {
+export async function login(email: string, password: string): Promise<{ success: boolean; token?: string; refreshToken?: string; userId?: number; message?: string }> {
   if (OFFLINE) {
     const TEST_EMAIL = 'admin@klub.pl'
     const TEST_PASSWORD = 'haslo123'

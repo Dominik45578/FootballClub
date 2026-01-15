@@ -2,6 +2,7 @@ package com.polibuda.footballclub.user.dto.request;
 
 import com.polibuda.footballclub.common.database.TeamCategory;
 import com.polibuda.footballclub.common.database.TeamStatus;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class UpdateTeamRequestDTO {
+    @Min(0)
     private Long id;
 
     @Size(min = 5, max = 128)

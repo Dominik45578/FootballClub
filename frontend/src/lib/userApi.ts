@@ -295,7 +295,7 @@ export async function getMemberProfile(id: number) {
 }
 
 // Aktywacja konta - do testów UI
-export async function activateAccount(code: string, email?: string): Promise<{ success: boolean }> {
+export async function activateAccount(code: string, email: string): Promise<{ success: boolean }> {
   if (OFFLINE) {
     // wymóg: dokładnie 8 znaków alfanumerycznych
     const ok = /^[A-Za-z0-9]{6,10}$/.test(code)
@@ -305,16 +305,16 @@ export async function activateAccount(code: string, email?: string): Promise<{ s
   return fetchJson(`${AUTH_BASE}/activate`, { method: 'POST', body: JSON.stringify({ code, email }), skipAuthHeader: true })
 }
 
-export async function resendActivation(email?: string): Promise<{ sent: boolean }> {
+export async function resendActivation(email: string): Promise<{ sent: boolean }> {
   if (OFFLINE) {
     await new Promise((r) => setTimeout(r, 500))
     return Promise.resolve({ sent: true })
   }
 
-  const qs = email ? `?email=${encodeURIComponent(email)}` : ''
-  const res = await fetchJson(`${AUTH_BASE}/activate/resend${qs}`, {
-    method: 'GET',
+  const res = await fetchJson(`${AUTH_BASE}/activate/resend`, {
+    method: 'POST',
     skipAuthHeader: true,
+      body: JSON.stringify({ email }),
   })
   return { sent: !!(res?.sent ?? res?.success ?? res?.status ?? true) }
 }

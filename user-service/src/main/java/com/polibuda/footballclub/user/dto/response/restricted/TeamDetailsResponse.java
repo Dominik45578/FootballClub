@@ -20,6 +20,7 @@ public class TeamDetailsResponse {
     private String code; // Kod widoczny tylko dla członków (żeby mogli zapraszać kolegów)
     private TeamCategory category;
     private Instant createdAt;
+    private String description;
     
     // Lista członków wewnątrz szczegółów zespołu
     private List<TeamMemberListItemDto> members;

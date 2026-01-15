@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,12 +22,13 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    @PreAuthorize("hasAnyRole('MEMBER')")
     @GetMapping("/me")
     public ResponseEntity<MemberProfileResponse> getMyProfile(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId) {
         return ResponseEntity.ok(memberService.getMyProfile(userId));
     }
-
+    @PreAuthorize("hasAnyRole('MEMBER')")
     @PatchMapping("/me")
     public ResponseEntity<MemberProfileResponse> updateMyProfile(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId,
@@ -34,12 +36,14 @@ public class MemberController {
         return ResponseEntity.ok(memberService.updateMyProfile(userId, request));
     }
 
+    @PreAuthorize("hasAnyRole('MEMBER')")
     @GetMapping("search")
     public ResponseEntity<MemberSearchResponse> searchMembers(
             @RequestParam String query,
             @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(memberService.searchMembers(query, pageable));
     }
+    @PreAuthorize("hasAnyRole('MEMBER')")
     @GetMapping
     public ResponseEntity<MemberSummaryResponse> getMemberProfile(
             @RequestParam Long id
@@ -55,6 +59,7 @@ public class MemberController {
         return memberService.addMember(request,userId);
     }
 
+    @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @DeleteMapping("/del")
     public ResponseEntity<Boolean> deleteMember(
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId

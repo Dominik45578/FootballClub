@@ -15,9 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class ActivateController {
     private final ActivateService activateService;
 
-    @PostMapping("activate")
+    @PostMapping("/activate")
     public ResponseEntity<ActivateResponse> activate(@Valid @RequestBody ActivateRequest request) {
         ActivateResponse response = activateService.activateAccount(request);
         return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
+    }
+
+    @PostMapping("/activate/resend")
+    public ResponseEntity<Boolean> resend(@Valid @RequestBody ResendCodeRequest request) {
+        boolean status = activateService.resendActivationCode(request);
+        return status ? ResponseEntity.ok(true) : ResponseEntity.badRequest().body(false);
     }
 }

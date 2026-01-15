@@ -59,7 +59,7 @@ export function ActivateAccountPage() {
 
     setLoading(true)
     try {
-      await activateAccount(code)
+      await activateAccount(code,email)
       toast.success('Konto aktywowane! Przekierowuję do logowania...')
       navigate('/login')
     } catch (err: any) {

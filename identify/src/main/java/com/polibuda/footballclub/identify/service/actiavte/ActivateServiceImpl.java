@@ -3,8 +3,10 @@ package com.polibuda.footballclub.identify.service.actiavte;
 import com.polibuda.footballclub.common.actions.UserAccountAction;
 import com.polibuda.footballclub.common.dto.ActivateRequest;
 import com.polibuda.footballclub.common.dto.ActivateResponse;
+import com.polibuda.footballclub.common.dto.ResendCodeRequest;
 import com.polibuda.footballclub.identify.EmailTemplates;
 import com.polibuda.footballclub.identify.RegisterCodeGenerator;
+import com.polibuda.footballclub.identify.entity.User;
 import com.polibuda.footballclub.identify.repository.UserRepository;
 import com.polibuda.footballclub.identify.service.RabbitService;
 import com.polibuda.footballclub.identify.service.redis.RedisService;
@@ -82,5 +84,25 @@ public class ActivateServiceImpl implements ActivateService {
     public void sendAccountNotVerifiedReminder(String email, String username) {
         String content = EmailTemplates.generateAccountNotActiveEmail(username);
         rabbitService.sendMessageWithVerificationCode(email, content, "Action Required: Verify Account");
+    }
+
+    @Override
+    public boolean resendActivationCode(ResendCodeRequest request) {
+        try {
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+            if(user.getEnabled() == true){
+                throw new Exception("User is already activated");
+            }
+            String code = RegisterCodeGenerator.generateUrlSafeToken();
+            redisService.deleteCode(request.getEmail(),UserAccountAction.VERIFY_USER_ACCOUNT);
+            redisService.saveCode(request.getEmail(), code, UserAccountAction.VERIFY_USER_ACCOUNT);
+            String subject = "Verify your account";
+            String content = EmailTemplates.generateEmailWithActivationCode(user.getUsername(), code);
+            rabbitService.sendMessageWithVerificationCode(request.getEmail(), content, subject);
+            return true;
+        }catch (Exception e) {
+            log.error("Error sending new verification  code to: {}", request.getEmail(), e);
+            return false;
+        }
     }
 }
