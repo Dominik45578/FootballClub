@@ -351,15 +351,35 @@ export async function createTeam(payload: { name: string; code?: string; status?
     mockTeams.push(newTeam)
     return Promise.resolve(newTeam)
   }
-  // Backend expects PUT /user/teams/new with AddTeamRequest
-  // Map frontend status -> backend expected value if necessary
-  // Jeśli frontend lub stary UI wysyła 'INACTIVE', zamapuj na 'SUSPENDED' (backendowy enum)
-  const mappedStatus = payload.status === 'INACTIVE' ? 'SUSPENDED' : payload.status
+
+  // Normalize status and map legacy values
+  const normalizedStatus = payload.status === undefined || payload.status === null ? undefined : String(payload.status).toUpperCase()
+  const mappedStatus = normalizedStatus === 'INACTIVE' ? 'SUSPENDED' : normalizedStatus
   const body: any = { name: payload.name, category: payload.category, code: payload.code, description: payload.description }
   if (mappedStatus !== undefined) body.status = mappedStatus
-  console.debug('[userApi.createTeam] sending body', body)
-   await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(body) })
-   return true
+
+  // Try relative URL first (works with Vite proxy in dev), then fall back to full USER_BASE URL
+  const relUrl = `${API_PREFIX}/user/teams/new`
+  const fullUrl = `${USER_BASE}/teams/new`
+
+  // attempt relative
+  try {
+    console.debug('[userApi.createTeam] attempting relative PUT', { url: relUrl, body })
+    await fetchJson(relUrl, { method: 'PUT', body: JSON.stringify(body) })
+    return true
+  } catch (e) {
+    console.warn('[userApi.createTeam] relative PUT failed, will try full URL', { relUrl, err: e })
+  }
+
+  // attempt full URL
+  try {
+    console.debug('[userApi.createTeam] attempting full PUT', { url: fullUrl, body })
+    await fetchJson(fullUrl, { method: 'PUT', body: JSON.stringify(body) })
+    return true
+  } catch (e2) {
+    console.error('[userApi.createTeam] full PUT failed', { fullUrl, err: e2 })
+    throw e2
+  }
  }
 
 // Aktualizuje zespół (PUT /user/teams/{id}) — jeśli backend używa PATCH/inna ścieżka, zmień tutaj.
