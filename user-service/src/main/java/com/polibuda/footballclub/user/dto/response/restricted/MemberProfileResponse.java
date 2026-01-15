@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.user.dto.response.restricted;
 
+import com.polibuda.footballclub.common.claims.FieldPosition;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,6 @@ public class MemberProfileResponse {
     private String phoneNumber;
     private Double height;
     private Double weight;
-
+    private FieldPosition fieldPosition;
     private Integer age;
 }

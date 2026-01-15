@@ -1,6 +1,7 @@
 package com.polibuda.footballclub.user.dto.request;
 
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.claims.FieldPosition;
 import com.polibuda.footballclub.common.database.TeamRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class ManageTeamMemberRequest {
     @NotNull(message = "Status jest wymagany")
     private TeamMemberStatus newStatus;
 
+    private FieldPosition newFieldPosition;
     // Opcjonalne: przy okazji zmiany statusu można nadać role
     private Set<TeamRole> newRoles;
     private Set<TeamRole> removerRoles;

@@ -1,9 +1,11 @@
 package com.polibuda.footballclub.match.config;
 
 import com.polibuda.footballclub.football_external_data.grpc.FootballDataServiceGrpc;
+import com.polibuda.footballclub.match.grpc.MatchIntegrationServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,35 +16,47 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class GrpcClientConfig {
 
-    // Adres serwisu "football-external-data"
     @Value("${grpc.football-data.host}")
-    private String host;
+    private String footballDataHost;
 
     @Value("${grpc.football-data.port}")
-    private int port;
+    private int footballDataPort;
 
-    /**
-     * Bean 1: ManagedChannel
-     * To jest fizyczne połączenie (socket TCP/HTTP2).
-     * Musi być Beanem, aby Spring zarządzał jego cyklem życia (zamknięcie przy stopie aplikacji).
-     */
+    @Value("${grpc.user-service.host:user-service}")
+    private String userServiceHost;
+
+    @Value("${grpc.user-service.port:9095}")
+    private int userServicePort;
+
     @Bean(destroyMethod = "shutdown")
     public ManagedChannel footballDataChannel() {
-        log.info("Creating gRPC Channel to {}:{}", host, port);
-        
+        log.info("Creating gRPC Channel to FootballData Service at {}:{}", footballDataHost, footballDataPort);
+        return createChannel(footballDataHost, footballDataPort);
+    }
+
+    @Bean(destroyMethod = "shutdown")
+    public ManagedChannel matchIntegrationChannel() {
+        log.info("Creating gRPC Channel to User Service (Match Integration) at {}:{}", userServiceHost, userServicePort);
+        return createChannel(userServiceHost, userServicePort);
+    }
+
+    // Metoda pomocnicza, żeby nie powielać kodu konfiguracji Netty
+    private ManagedChannel createChannel(String host, int port) {
         return NettyChannelBuilder.forAddress(host, port)
-                .usePlaintext() // Wyłączamy SSL dla komunikacji wewnętrznej
-                .keepAliveTime(30, TimeUnit.SECONDS) // Pingowanie połączenia, żeby Load Balancer go nie ubił
+                .usePlaintext() // Wyłączamy SSL dla komunikacji wewnątrz klastra
+                .keepAliveTime(30, TimeUnit.SECONDS)
                 .build();
     }
 
-    /**
-     * Bean 2: BlockingStub
-     * To jest ten obiekt, którego Spring szukał i nie mógł znaleźć.
-     * Wstrzykujemy tu kanał utworzony metodę wyżej.
-     */
     @Bean
-    public FootballDataServiceGrpc.FootballDataServiceBlockingStub footballDataStub(ManagedChannel channel) {
+    public FootballDataServiceGrpc.FootballDataServiceBlockingStub footballDataStub(
+            @Qualifier("footballDataChannel") ManagedChannel channel) {
         return FootballDataServiceGrpc.newBlockingStub(channel);
+    }
+
+    @Bean
+    public MatchIntegrationServiceGrpc.MatchIntegrationServiceBlockingStub matchIntegrationStub(
+            @Qualifier("matchIntegrationChannel") ManagedChannel channel) {
+        return MatchIntegrationServiceGrpc.newBlockingStub(channel);
     }
 }

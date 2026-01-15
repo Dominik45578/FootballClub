@@ -137,6 +137,8 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBIT_PASSWORD}
       GRPC_IDENTIFY_PORT: 9092
       GRPC_IDENTIFY_HOST: identify
+      GRPC_SERVER_PORT: 9095
+
 
 
   # ==========================================
@@ -175,13 +177,24 @@ services:
         condition: service_started
       football-external-data-service:
         condition: service_started
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_started
 
     networks:
       - services-network
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://${EUREKA_NAME}:8761/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://${DB_CONTAINER}:${DB_PORT}/${DB_MATCH_NAME}${DB_PARAMETERS}"
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       GRPC_SERVER_HOST: ${FED_SERVICE_NAME}
       GRPC_SERVER_PORT: ${FED_GRPC_PORT}
+      GRPC_SERVE_PORT: 9095
+      GRPC_SERVE_HOST: user-service
+
+
 
   # ==========================================
   # FOOTBALL EXTERNAL DATA SERVICE

@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service // Kluczowe: Rejestruje Bean, który wpadnie do listy BindableService w konfigu
+@Service
 @RequiredArgsConstructor
 public class UserRoleGrpcController extends UserRoleServiceGrpc.UserRoleServiceImplBase {
 

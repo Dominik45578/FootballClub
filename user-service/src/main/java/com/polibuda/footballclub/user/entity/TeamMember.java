@@ -1,6 +1,7 @@
 package com.polibuda.footballclub.user.entity;
 
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.claims.FieldPosition;
 import com.polibuda.footballclub.common.database.TeamRole;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,6 +43,11 @@ public class TeamMember extends AbstractAuditableEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Set<TeamRole> roles = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private FieldPosition fieldPosition = FieldPosition.NO_POSITION;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

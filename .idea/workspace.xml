@@ -5,10 +5,53 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Added teams adding and changed favicon">
+      <change afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/proto/match_integration.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/MatchStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/RoleAuthConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/UserAuthenticationFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/MatchMemberDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/MatchTeamDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/PhysicalProfileDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/request/CreateMatchRequestDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/request/UpdateMatchRequestDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/response/wrappers/MatchResponseDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/response/wrappers/MatchTeamDataDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/entity/BaseEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/entity/Match.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/exceptions/InsufficientPermissionsException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/exceptions/MatchNotFoundExceptions.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/exceptions/MatchSerwisExceptions.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/exceptions/ResourceNotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchProtoMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/model/SecurityContextHelper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/repository/MatchRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/service/MatchIntegrationClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/service/domain/MatchEntityService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/service/domain/TeamProviderService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/service/match/MatchManagementService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/GrpcServerConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/MatchIntegrationGrpcController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/mappers/MatchGrpcMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/MatchDataService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/claims/FieldPosition.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/claims/FieldPosition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/controller/UserRoleGrpcController.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/controller/UserRoleGrpcController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/GrpcClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/GrpcClientConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManageTeamMemberRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManageTeamMemberRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/MemberProfileResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/MemberProfileResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/TeamMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/TeamMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/member/MemberServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,11 +65,11 @@
         <option value="Dockerfile" />
         <option value="Enum" />
         <option value="Interface" />
-        <option value="Class" />
         <option value="TypeScript File" />
         <option value="package.json" />
         <option value="TypeScript JSX File" />
         <option value="Exception" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -44,12 +87,12 @@
     &quot;assignee&quot;: &quot;Dominik45578&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Dominik45578/FootballClub.git&quot;,
-    &quot;accountId&quot;: &quot;5169ff68-3c75-45bb-b6c0-912145f4115e&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Dominik45578/FootballClub",
+    "accountId": "6333b2a0-0847-4ccb-9335-a438f23cc5b3"
   }
-}</component>
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="jar://$USER_HOME$/.jdks/openjdk-25.0.1/lib/src.zip!/java.base/java/lang/RuntimeException.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3-sources.jar!/org/apache/http/conn/HttpHostConnectException.java" root0="SKIP_INSPECTION" />
@@ -145,10 +188,10 @@
     &quot;Spring Boot.Notification-service.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.NotificationApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.User-service.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;frontend&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;match&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;G:/Studia/Projekt/FootballClub/frontend/public&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Dominik/IdeaProjects/FootballClubSystem/match-service/src/main/java/com/polibuda/footballclub/match/config&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -159,7 +202,7 @@
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.mcp.McpConfigurable&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;G:\\Studia\\Projekt\\FootballClub\\frontend\\node_modules\\typescript\\lib&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Dominik\\IdeaProjects\\FootballClubSystem\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -171,15 +214,16 @@
 }</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.polibuda.footballclub.match.exceptions" />
       <recent name="com.polibuda.footballclub.user.dto.request." />
       <recent name="com.polibuda.footballclub.user.dto.response.summary" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\match-service\src\main\java\com\polibuda\footballclub\match\config" />
       <recent name="G:\Studia\Projekt\FootballClub\frontend\public" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\user-service" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\notification" />
-      <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem" />
@@ -187,6 +231,7 @@
       <recent name="C:\Users\Dominik\IdeaProjects\FootballClubSystem\identify\src\main\resources" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.polibuda.footballclub.user.config" />
       <recent name="com.polibuda.footballclub.gateway.config" />
       <recent name="com.polibuda.footballclub.common.redis" />
     </key>
@@ -231,13 +276,13 @@
     </option>
   </component>
   <component name="RunManager" selected="Docker.Docker">
-    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" requestIdentifier="#1" runType="Run single request">
+    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" requestIdentifier="#3" runType="Run single request">
+    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" requestIdentifier="#4" runType="Run single request">
+    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="generated-requests | #4" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
@@ -355,8 +400,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.26775.15" />
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.26775.15" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26199.169" />
+        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-IU-252.26199.169" />
       </set>
     </attachedChunks>
   </component>
@@ -434,6 +479,7 @@
       <workItem from="1768266837803" duration="5500000" />
       <workItem from="1768318287849" duration="8767000" />
       <workItem from="1768419598669" duration="5942000" />
+      <workItem from="1768447950560" duration="6510000" />
     </task>
     <task id="LOCAL-00001" summary="Edited login page. Partially added dashboard.">
       <option name="closed" value="true" />
