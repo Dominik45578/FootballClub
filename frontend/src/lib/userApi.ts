@@ -647,7 +647,69 @@ export async function approveTeamMember(teamMemberId: number) {
 
 export async function removeTeamMember(teamMemberId: number) {
   if (OFFLINE) return Promise.resolve({ ok: true })
-  return fetchJson(`${USER_BASE}/team-management/${teamMemberId}`, { method: 'DELETE' })
+  // Backend maps DELETE to /user/team-management/{teamMemberId}/del
+  const relUrl = `${API_PREFIX}/user/team-management/${teamMemberId}/del`
+  const fullUrl = `${USER_BASE}/team-management/${teamMemberId}/del`
+  try {
+    // try relative first to benefit from Vite proxy
+    return await fetchJson(relUrl, { method: 'DELETE' })
+  } catch (e) {
+    // fallback to full URL
+    return fetchJson(fullUrl, { method: 'DELETE' })
+  }
+}
+
+// Pobierz listę członków zespołu (może przyjmować opcjonalny parametr status: ACTIVE | WAITING | ...)
+export async function getTeamMembers(status?: string, page?: number, size?: number, opts?: { allowUnauth?: boolean }): Promise<{ items: any[]; total?: number }> {
+   if (OFFLINE && ENABLE_MOCKS) {
+     // jeśli mockTeamDetails ma members, zwróć je, inaczej zwróć wygenerowany mock
+     const items = (mockTeamDetails && mockTeamDetails.members) ? mockTeamDetails.members : [{ teamMemberId: 1, memberId: 11, firstName: 'Jan', lastName: 'Kowalski', roles: ['PLAYER'], status: 'ACTIVE' }]
+     const filtered = typeof status === 'string' && status !== '' ? items.filter((it: any) => ((it.status || '').toString().toUpperCase() === status.toString().toUpperCase())) : items
+     return Promise.resolve({ items: filtered, total: filtered.length })
+   }
+
+   const qs = new URLSearchParams()
+   if (status !== undefined && status !== null && String(status).trim() !== '') qs.set('status', String(status))
+   if (page !== undefined && page !== null) qs.set('page', String(page))
+   if (size !== undefined && size !== null) qs.set('size', String(size))
+
+   const relUrl = `${API_PREFIX}/user/team-management/get${qs.toString() ? '?' + qs.toString() : ''}`
+   const fullUrl = `${USER_BASE}/team-management/get${qs.toString() ? '?' + qs.toString() : ''}`
+
+   try {
+    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.allowUnauth })
+    // Normalizuj możliwe kształty odpowiedzi: content, items, members, teamMembers, lub bezpośrednia tablica
+    const itemsArray = data?.content ?? data?.items ?? data?.members ?? data?.teamMembers ?? (Array.isArray(data) ? data : [])
+    const total = data?.totalElements ?? data?.total ?? (Array.isArray(itemsArray) ? itemsArray.length : undefined)
+    return { items: itemsArray ?? [], total }
+   } catch (e) {
+     console.warn('[userApi.getTeamMembers] relative fetch failed, trying full URL', { relUrl, err: e })
+     if (opts?.allowUnauth) {
+       // fallback do mock when allowUnauth
+       const items = (mockTeamDetails && mockTeamDetails.members) ? mockTeamDetails.members : []
+       const filtered = typeof status === 'string' && status !== '' ? items.filter((it: any) => ((it.status || '').toString().toUpperCase() === status.toString().toUpperCase())) : items
+       return { items: filtered, total: filtered.length }
+     }
+    const data2 = await fetchJson(fullUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
+    const itemsArray2 = data2?.content ?? data2?.items ?? data2?.members ?? data2?.teamMembers ?? (Array.isArray(data2) ? data2 : [])
+    const total2 = data2?.totalElements ?? data2?.total ?? (Array.isArray(itemsArray2) ? itemsArray2.length : undefined)
+    return { items: itemsArray2 ?? [], total: total2 }
+   }
+ }
+
+// Pobierz pojedynczego team membera
+export async function getTeamMember(teamMemberId: number) {
+  if (OFFLINE && ENABLE_MOCKS) {
+    const found = (mockTeamDetails && mockTeamDetails.members) ? mockTeamDetails.members.find((m: any) => (m.teamMemberId === teamMemberId || m.memberId === teamMemberId)) : null
+    return Promise.resolve(found)
+  }
+  const relUrl = `${API_PREFIX}/user/team-management/get/${teamMemberId}`
+  const fullUrl = `${USER_BASE}/team-management/get/${teamMemberId}`
+  try {
+    return await fetchJson(relUrl)
+  } catch (e) {
+    return fetchJson(fullUrl)
+  }
 }
 
 // Auth flows (identify service)

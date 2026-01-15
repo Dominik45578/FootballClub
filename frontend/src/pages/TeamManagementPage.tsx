@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams, getTeamDetails, updateTeam } from '@/lib/userApi'
+import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams, getTeamDetails, updateTeam, getTeamMembers } from '@/lib/userApi'
 import { OFFLINE, getUserRoles, hasRole } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -90,6 +90,38 @@ class ErrorBoundary extends React.Component<{ children?: React.ReactNode }, { er
 }
 
 export function TeamManagementPage() {
+    // Helper do normalizacji pojedynczego wpisu roli na porównywalny, uppercase string
+    const normalizeRole = (r: any) => {
+        if (!r && r !== 0) return ''
+        if (typeof r === 'string') return r.toString().toUpperCase()
+        if (typeof r === 'number') return String(r).toUpperCase()
+        if (typeof r === 'object') {
+            if (typeof r.name === 'string') return r.name.toUpperCase()
+            if (typeof r.role === 'string') return r.role.toUpperCase()
+            if (typeof r.value === 'string') return r.value.toUpperCase()
+            try { return JSON.stringify(r).toUpperCase() } catch { return String(r).toUpperCase() }
+        }
+        return String(r).toUpperCase()
+    }
+
+    // Wykrywa czy podana znormalizowana rola opisuje 'team player' (np. 'ROLE_TEAM_PLAYER', 'role_team_player', 'Team-Player')
+    const isTeamPlayerRoleString = (roleStr: string) => {
+        if (!roleStr) return false
+        const s = roleStr.replace(/[^A-Z0-9_]/g, '_') // ujednolicenie separatorów
+        return s.includes('TEAM') && s.includes('PLAYER')
+    }
+
+    // Normalizuje statusy: traktujemy różne warianty 'pending' jako 'WAITING'
+    const normalizeStatus = (raw?: any) => {
+        const rawStr = (raw ?? '').toString().toUpperCase()
+        if (!rawStr) return 'UNKNOWN'
+        if (rawStr.includes('WAIT') || rawStr.includes('PEND')) return 'WAITING'
+        if (rawStr === 'ACTIVE' || rawStr === 'MEMBER') return 'ACTIVE'
+        if (rawStr.includes('ARCHIV') || rawStr === 'ARCHIVED') return 'ARCHIVED'
+        if (rawStr === 'REJECTED') return 'REJECTED'
+        return rawStr
+    }
+
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
     const navigate = useNavigate()
@@ -99,6 +131,7 @@ export function TeamManagementPage() {
     const [memberAllowed, setMemberAllowed] = useState(true)
     const [memberError, setMemberError] = useState<string | null>(null)
     const [loadingDescription, setLoadingDescription] = useState(false)
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'WAITING'>('ALL')
     // create-form validation schema and hook (live validation)
     const createSchema = z.object({
         category: z.enum(['academy', 'junior', 'senior', 'u19', 'u17'] as const),
@@ -164,18 +197,177 @@ export function TeamManagementPage() {
 
     const [query, setQuery] = useState('')
     const [loading, setLoading] = useState(false)
-    const filtered = useMemo(() => members.filter((m) => m.fullName.toLowerCase().includes(query.toLowerCase())), [members, query])
+    const filtered = useMemo(() => members
+        .filter((m) => {
+            if (statusFilter === 'ALL') return true
+            const s = (m.status || '').toString().toUpperCase()
+            // zawsze pokazuj ROLE_TEAM_PLAYER (różne formaty) niezależnie od filtra statusu
+            const rolesNormalized = (m.roles || []).map((r: any) => normalizeRole(r))
+            if (rolesNormalized.some(isTeamPlayerRoleString)) return true
+            return s === statusFilter
+        })
+        .filter((m) => m.fullName.toLowerCase().includes(query.toLowerCase())), [members, query, statusFilter])
 
     const handleSearch = () => {
         setLoading(true)
         setTimeout(() => setLoading(false), 400)
     }
 
+    const fetchMembers = async (status?: string) => {
+        setLoading(true)
+        try {
+            // Jeśli wybrano konkretny zespół — pobierz jego szczegóły (zawiera pole members)
+            if (selectedTeamId) {
+                const details = await getTeamDetails(selectedTeamId, { forceReal: true })
+                console.debug('[TeamManagementPage] getTeamDetails response', { selectedTeamId, details })
+                const rawList: any[] = (details && (details as any).members) ? (details as any).members : []
+                const mappedFromDetails: Member[] = rawList.map((it: any) => {
+                    const id = it.teamMemberId ?? it.memberId ?? it.id ?? 0
+                    const firstName = it.firstName ?? ''
+                    const lastName = it.lastName ?? ''
+                    const fullName = (`${firstName} ${lastName}`).trim() || (it.fullName ?? '—')
+                    const number = it.number ?? it.playerNumber ?? 0
+                    const rawStatus = normalizeStatus(it.status ?? it.member?.status ?? '')
+                    const roles = Array.isArray(it.roles) ? it.roles.map((r: any) => (typeof r === 'string' ? r : String(r))) : []
+                    return { id, fullName, number, status: rawStatus, roles }
+                })
+                console.debug('[TeamManagementPage] mappedFromDetails', mappedFromDetails)
+                setMembers(mappedFromDetails)
+                setLoading(false)
+                return
+            }
+
+            // Najpierw spróbuj użyć centralnego endpointu GET /user/team-management/get (TeamManagementController#getTeamMembers)
+            try {
+                const res = await getTeamMembers(status && status !== 'ALL' ? status : undefined)
+                console.debug('[TeamManagementPage] getTeamMembers response (primary)', res)
+                const items = res.items ?? []
+                const mappedFromGlobal: Member[] = items.map((it: any) => {
+                    const person = it.member ?? it.user ?? it
+                    const id = it.teamMemberId ?? it.memberId ?? person.id ?? 0
+                    const firstName = it.firstName ?? person.firstName ?? ''
+                    const lastName = it.lastName ?? person.lastName ?? ''
+                    const fullName = (`${firstName} ${lastName}`).trim() || (person.fullName ?? '—')
+                    const number = it.number ?? it.playerNumber ?? person.number ?? person.playerNumber ?? 0
+                    const rawStatus = normalizeStatus(it.status ?? person.status ?? it.memberStatus ?? '')
+                    // normalize roles: handle arrays, nested person.roles and different naming conventions
+                    let roles: string[] = []
+                    if (Array.isArray(it.roles)) roles = it.roles.map((r: any) => (typeof r === 'string' ? r : String(r)))
+                    else if (Array.isArray(person.roles)) roles = person.roles.map((r: any) => (typeof r === 'string' ? r : String(r)))
+                    else if (typeof it.role === 'string') roles = [it.role]
+                    else if (typeof person.role === 'string') roles = [person.role]
+
+                    // ensure typical role variants are present in normalized form
+                    const normalizedRoles = roles.map((r) => (r || '').toString())
+                    return { id, fullName, number, status: rawStatus, roles: normalizedRoles }
+                })
+                console.debug('[TeamManagementPage] mapped members (primary getTeamMembers)', mappedFromGlobal)
+                // scalmy z graczami team_player ze wszystkich zespołów
+                await mergeTeamPlayersFromAllTeams(mappedFromGlobal)
+                setLoading(false)
+                return
+            } catch (e: any) {
+                // jeśli brak uprawnień (403) lub inny błąd, fallback do pobierania szczegółów per-team
+                console.warn('[TeamManagementPage] getTeamMembers failed (will fallback to per-team details)', e)
+            }
+
+            // fallback: pobierz wszystkie moje zespoły, potem pobierz szczegóły każdego i połącz członków
+            try {
+                const teamsRes = await getTeams({ mode: 'MY_TEAMS', page: 0, size: 50 })
+                const teams = teamsRes?.items ?? []
+                if (Array.isArray(teams) && teams.length > 0) {
+                    // równoległe pobranie szczegółów zespołów
+                    const promises = teams.map((t: any) => {
+                        const id = t.teamId ?? t.id
+                        return id ? getTeamDetails(Number(id), { forceReal: true }).catch((e) => {
+                            console.warn('[TeamManagementPage] getTeamDetails failed for team', id, e)
+                            return null
+                        }) : null
+                    }).filter(Boolean) as Promise<any>[]
+
+                    const settled = await Promise.all(promises)
+                    // wyciągnij wszystkich członków z details.members
+                    const allRawMembers: any[] = []
+                    for (const d of settled) {
+                        if (!d) continue
+                        const arr = (d as any).members ?? []
+                        if (Array.isArray(arr)) allRawMembers.push(...arr)
+                    }
+
+                    // deduplikacja (po teamMemberId, albo memberId+teamId)
+                    const seen = new Set<string>()
+                    const combined: Member[] = []
+                    for (const it of allRawMembers) {
+                        const teamMemberId = it.teamMemberId ?? it.memberId ?? it.id
+                        const teamId = it.teamId ?? it.teamId ?? null
+                        const uniqueKey = teamMemberId ? `tm:${teamMemberId}` : `m:${it.memberId ?? it.id}-${teamId ?? ''}`
+                        if (seen.has(uniqueKey)) continue
+                        seen.add(uniqueKey)
+
+                        const firstName = it.firstName ?? it.member?.firstName ?? ''
+                        const lastName = it.lastName ?? it.member?.lastName ?? ''
+                        const fullName = (`${firstName} ${lastName}`).trim() || (it.fullName ?? '—')
+                        const number = it.number ?? it.playerNumber ?? it.member?.number ?? 0
+                        const rawStatus = normalizeStatus(it.status ?? it.member?.status ?? '')
+                        const roles = Array.isArray(it.roles) ? it.roles.map((r: any) => (typeof r === 'string' ? r : String(r))) : (Array.isArray(it.member?.roles) ? it.member.roles.map((r: any) => (typeof r === 'string' ? r : String(r))) : [])
+
+                        // stosuj filtr status jeśli podano, ale jeśli osoba ma rolę team_player (różne warianty), pokaż ją zawsze
+                        const rolesNormalized = roles.map((r: any) => normalizeRole(r))
+                        const isTeamPlayer = rolesNormalized.some(isTeamPlayerRoleString)
+                        if (status && status !== 'ALL' && rawStatus !== status.toString().toUpperCase() && !isTeamPlayer) continue
+
+                        combined.push({ id: teamMemberId ?? 0, fullName, number, status: rawStatus, roles })
+                    }
+                    console.debug('[TeamManagementPage] combined members from all teams', combined)
+                    // scalmy z graczami team_player ze wszystkich zespołów (zabezpieczenie)
+                    await mergeTeamPlayersFromAllTeams(combined)
+                    setLoading(false)
+                    return
+                }
+            } catch (e) {
+                console.warn('[TeamManagementPage] fetching MY_TEAMS or team details failed, falling back', e)
+            }
+
+            // Ostateczny fallback: spróbuj GET /user/team-management/get (jeśli powyższe zawiedzie)
+            try {
+                const res2 = await getTeamMembers(status && status !== 'ALL' ? status : undefined)
+                console.debug('[TeamManagementPage] getTeamMembers response (final fallback)', res2)
+                const items2 = res2.items ?? []
+                const mapped2: Member[] = items2.map((it: any) => {
+                    const person = it.member ?? it.user ?? it
+                    const id = it.teamMemberId ?? it.memberId ?? person.id ?? 0
+                    const firstName = it.firstName ?? person.firstName ?? ''
+                    const lastName = it.lastName ?? person.lastName ?? ''
+                    const fullName = (`${firstName} ${lastName}`).trim() || (person.fullName ?? '—')
+                    const number = it.number ?? it.playerNumber ?? person.number ?? person.playerNumber ?? 0
+                    const rawStatus = normalizeStatus(it.status ?? person.status ?? it.memberStatus ?? '')
+                    let roles: string[] = []
+                    if (Array.isArray(it.roles)) roles = it.roles.map((r: any) => (typeof r === 'string' ? r : String(r)))
+                    else if (Array.isArray(person.roles)) roles = person.roles.map((r: any) => (typeof r === 'string' ? r : String(r)))
+                    else if (typeof it.role === 'string') roles = [it.role]
+                    else if (typeof person.role === 'string') roles = [person.role]
+                    return { id, fullName, number, status: rawStatus, roles }
+                })
+                console.debug('[TeamManagementPage] mapped members (fallback getTeamMembers final)', mapped2)
+                await mergeTeamPlayersFromAllTeams(mapped2)
+             } catch (e2) {
+                 console.warn('[TeamManagementPage] final getTeamMembers fallback also failed', e2)
+                 setMembers([])
+             }
+         } catch (err: any) {
+             toast.error('Nie udało się pobrać członków', { description: err?.message })
+             setMembers([])
+         } finally {
+             setLoading(false)
+         }
+     }
+
     const approveMember = async (id: number) => {
         try {
             await approveTeamMember(id)
-            setMembers((prev) => prev.map((m) => m.id === id ? { ...m, status: 'ACTIVE' } : m))
             toast.success('Zatwierdzono członka')
+            // refetch by current filter
+            await fetchMembers(statusFilter === 'ALL' ? undefined : statusFilter)
         } catch (err: any) {
             toast.error('Nie udało się zatwierdzić', { description: err?.message })
         }
@@ -184,12 +376,40 @@ export function TeamManagementPage() {
     const rejectMember = async (id: number) => {
         try {
             await removeTeamMember(id)
-            setMembers((prev) => prev.filter((m) => m.id !== id))
             toast.info('Odrzucono/wykluczono członka')
+            await fetchMembers(statusFilter === 'ALL' ? undefined : statusFilter)
         } catch (err: any) {
             toast.error('Nie udało się odrzucić', { description: err?.message })
         }
     }
+
+    // Fetch members when tab is active or when status filter or selectedTeamId changes
+    useEffect(() => {
+        if (tab === 'members') {
+            // Jeśli nie mamy wybranycego zespołu, spróbuj pobrać listę moich zespołów i jeśli jest tylko 1, wybierz go automatycznie
+            (async () => {
+                try {
+                    if (!selectedTeamId) {
+                        const teamsRes = await getTeams({ mode: 'MY_TEAMS', page: 0, size: 10 })
+                        const items = teamsRes?.items ?? []
+                        if (items.length === 1) {
+                            const found = items[0]
+                            const id = found.teamId ?? (found as any).id
+                            if (id) {
+                                setSelectedTeamId(Number(id))
+                                // fetchMembers zostanie wywołane przez useEffect change selectedTeamId
+                                return
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // ignore — fallback to global fetch
+                }
+                fetchMembers(statusFilter === 'ALL' ? undefined : statusFilter)
+            })()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tab, statusFilter, selectedTeamId])
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
@@ -278,22 +498,10 @@ export function TeamManagementPage() {
         toast.info('Przywrócono dane lokalne')
     }
 
-    if (!memberAllowed && !OFFLINE) {
-        return (
-            <div className="min-h-screen bg-background">
-                <header className="border-b bg-card">
-                    <div className="container flex h-16 items-center px-4">
-                        <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>
-                    </div>
-                </header>
-                <main className="container py-8 px-4 sm:px-6 lg:px-8">
-                    <div className="rounded-md border border-amber-500 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
-                        {memberError || 'Brak dostępu — wymagana rola członka. Zostań zatwierdzonym członkiem, aby zarządzać zespołem.'}
-                    </div>
-                </main>
-            </div>
-        )
-    }
+    // NOTE: Previously we returned early here when memberAllowed was false which prevented
+    // the whole management UI (including 'Członkowie / oczekujące') from rendering.
+    // Keep rendering the page (show a notice inside the main area) but allow fetching/listing
+    // members so that team members can see their status. This is a frontend-only UX change.
 
     return (
         <div className="min-h-screen bg-background">
@@ -445,6 +653,19 @@ export function TeamManagementPage() {
                                         <label className="text-sm font-medium">Szukaj</label>
                                         <Input value={query} onChange={(e) => setQuery(e.target.value)}
                                                placeholder="np. Jan"/>
+                                    </div>
+                                    <div className="w-56">
+                                        <label className="text-sm font-medium">Status</label>
+                                        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Wszystkie" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
+                                                <SelectItem value='ALL'>Wszystkie</SelectItem>
+                                                <SelectItem value='ACTIVE'>Aktywni</SelectItem>
+                                                <SelectItem value='WAITING'>Oczekujące</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button onClick={handleSearch} disabled={loading}>
@@ -764,9 +985,10 @@ export function TeamManagementPage() {
         </div>
     )
 
+
     async function handleCreateTeam(values: CreateFormValues) {
-        setCreating(true)
-        try {
+         setCreating(true)
+         try {
             const categoryMap: Record<string, string> = {
                 academy: 'ACADEMY',
                 junior: 'JUNIOR',
@@ -809,6 +1031,68 @@ export function TeamManagementPage() {
             toast.error('Nie udało się utworzyć zespołu', { description: err?.message || 'Sprawdź konsolę dla szczegółów' })
         } finally {
             setCreating(false)
+        }
+    }
+
+    // Funkcja: pobierz członków z rolą team_player ze wszystkich zespołów i dołącz do aktualnej listy
+    async function mergeTeamPlayersFromAllTeams(current: Member[]) {
+        try {
+            // Pobierz listę wszystkich zespołów (duży rozmiar, można page'ować jeśli potrzeba)
+            const allTeamsRes = await getTeams({ mode: 'ALL_TEAMS', page: 0, size: 200 })
+            const allTeams = allTeamsRes?.items ?? []
+            if (!Array.isArray(allTeams) || allTeams.length === 0) return current
+
+            const teamDetailsPromises = allTeams.map((t: any) => {
+                const id = t.teamId ?? t.id
+                return id ? getTeamDetails(Number(id), { forceReal: true }).catch((e) => {
+                    console.warn('[TeamManagementPage] getTeamDetails failed for ALL_TEAMS team', id, e)
+                    return null
+                }) : null
+            }).filter(Boolean) as Promise<any>[]
+
+            const settled = await Promise.all(teamDetailsPromises)
+            const collected: Member[] = []
+            for (const d of settled) {
+                if (!d) continue
+                const arr = (d as any).members ?? []
+                if (!Array.isArray(arr)) continue
+                for (const it of arr) {
+                    // wyciągnij role i sprawdź czy to team player
+                    const rawRoles: any[] = Array.isArray(it.roles) ? it.roles : (Array.isArray(it.member?.roles) ? it.member.roles : [])
+                    const roles = rawRoles.map((r: any) => typeof r === 'string' ? r : (r && (r.name || r.role || r.value) ? (r.name || r.role || r.value) : String(r)))
+                    const rolesNorm = roles.map(normalizeRole)
+                    const isTP = rolesNorm.some(isTeamPlayerRoleString)
+                    if (!isTP) continue
+                    const teamMemberId = it.teamMemberId ?? it.memberId ?? it.id ?? 0
+                    const firstName = it.firstName ?? it.member?.firstName ?? ''
+                    const lastName = it.lastName ?? it.member?.lastName ?? ''
+                    const fullName = (`${firstName} ${lastName}`).trim() || (it.fullName ?? '—')
+                    const number = it.number ?? it.playerNumber ?? it.member?.number ?? 0
+                    const statusNorm = normalizeStatus(it.status ?? it.member?.status ?? '')
+                    collected.push({ id: teamMemberId ?? 0, fullName, number, status: statusNorm, roles })
+                }
+            }
+
+            // deduplikacja: bierzemy po id (teamMemberId/memberId) i fullName fallback
+            const map = new Map<string, Member>()
+            // najpierw kopiujemy current
+            for (const c of current) {
+                const key = `id:${c.id}`
+                map.set(key, c)
+            }
+            for (const p of collected) {
+                const key = `id:${p.id}`
+                if (!map.has(key)) {
+                    map.set(key, p)
+                }
+            }
+
+            const merged = Array.from(map.values())
+            setMembers(merged)
+            return merged
+        } catch (e) {
+            console.warn('[TeamManagementPage] mergeTeamPlayersFromAllTeams failed', e)
+            return current
         }
     }
 }
