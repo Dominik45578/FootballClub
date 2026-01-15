@@ -13,7 +13,7 @@ import java.util.List;
 
 //Nie mapuj do fronta!!!!!!!!!!!
 @RestController
-@RequestMapping("match/temp/")
+@RequestMapping("/match/temp")
 @AllArgsConstructor
 public class TempController {
     private final FootballGrpcClient client;
@@ -22,7 +22,7 @@ public class TempController {
         return client.getAllTeams();
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     TeamDetailsResponseDTO getTeamById(@PathVariable Long id){
         return client.getTeamDetails(id);
     }

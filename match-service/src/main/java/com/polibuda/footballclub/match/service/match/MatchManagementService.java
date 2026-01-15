@@ -30,4 +30,6 @@ public interface MatchManagementService {
     MatchResponseDTO updateMatch(Long matchId, UpdateMatchRequestDTO request);
 
     void deleteMatch(Long matchId);
+
+    Page<MatchResponseDTO> getAllMatches(Pageable pageable);
 }
