@@ -153,6 +153,12 @@ public class MatchManagementServiceImpl implements MatchManagementService {
         log.info("MATCH_DELETED: ID={} by User={}", matchId, userId);
     }
 
+    @Override
+    public Page<MatchResponseDTO> getAllMatches(Pageable pageable) {
+        var matches = matchEntityService.getAllMatches(pageable);
+        return matches.map(this::enrichAndMap);
+    }
+
     // --- METODY POMOCNICZE (PRIVATE) ---
 
     /**

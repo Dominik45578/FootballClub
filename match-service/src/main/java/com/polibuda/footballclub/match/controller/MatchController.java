@@ -25,6 +25,11 @@ public class MatchController {
 
     // --- ENDPOINTY DO ODCZYTU (GET) ---
 
+    @GetMapping("/all")
+    public ResponseEntity<Page<MatchResponseDTO>> getAllMatches( @PageableDefault(size = 20) Pageable pageable) {
+        Page<MatchResponseDTO> matches = matchService.getAllMatches(pageable);
+        return ResponseEntity.ok(matches);
+    }
     /**
      * Pobiera szczegóły konkretnego meczu.
      * GET /api/v1/matches/{matchId}

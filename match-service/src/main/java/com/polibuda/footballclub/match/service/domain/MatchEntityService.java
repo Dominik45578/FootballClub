@@ -83,4 +83,9 @@ public class MatchEntityService {
         }
         matchRepository.deleteById(id);
     }
+
+    @Transactional
+    public Page<Match> getAllMatches(Pageable pageable) {
+        return matchRepository.findAll(pageable);
+    }
 }
