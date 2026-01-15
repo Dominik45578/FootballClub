@@ -2,6 +2,7 @@ package com.polibuda.footballclub.user.dto.response.restricted;
 
 
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.claims.FieldPosition;
 import com.polibuda.footballclub.common.database.TeamRole;
 import com.polibuda.footballclub.user.dto.response.summary.AbstractSummaryResponse;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,5 @@ public class TeamMemberListItemDto implements AbstractSummaryResponse {
     private Instant sienceDate;
     private Set<TeamRole> roles;
     private TeamMemberStatus status;
+    private FieldPosition fieldPosition;
 }

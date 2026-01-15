@@ -148,6 +148,7 @@ public class MemberServiceImpl implements MemberService {
           log.error("USER_EVENT: Member not found for user {}", userId);
           return new ResponseEntity<>(Boolean.FALSE,HttpStatus.NOT_FOUND);
       }
+      teamMemberRepository.deleteById(userId);
       IdentityGrpcClient.RoleRemoveResult response =  grpcService.removeRoles(userId,UserRole.ROLE_MEMBER);
         if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
             throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " +userId);
@@ -183,7 +184,7 @@ public class MemberServiceImpl implements MemberService {
 
     private Integer calculateAge(LocalDate birthDate) {
         if (birthDate == null) return 0;
-        return (int) ChronoUnit.YEARS.between(LocalDate.now(), birthDate);
+        return (int) ChronoUnit.YEARS.between(birthDate,LocalDate.now());
     }
 
     private MemberSummaryResponse mapToMemberSummaryResponse(Member member) {

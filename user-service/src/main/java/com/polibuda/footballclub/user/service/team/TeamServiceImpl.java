@@ -239,6 +239,7 @@ public class TeamServiceImpl implements TeamService {
                         .roles(Set.copyOf(tm.getRoles()))
                         .status(tm.getStatus())
                         .sienceDate(tm.getCreatedAt())
+                        .fieldPosition(tm.getFieldPosition())
                         .build())
                 .collect(Collectors.toList());
 

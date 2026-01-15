@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package com.polibuda.footballclub.match.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.polibuda.footballclub.match.grpc";
+option java_outer_classname = "MatchIntegrationProto";
+
+service MatchIntegrationService {
+  rpc GetTeamForMatch (GetTeamForMatchRequest) returns (TeamForMatchResponse);
+  rpc GetTeamMemberForMatch (GetTeamMemberForMatchRequest) returns (TeamMemberForMatchResponse);
+  rpc GetPlayerPhysicalProfile (GetPlayerPhysicalProfileRequest) returns (PlayerPhysicalProfileResponse);
+  rpc GetUserTeams (GetUserTeamsRequest) returns (GetUserTeamsResponse);
+}
+
+message GetTeamForMatchRequest {
+  int64 team_id = 1;
+}
+
+message GetTeamMemberForMatchRequest {
+  int64 team_member_id = 1;
+}
+
+message GetPlayerPhysicalProfileRequest {
+  int64 member_id = 1;
+}
+message GetUserTeamsRequest {
+  int64 user_id = 1;
+}
+
+message GetUserTeamsResponse {
+  int64 user_id = 1;
+  repeated int64 team_ids = 2; // Lista ID drużyn
+}
+
+message TeamForMatchResponse {
+  int64 team_id = 1;
+  string team_name = 2;
+  string category = 3;
+  repeated MatchTeamMemberDto members = 4;
+}
+
+message MatchTeamMemberDto {
+  int64 team_member_id = 1;
+  int64 member_id = 2;
+  string first_name = 3;
+  string last_name = 4;
+  MatchTeamMemberStatus status = 5;
+  repeated MatchTeamRole roles = 6;
+  MatchFieldPosition field_position = 7;
+}
+
+message TeamMemberForMatchResponse {
+  int64 team_member_id = 1;
+  int64 team_id = 2;
+  int64 member_id = 3;
+  string first_name = 4;
+  string last_name = 5;
+  MatchTeamMemberStatus status = 6;
+  repeated MatchTeamRole roles = 7;
+  MatchFieldPosition field_position = 8;
+}
+
+message PlayerPhysicalProfileResponse {
+  int64 member_id = 1;
+  int64 user_id = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+enum MatchTeamMemberStatus {
+  STATUS_UNSPECIFIED = 0;
+  WAITING_FOR_VERIFICATION = 1;
+  ACTIVE = 2;
+  REJECTED = 3;
+  ARCHIVED = 4;
+}
+
+enum MatchTeamRole {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_TEAM_CAPTAIN = 1;
+  ROLE_TEAM_HEAD_COACH = 2;
+  ROLE_TEAM_ASSISTANT_COACH = 3;
+  ROLE_TEAM_MEMBER = 4;
+  ROLE_GOALKEEPER = 5;
+}
+
+enum MatchFieldPosition {
+  POSITION_UNSPECIFIED = 0;
+  NO_POSITION = 1;
+  GOALKEEPER = 2;
+  DEFENDER = 3;
+  MIDFIELDER = 4;
+  STRIKER = 5;
+}

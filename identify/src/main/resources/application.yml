@@ -1,4 +1,7 @@
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
   rabbitmq:
     host: ${RABBIT_CONTAINER:localhost}
     port: ${RABBITMQ_PORT:5672}

@@ -208,6 +208,9 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         if(request.getRemoverRoles()!=null){
             member.removeRole(request.getRemoverRoles());
         }
+        if(request.getNewFieldPosition()!=null){
+            member.setFieldPosition(request.getNewFieldPosition());
+        }
         return  member;
     }
 
@@ -259,6 +262,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .status(teamMember.getStatus())
                 .roles(teamMember.getRoles())
                 .sienceDate(teamMember.getCreatedAt())
+                .fieldPosition(teamMember.getFieldPosition())
                 .build();
     }
 }

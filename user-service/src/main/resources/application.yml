@@ -60,3 +60,5 @@ grpc:
   identify:
     host: ${IDENTIFY_NAME:}
     port: ${IDENTIFY_GRPC_PORT:9092}
+  server:
+      port: ${USER_SERVER_GRPC_PORT:9095}
