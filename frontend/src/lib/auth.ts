@@ -1,9 +1,14 @@
 export const OFFLINE = import.meta.env.VITE_OFFLINE === 'true'
-if(typeof window !== 'undefined') {
-    try{
-        console.info('[auth] offline =', OFFLINE)
-    }catch(e){}
+
+if (typeof window !== 'undefined') {
+  try {
+    // Informacyjny log przy imporcie modułu — ułatwia debug czy OFFLINE jest ustawione zgodnie z env
+    // Usuń ten log po debugowaniu
+    // eslint-disable-next-line no-console
+    console.info('[auth] OFFLINE=', OFFLINE)
+  } catch { /* noop */ }
 }
+
 const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
 // Prefiks API do gateway (np. /api); dla bezpośredniego połączenia z identity zostanie pominięty
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')

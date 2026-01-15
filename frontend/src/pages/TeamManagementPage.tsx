@@ -132,6 +132,18 @@ export function TeamManagementPage() {
         return rawStr
     }
 
+    // Normalizacja statusu zespołu – mapujemy stare/różne warianty na wartości używane w formularzach
+    const normalizeTeamStatus = (raw?: any) => {
+        const s = (raw ?? '').toString().toUpperCase()
+        if (!s) return 'ACTIVE'
+        // some backends may use 'INACTIVE' – map it to 'SUSPENDED' which is accepted by createSchema
+        if (s === 'INACTIVE') return 'SUSPENDED'
+        // allow known values
+        if (['ACTIVE', 'SUSPENDED', 'ARCHIVED', 'CREATED'].includes(s)) return s
+        // fallback to raw string uppercased
+        return s
+    }
+
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
     const navigate = useNavigate()
@@ -147,7 +159,8 @@ export function TeamManagementPage() {
         category: z.enum(['academy', 'junior', 'senior', 'u19', 'u17'] as const),
         code: z.string().min(10, 'Kod zespołu musi mieć 10–16 znaków').max(16, 'Kod zespołu musi mieć 10–16 znaków'),
         name: z.string().min(1, 'Nazwa zespołu jest wymagana'),
-        status: z.enum(['ACTIVE', 'SUSPENDED', 'ARCHIVED', 'CREATED'] as const),
+        // Nie pozwalamy na wybór ARCHIVED przy tworzeniu zespołu (archiwizacja odbywa się osobnym procesem)
+        status: z.enum(['ACTIVE', 'SUSPENDED', 'CREATED'] as const),
         description: z.string().min(50, 'Opis musi mieć co najmniej 50 znaków').max(4095, 'Opis może mieć maksymalnie 4095 znaków'),
     })
     type CreateFormValues = z.infer<typeof createSchema>
@@ -440,7 +453,7 @@ export function TeamManagementPage() {
                     id: details.id ?? selectedTeamId,
                     name: details.name ?? prev.name,
                     code: (details as any).code ?? prev.code,
-                    status: (details as any).status ?? prev.status,
+                    status: normalizeTeamStatus((details as any).status ?? prev.status),
                     category: BACKEND_TO_FRONT[(details as any).category ?? ''] ?? prev.category,
                     description: (details as any).description ?? '',
                 }))
@@ -492,7 +505,7 @@ export function TeamManagementPage() {
                     id: details.id ?? selectedTeamId,
                     name: details.name ?? '',
                     code: (details as any).code ?? '',
-                    status: (details as any).status ?? 'ACTIVE',
+                    status: normalizeTeamStatus((details as any).status ?? 'ACTIVE'),
                     category: BACKEND_TO_FRONT[(details as any).category ?? ''] ?? 'academy',
                     description: (details as any).description ?? '',
                 })
@@ -807,7 +820,7 @@ export function TeamManagementPage() {
                                             id: details.id ?? teamId,
                                             name: details.name ?? prev.name,
                                             code: (details as any).code ?? prev.code,
-                                            status: (details as any).status ?? prev.status,
+                                            status: normalizeTeamStatus((details as any).status ?? prev.status),
                                             category: BACKEND_TO_FRONT[(details as any).category ?? ''] ?? prev.category,
                                             description: (details as any).description ?? '',
                                         }))
@@ -836,8 +849,8 @@ export function TeamManagementPage() {
                                                 className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg [&_[data-radix-select-viewport]]:bg-white dark:[&_[data-radix-select-viewport]]:bg-slate-900"
                                             >
                                                 <SelectItem value="ACTIVE">Aktywny</SelectItem>
-                                                <SelectItem value="INACTIVE">Nieaktywny</SelectItem>
-                                                <SelectItem value="ARCHIVED">Zarchiwizowany</SelectItem>
+                                                <SelectItem value="SUSPENDED">Zawieszony</SelectItem>
+                                                <SelectItem value="CREATED">Utworzony</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -1011,8 +1024,8 @@ export function TeamManagementPage() {
                                                                     </SelectTrigger>
                                                                     <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
                                                                         <SelectItem value="ACTIVE">Aktywny</SelectItem>
-                                                                        <SelectItem value="INACTIVE">Nieaktywny</SelectItem>
-                                                                        <SelectItem value="ARCHIVED">Zarchiwizowany</SelectItem>
+                                                                        <SelectItem value="SUSPENDED">Zawieszony</SelectItem>
+                                                                        <SelectItem value="CREATED">Utworzony</SelectItem>
                                                                     </SelectContent>
                                                                 </Select>
                                                             </FormControl>
@@ -1077,7 +1090,7 @@ export function TeamManagementPage() {
                         id: foundId,
                         name: found.teamName ?? (found as any).name ?? values.name,
                         code: (found as any).code ?? values.code ?? prev.code,
-                        status: (found as any).status ?? values.status,
+                        status: normalizeTeamStatus((found as any).status ?? values.status),
                         category: BACKEND_TO_FRONT[(found as any).category ?? ''] ?? values.category,
                         description: (found as any).description ?? prev.description,
                     }))
@@ -1165,3 +1178,4 @@ export function TeamManagementPage() {
 }
 
 export default TeamManagementPage
+

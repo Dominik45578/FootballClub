@@ -43,6 +43,10 @@ export function ClubSquadPage() {
       setClubIdError(null)
       setLoading(true)
       setError(null)
+
+      // Użyj lokalnej tablicy, żeby nie polegać na stanie `players` w tym samym efekcie
+      let finalPlayers: any[] = []
+
       try {
         // Pobierz nazwę z listy klubów (bez ryzykownych wywołań które mogą wymusić logowanie)
         try {
@@ -59,7 +63,7 @@ export function ClubSquadPage() {
           if (details?.name) setClubName(details.name)
           const rawMembers: any[] = (details && (details as any).members) ? (details as any).members : []
           // mapuj członków na format tabeli
-          const mapped = (rawMembers || []).map((m: any) => ({
+          finalPlayers = (rawMembers || []).map((m: any) => ({
             id: m.teamMemberId ?? m.memberId ?? m.id,
             name: `${m.firstName ?? m.name ?? ''}${m.lastName ? ' ' + m.lastName : ''}`.trim() || m.fullName || m.username || '—',
             number: (m.number ?? m.playerNumber ?? m.shirtNumber ?? m.jerseyNumber) || undefined,
@@ -69,37 +73,52 @@ export function ClubSquadPage() {
             status: m.status ?? undefined,
             roles: Array.isArray(m.roles) ? m.roles : (m.member?.roles ?? []),
           }))
-          // Pokaż osoby z rolą TEAM_PLAYER niezależnie od statusu — UI filtruje po pozycji, więc tu pozostawiamy wszystkich
-          setPlayers(mapped)
         } catch (e) {
           // fallback: jeśli getTeamDetails zawiedzie, spróbuj globalnego endpointu getTeamMembers
-          const resp = await getTeamMembers(undefined, 0, 1000, { allowUnauth: true })
-          const members = (resp?.items ?? resp ?? [])
-          const mapped = (members || []).map((m: any) => ({
-            id: m.teamMemberId ?? m.memberId ?? m.id,
-            name: `${m.firstName ?? m.name ?? ''}${m.lastName ? ' ' + m.lastName : ''}`.trim() || m.username || '—',
-            number: (m.number ?? m.shirtNumber ?? m.jerseyNumber) || undefined,
-            position: (m.position ?? m.positionName) || undefined,
-            age: m.age ?? m.years ?? undefined,
-          }))
-          setPlayers(mapped)
+          try {
+            const resp = await getTeamMembers(undefined, 0, 1000, { allowUnauth: true })
+            const members = (resp?.items ?? resp ?? [])
+            finalPlayers = (members || []).map((m: any) => ({
+              id: m.teamMemberId ?? m.memberId ?? m.id,
+              name: `${m.firstName ?? m.name ?? ''}${m.lastName ? ' ' + m.lastName : ''}`.trim() || m.username || '—',
+              number: (m.number ?? m.shirtNumber ?? m.jerseyNumber) || undefined,
+              position: (m.position ?? m.positionName) || undefined,
+              age: m.age ?? m.years ?? undefined,
+            }))
+          } catch (innerErr) {
+            // zostaw finalPlayers puste i pozwól na kolejny fallback niżej
+          }
         }
-         setError(null)
+
         // fallback do mocków jeśli nic nie zwrócono
-        if (!players || players.length === 0) {
+        if (!finalPlayers || finalPlayers.length === 0) {
+          try {
+            const fallback = await (await import('@/lib/externalApi')).getClubSquad(-1)
+            finalPlayers = fallback || []
+          } catch (err) {
+            // jeśli nawet mocki nie działają, pozostaw pustą tablicę
+            finalPlayers = []
+          }
+        }
+
+        // Ustaw stan raz na końcu
+        setPlayers(finalPlayers)
+        setError(null)
+      } catch (e: any) {
+        setError(e?.message || 'Nie udało się wczytać składu')
+        // Spróbuj fallback do mocków przy błędzie
+        try {
           const fallback = await (await import('@/lib/externalApi')).getClubSquad(-1)
           setPlayers(fallback)
+        } catch (err) {
+          setPlayers([])
         }
-       } catch (e: any) {
-         setError(e?.message || 'Nie udało się wczytać składu')
-         const fallback = await (await import('@/lib/externalApi')).getClubSquad(-1)
-         setPlayers(fallback)
-       } finally {
-         setLoading(false)
-       }
-     }
-     load()
-   }, [clubId])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [clubId])
 
   const filtered = useMemo(
     () => players.filter((p) => positionFilter === 'ALL' || p.position === positionFilter),
