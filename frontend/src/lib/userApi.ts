@@ -53,6 +53,7 @@ export type TeamDetails = {
   code?: string
   category?: string
   createdAt?: string
+  description?: string
   members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string }>
 }
 
@@ -95,13 +96,27 @@ const mockTeamDetails: TeamDetails = {
   ],
 }
 
+// Flags to control mocking/forcing real API
+const FORCE_REAL_API = import.meta.env.VITE_FORCE_REAL_API === 'true'
+const ENABLE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === 'true'
+
+if (typeof window !== 'undefined') {
+  console.info('[userApi] flags', { OFFLINE, ENABLE_MOCKS, FORCE_REAL_API })
+}
+
 // Helper for fetch wrapper
 type ApiRequestOptions = RequestInit & { dontRedirectOnAuthError?: boolean; skipAuthHeader?: boolean }
 
 async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
   const { dontRedirectOnAuthError, skipAuthHeader, ...rest } = opts
   const auth = skipAuthHeader ? {} : authHeader()
-  const headers = { ...(rest.headers || {}), ...auth, 'Content-Type': 'application/json' }
+  const method = (rest.method || 'GET').toString().toUpperCase()
+  const requestHasBody = !!rest.body
+  // Do not set Content-Type for GET/HEAD to avoid CORS preflight. Set it only for requests with body or methods that usually send JSON.
+  const headers: any = { ...(rest.headers as any || {}), ...auth }
+  if (requestHasBody || (method !== 'GET' && method !== 'HEAD')) {
+    headers['Content-Type'] = 'application/json'
+  }
   const res = await fetch(url, { ...rest, headers, credentials: 'include' })
   if (!res.ok) {
     if ((res.status === 401 || res.status === 403) && !dontRedirectOnAuthError) {
@@ -118,8 +133,8 @@ async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
   // Bezpieczne parsowanie - jeśli brak treści lub nie-json, zwracamy null
   const contentType = res.headers.get('content-type') || ''
   const contentLength = res.headers.get('content-length')
-  const hasBody = (contentLength && Number(contentLength) > 0) || contentType.includes('application/json')
-  if (res.status === 204 || !hasBody) return null
+  const responseHasBody = (contentLength && Number(contentLength) > 0) || contentType.includes('application/json')
+  if (res.status === 204 || !responseHasBody) return null
   return res.json()
 }
 
@@ -219,21 +234,107 @@ export async function updateMyProfile(payload: { height?: number; weight?: numbe
   return fetchJson(`${USER_BASE}/members/me`, { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
-export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }, opts?: { allowUnauth?: boolean }): Promise<{ items: TeamSummary[]; total?: number }>{
-  if (OFFLINE) return Promise.resolve({ items: mockTeams, total: mockTeams.length })
+export async function getTeams(params?: { mode?: string; teamId?: number; name?: string; page?: number; size?: number }, opts?: { allowUnauth?: boolean; forceReal?: boolean }): Promise<{ items: TeamSummary[]; total?: number }>{
+  // Use mock data only when explicitly enabled (VITE_ENABLE_MOCKS=true) and OFFLINE is true,
+  // unless VITE_FORCE_REAL_API=true or caller passed opts.forceReal === true.
+  const callerForceReal = !!opts?.forceReal
+  if (OFFLINE && !FORCE_REAL_API && ENABLE_MOCKS && !callerForceReal) {
+    console.debug('[userApi.getTeams] returning mockTeams because OFFLINE && ENABLE_MOCKS && !forceReal')
+    return Promise.resolve({ items: mockTeams, total: mockTeams.length })
+  }
   const qs = new URLSearchParams()
   if (params?.mode) qs.set('mode', params.mode)
-  if (params?.teamId) qs.set('teamId', String(params.teamId))
+  if (params?.teamId !== undefined && params.teamId !== null) qs.set('teamId', String(params.teamId))
   if (params?.name) qs.set('name', params.name)
-  if (params?.page) qs.set('page', String(params.page))
-  if (params?.size) qs.set('size', String(params.size))
-  const data = await fetchJson(`${USER_BASE}/teams?${qs.toString()}`, { dontRedirectOnAuthError: opts?.allowUnauth })
-  return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
+  if (params?.page !== undefined && params.page !== null) qs.set('page', String(params.page))
+  if (params?.size !== undefined && params.size !== null) qs.set('size', String(params.size))
+
+  // Prefer relative API path so Vite dev server can proxy /api to backend and avoid CORS.
+  const relUrl = `${API_PREFIX}/user/teams?${qs.toString()}`
+  const fullApiUrl = `${USER_BASE}/teams?${qs.toString()}`
+  try {
+    const data = await fetchJson(relUrl, { dontRedirectOnAuthError: opts?.allowUnauth, skipAuthHeader: !!opts?.allowUnauth })
+    return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
+  } catch (e) {
+    console.warn('[userApi.getTeams] relative fetch failed, trying full URL', { relUrl, err: e })
+    // If unauthenticated mode is allowed, avoid throwing — return mock data so UI remains usable in dev
+    if (opts?.allowUnauth) {
+      console.warn('[userApi.getTeams] returning mockTeams because allowUnauth is true and backend fetch failed')
+      return { items: mockTeams, total: mockTeams.length }
+    }
+    // try full URL once
+    try {
+      const data2 = await fetchJson(fullApiUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
+      return { items: data2?.content ?? data2?.items ?? [], total: data2?.totalElements ?? data2?.total ?? data2?.content?.length }
+    } catch (e2) {
+      console.error('[userApi.getTeams] full URL fetch failed', { fullApiUrl, err: e2 })
+      const err: any = new Error('Failed to fetch teams from backend')
+      err.original = e2
+      throw err
+    }
+  }
 }
 
-export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
-  if (OFFLINE) return Promise.resolve(teamId === mockTeamDetails.id ? mockTeamDetails : { ...mockTeamDetails, id: teamId, name: `Drużyna ${teamId}` })
-  return fetchJson(`${USER_BASE}/teams/${teamId}`)
+export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolean }): Promise<TeamDetails> {
+  const callerForceReal = !!opts?.forceReal
+  if (OFFLINE && !FORCE_REAL_API && ENABLE_MOCKS && !callerForceReal) {
+    console.debug('[userApi.getTeamDetails] returning MOCK details', { teamId })
+    return Promise.resolve(teamId === mockTeamDetails.id ? mockTeamDetails : { ...mockTeamDetails, id: teamId, name: `Drużyna ${teamId}` })
+  }
+
+  const relUrl = `${API_PREFIX}/user/teams/${teamId}`
+  const fullUrl = `${USER_BASE}/teams/${teamId}`
+
+  // Try relative (proxy) first to avoid CORS issues in dev
+  console.debug('[userApi.getTeamDetails] attempting relative fetch (no auth header) to reduce preflight', { relUrl })
+  try {
+    const data = await fetchJson(relUrl, { skipAuthHeader: true })
+    console.debug('[userApi.getTeamDetails] relative fetch (no auth) success', { teamId, relUrl, data })
+    // Normalize description from multiple possible fields
+    if (data) {
+      const desc = (data as any).description ?? (data as any).teamDescription ?? (data as any).summary ?? (data as any).desc ?? (data as any).about ?? (data as any).details?.description ?? null
+      if (desc) (data as any).description = desc
+    }
+    return data
+  } catch (e) {
+    console.warn('[userApi.getTeamDetails] relative fetch (no auth) failed, trying relative with auth', { relUrl, err: e })
+  }
+
+  // try relative with auth header
+  try {
+    console.debug('[userApi.getTeamDetails] attempting relative fetch (with auth)', { relUrl })
+    const dataAuth = await fetchJson(relUrl)
+    console.debug('[userApi.getTeamDetails] relative fetch (with auth) success', { teamId, relUrl, dataAuth })
+    if (dataAuth) {
+      const desc = (dataAuth as any).description ?? (dataAuth as any).teamDescription ?? (dataAuth as any).summary ?? (dataAuth as any).desc ?? (dataAuth as any).about ?? (dataAuth as any).details?.description ?? null
+      if (desc) (dataAuth as any).description = desc
+    }
+    return dataAuth
+  } catch (e) {
+    console.warn('[userApi.getTeamDetails] relative fetch with auth failed, trying full URL', { relUrl, err: e })
+  }
+
+  // Try full URL (direct to gateway/identity)
+  console.debug('[userApi.getTeamDetails] attempting full fetch', { fullUrl })
+  try {
+    const data2 = await fetchJson(fullUrl)
+    console.debug('[userApi.getTeamDetails] full fetch success', { teamId, fullUrl, data2 })
+    if (data2) {
+      const desc = (data2 as any).description ?? (data2 as any).teamDescription ?? (data2 as any).summary ?? (data2 as any).desc ?? (data2 as any).about ?? (data2 as any).details?.description ?? null
+      if (desc) (data2 as any).description = desc
+    }
+    return data2
+  } catch (e2) {
+    console.error('[userApi.getTeamDetails] full fetch failed', { fullUrl, err: e2 })
+    // If caller explicitly forced real call, rethrow to let caller handle the error
+    if (callerForceReal || FORCE_REAL_API) throw e2
+    // otherwise, as a last resort, if mocks are enabled return mock; else rethrow
+    if (OFFLINE && ENABLE_MOCKS) {
+      console.debug('[userApi.getTeamDetails] returning MOCK details after fetch failures', { teamId })
+      return teamId === mockTeamDetails.id ? mockTeamDetails : { ...mockTeamDetails, id: teamId, name: `Drużyna ${teamId}` }
+    }
+    throw e2
+  }
 }
 
 // Tworzy nowy zespół (POST /user/teams)
@@ -251,6 +352,45 @@ export async function createTeam(payload: { name: string; code?: string; status?
   // Backend expects PUT /user/teams/new with AddTeamRequest
   const body = { name: payload.name, category: payload.category, code: payload.code, description: payload.description }
   await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(body) })
+  return true
+}
+
+// Aktualizuje zespół (PUT /user/teams/{id}) — jeśli backend używa PATCH/inna ścieżka, zmień tutaj.
+export async function updateTeam(teamId: number, payload: { name?: string; code?: string; status?: string; category?: string; description?: string }) {
+  if (OFFLINE) {
+    // Aktualizuj mockTeams
+    const idx = mockTeams.findIndex(t => t.teamId === teamId)
+    if (idx >= 0) {
+      const t = mockTeams[idx]
+      const updated = { ...t }
+      if (payload.name) updated.teamName = payload.name
+      if (payload.category) updated.category = payload.category
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (payload.description) updated.description = payload.description
+      mockTeams[idx] = updated
+    }
+    // Aktualizuj mockTeamDetails jeśli pasuje
+    if (mockTeamDetails.id === teamId) {
+      if (payload.name) mockTeamDetails.name = payload.name
+      if (payload.code) mockTeamDetails.code = payload.code
+      if (payload.category) mockTeamDetails.category = payload.category
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (payload.description) (mockTeamDetails as any).description = payload.description
+    }
+    return Promise.resolve(true)
+  }
+
+  const body: any = {}
+  if (payload.name !== undefined) body.name = payload.name
+  if (payload.code !== undefined) body.code = payload.code
+  if (payload.status !== undefined) body.status = payload.status
+  if (payload.category !== undefined) body.category = payload.category
+  if (payload.description !== undefined) body.description = payload.description
+
+  // Wyślij PUT do endpointu aktualizacji — użyj PUT jako domyślnego; jeśli backend wymaga PATCH, zmień metodę.
+  await fetchJson(`${USER_BASE}/teams/${teamId}`, { method: 'PUT', body: JSON.stringify(body) })
   return true
 }
 
@@ -465,7 +605,7 @@ export async function getMemberProfile(id: number) {
 }
 
 // Aktywacja konta - do testów UI
-export async function activateAccount(code: string, email?: string): Promise<{ success: boolean }> {
+export async function activateAccount(code: string, email: string): Promise<{ success: boolean }> {
   if (OFFLINE) {
     // wymóg: dokładnie 8 znaków alfanumerycznych
     const ok = /^[A-Za-z0-9]{6,10}$/.test(code)
