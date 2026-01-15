@@ -13,10 +13,13 @@ type Props = {
   disabled?: boolean
   // optional className forwarded to the internal input to allow matching styles
   inputClassName?: string
+  // when true, show time controls under the calendar
+  includeTime?: boolean
 }
 
 function pad(n: number) { return n < 10 ? `0${n}` : `${n}` }
 function toISO(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` }
+function toISODateTime(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}` }
 function startOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth(), 1) }
 function endOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth()+1, 0) }
 
@@ -31,11 +34,15 @@ function parseSafeDate(s?: string | null): Date | null {
   }
 }
 
-export default function DateInput({ value, onChange, id, placeholder, required, inputClassName, disabled }: Props) {
+export default function DateInput({ value, onChange, id, placeholder, required, inputClassName, disabled, includeTime = true }: Props) {
   const [open, setOpen] = useState(false)
   const [internal, setInternal] = useState<string | null>(value ?? null)
   // use a safe parser for initial view month
   const [viewMonth, setViewMonth] = useState<Date>(() => parseSafeDate(internal) ?? new Date())
+  // time selection states (used only when includeTime is true)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => parseSafeDate(internal))
+  const [selectedHour, setSelectedHour] = useState<number>(() => { const d = parseSafeDate(internal); return d ? d.getHours() : 0 })
+  const [selectedMinute, setSelectedMinute] = useState<number>(() => { const d = parseSafeDate(internal); return d ? d.getMinutes() : 0 })
   const [monthOpen, setMonthOpen] = useState(false)
   const [yearOpen, setYearOpen] = useState(false)
   const [popupStyle, setPopupStyle] = useState<Record<string,string>>({})
@@ -48,16 +55,56 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
   const ref = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const popupRef = useRef<HTMLDivElement | null>(null)
+  const hourInputRef = useRef<HTMLInputElement | null>(null)
   const rafRef = useRef<number | null>(null)
   const pendingRef = useRef(false)
   const suppressCloseRef = useRef<number>(0)
+
+  // Ensure critical date/time states are valid to avoid runtime render errors
+  useEffect(() => {
+    if (!(viewMonth instanceof Date) || isNaN(viewMonth.getTime())) {
+      setViewMonth(new Date())
+    }
+  }, [viewMonth])
+
+  useEffect(() => {
+    if (selectedDate && (!(selectedDate instanceof Date) || isNaN(selectedDate.getTime()))) {
+      setSelectedDate(null)
+    }
+  }, [selectedDate])
+
+  useEffect(() => {
+    if (!Number.isFinite(selectedHour) || isNaN(selectedHour) || selectedHour < 0 || selectedHour > 23) setSelectedHour(0)
+  }, [selectedHour])
+
+  useEffect(() => {
+    if (!Number.isFinite(selectedMinute) || isNaN(selectedMinute) || selectedMinute < 0 || selectedMinute > 59) setSelectedMinute(0)
+  }, [selectedMinute])
 
   useEffect(() => setInternal(value ?? null), [value])
   // set viewMonth only when parsed date is valid
   useEffect(() => {
     const parsed = parseSafeDate(internal)
-    if (parsed) setViewMonth(parsed)
+    if (parsed) {
+      setViewMonth(parsed)
+      // initialize time selection when there's an initial value
+      setSelectedDate(parsed)
+      setSelectedHour(parsed.getHours())
+      setSelectedMinute(parsed.getMinutes())
+    }
   }, [internal])
+
+  // when popup opens and includeTime is enabled, prefill selected date/time and focus hour input
+  useEffect(() => {
+    if (!open || !includeTime) return
+    const parsed = parseSafeDate(internal) ?? new Date()
+    setSelectedDate(parsed)
+    setSelectedHour(parsed.getHours())
+    setSelectedMinute(parsed.getMinutes())
+    setViewMonth(new Date(parsed.getFullYear(), parsed.getMonth(), 1))
+    // small timeout to allow popup to render
+    setTimeout(() => { try { hourInputRef.current?.focus() } catch (e) { /* ignore */ } }, 0)
+  }, [open, includeTime])
 
   // compute overlay and text color based on popup background so hover always 'brightens'
   useEffect(() => {
@@ -178,6 +225,17 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
       setOpen(false)
       return
     }
+
+    // when includeTime is enabled, set selectedDate and keep popup open so user can pick time
+    if (includeTime) {
+      setSelectedDate(d)
+      // ensure viewMonth reflects the selected date's month
+      setViewMonth(new Date(d.getFullYear(), d.getMonth(), 1))
+      // focus hour input so time can be entered immediately
+      setTimeout(() => { try { hourInputRef.current?.focus() } catch (e) { /* ignore */ } }, 0)
+      return
+    }
+
     const iso = toISO(d)
     setInternal(iso)
     try {
@@ -190,8 +248,33 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
     }
   }
 
-  const prevMonth = () => setViewMonth(m => new Date(m.getFullYear(), m.getMonth()-1, 1))
-  const nextMonth = () => setViewMonth(m => new Date(m.getFullYear(), m.getMonth()+1, 1))
+  // apply selected date (and time if includeTime) and notify parent
+  const applySelection = () => {
+    if (!selectedDate) { setOpen(false); return }
+    const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), selectedHour, selectedMinute, 0)
+    const iso = includeTime ? toISODateTime(d) : toISO(d)
+    setInternal(iso)
+    try { onChange?.(iso) } catch (e) { console.error('DateInput onChange error', e) } finally { setOpen(false) }
+  }
+
+  const clearSelection = () => {
+    setSelectedDate(null)
+    setSelectedHour(0)
+    setSelectedMinute(0)
+    setInternal(null)
+    try { onChange?.(null) } catch (e) { console.error('DateInput onChange error', e) }
+    setOpen(false)
+  }
+
+  // month navigation helpers (use safe fallback if state is invalid)
+  const prevMonth = () => setViewMonth(m => {
+    const base = (m instanceof Date && !isNaN(m.getTime())) ? m : safeViewMonth
+    return new Date(base.getFullYear(), base.getMonth()-1, 1)
+  })
+  const nextMonth = () => setViewMonth(m => {
+    const base = (m instanceof Date && !isNaN(m.getTime())) ? m : safeViewMonth
+    return new Date(base.getFullYear(), base.getMonth()+1, 1)
+  })
 
   // helper to render year buttons (avoids complex IIFE inside JSX)
   const renderYearButtons = () => {
@@ -205,7 +288,7 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
         key={y}
         type="button"
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => { setViewMonth(new Date(y, viewMonth.getMonth(), 1)); setYearOpen(false) }}
+        onClick={() => { setViewMonth(new Date(y, safeViewMonth.getMonth(), 1)); setYearOpen(false) }}
         onMouseEnter={() => setHoveredYear(y)}
         onMouseLeave={() => setHoveredYear(null)}
         className={`block w-full text-left px-2 py-1 rounded transition-colors duration-150 hover:bg-accent/10`}
@@ -216,8 +299,10 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
     ))
   }
 
-  const monthStart = startOfMonth(viewMonth)
-  const monthEnd = endOfMonth(viewMonth)
+  // Ensure we use a valid Date for calendar computations
+  const safeViewMonth = (viewMonth instanceof Date && !isNaN(viewMonth.getTime())) ? viewMonth : new Date()
+  const monthStart = startOfMonth(safeViewMonth)
+  const monthEnd = endOfMonth(safeViewMonth)
   const startWeekDay = monthStart.getDay()
   const daysInMonth = monthEnd.getDate()
 
@@ -247,7 +332,7 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
 
           <div className="flex items-center gap-1 relative">
             <div className="relative">
-              <button type="button" onPointerDown={(e)=>{ e.stopPropagation(); suppressCloseRef.current = Date.now() + 250 }} onClick={() => { setMonthOpen(v => !v); setYearOpen(false) }} className="rounded-md border border-border px-2 py-0.5 text-sm flex items-center gap-2" style={{ background: 'transparent' }}>{viewMonth.toLocaleString(undefined, { month: 'long' })}</button>
+              <button type="button" onPointerDown={(e)=>{ e.stopPropagation(); suppressCloseRef.current = Date.now() + 250 }} onClick={() => { setMonthOpen(v => !v); setYearOpen(false) }} className="rounded-md border border-border px-2 py-0.5 text-sm flex items-center gap-2" style={{ background: 'transparent' }}>{safeViewMonth.toLocaleString(undefined, { month: 'long' })}</button>
               {monthOpen && (
                 <div className="absolute left-0 z-40 mt-1 border border-border rounded-md shadow p-1 flex flex-col text-sm bg-card" style={{ minWidth: 128, backgroundColor: 'var(--card, #fff)' }}>
                   {Array.from({ length: 12 }).map((_, m) => (
@@ -255,7 +340,7 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
                       key={m}
                       type="button"
                       onPointerDown={(e)=>e.stopPropagation()}
-                      onClick={() => { setViewMonth(new Date(viewMonth.getFullYear(), m, 1)); setMonthOpen(false) }}
+                      onClick={() => { setViewMonth(new Date(safeViewMonth.getFullYear(), m, 1)); setMonthOpen(false) }}
                       onMouseEnter={() => setHoveredMonth(m)}
                       onMouseLeave={() => setHoveredMonth(null)}
                       className={`block w-full text-left px-2 py-1 rounded transition-colors duration-150 hover:bg-accent/10`}
@@ -269,7 +354,7 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
             </div>
 
             <div className="relative">
-              <button type="button" onPointerDown={(e)=>{ e.stopPropagation(); suppressCloseRef.current = Date.now() + 250 }} onClick={() => { setYearOpen(v => !v); setMonthOpen(false) }} className="rounded-md border border-border px-2 py-0.5 text-sm" style={{ background: 'transparent' }}>{viewMonth.getFullYear()}</button>
+              <button type="button" onPointerDown={(e)=>{ e.stopPropagation(); suppressCloseRef.current = Date.now() + 250 }} onClick={() => { setYearOpen(v => !v); setMonthOpen(false) }} className="rounded-md border border-border px-2 py-0.5 text-sm" style={{ background: 'transparent' }}>{safeViewMonth.getFullYear()}</button>
               {yearOpen && (
                 <div className="absolute left-0 z-40 mt-1 border border-border rounded-md shadow p-1 max-h-60 overflow-auto flex flex-col text-sm bg-card" style={{ minWidth: 96, backgroundColor: 'var(--card, #fff)' }}>
                   {renderYearButtons()}
@@ -295,77 +380,137 @@ export default function DateInput({ value, onChange, id, placeholder, required, 
             <tbody>
               {weeks.map((row, i) => (
                 <tr key={i}>
-                  {row.map((d, j) => (
-                    <td key={j} className="py-0.5">
-                      {d === null ? null : (
+                  {row.map((d, j) => {
+                    if (d === null) return <td key={j} className="py-0.5" />
+                    const isoForDay = toISO(new Date(safeViewMonth.getFullYear(), safeViewMonth.getMonth(), d))
+                    const isSelected = !!(selectedDate && selectedDate.getFullYear() === safeViewMonth.getFullYear() && selectedDate.getMonth() === safeViewMonth.getMonth() && selectedDate.getDate() === d)
+                    return (
+                      <td key={j} className="py-0.5">
                         <button
                           type="button"
                           onPointerDown={(e)=>{ e.stopPropagation(); suppressCloseRef.current = Date.now() + 250 }}
-                          onClick={() => select(new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d))}
-                          onMouseEnter={() => setHoveredIso(toISO(new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d)))}
-                          onMouseLeave={() => setHoveredIso(null)}
-                          className={`w-full h-full px-2 py-1 rounded-md transition-colors duration-150 flex items-center justify-center hover:bg-accent/10`}
-                          style={{ color: textColor, boxShadow: hoveredIso === toISO(new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d)) ? `inset 0 0 0 9999px ${hoverOverlayColor}` : undefined, transition: 'box-shadow 150ms ease' }}
-                         >
-                           {d}
-                         </button>
-                      )}
-                    </td>
-                  ))}
+                          onClick={() => select(new Date(safeViewMonth.getFullYear(), safeViewMonth.getMonth(), d))}
+                          onMouseEnter={() => setHoveredIso(isoForDay)}
+                          onMouseLeave={() => setHoveredIso(null)
+                          }
+                          className={`w-full h-full px-2 py-1 rounded-md transition-colors duration-150 flex items-center justify-center hover:bg-accent/10 ${isSelected ? 'ring-2 ring-accent/40 bg-accent/10' : ''}`}
+                          style={{ color: textColor, boxShadow: hoveredIso === isoForDay ? `inset 0 0 0 9999px ${hoverOverlayColor}` : undefined, transition: 'box-shadow 150ms ease' }}
+                        >
+                          {d}
+                        </button>
+                      </td>
+                    )
+                  })}
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    )
-  } catch (e) {
-    console.error('DateInput render error:', e)
-    popupElement = null
-  }
+             </tbody>
+           </table>
+         </div>
 
-  return (
-    <div ref={ref} className="relative w-full">
-      <input
-        type="text"
-        id={id}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-        readOnly
-        value={safeFormatDisplay(internal)}
-        onPointerDown={(e) => { e.stopPropagation(); suppressCloseRef.current = Date.now() + 250; setOpen(true) }}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        // allow callers to override / extend input classes to match surrounding inputs
-        className={`${"w-full px-3 py-2 text-sm rounded-md border border-border focus:ring-1 focus:ring-accent focus:outline-none"} ${inputClassName ?? ''}`}
-        style={{ color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
-        ref={inputRef}
-      />
-      {open && (() => {
-        try {
-          return createPortal(
-            <ErrorBoundary>
-              {popupElement}
-            </ErrorBoundary>,
-            document.body
-          )
-        } catch (e) {
-          console.error('DateInput portal error', e)
-          return null
-        }
-      })()}
-    </div>
-  )
-}
+         {/* time controls (pokazuj tylko gdy includeTime === true i popup jest otwarty) */}
+         {open && includeTime && (
+           <div className="px-2 pt-2 pb-1 border-t border-border mt-1 flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <label className="text-sm text-muted-foreground">Godz.</label>
+                <input
+                  ref={hourInputRef}
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={selectedHour}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.min(23, Number(e.target.value || 0)))
+                    setSelectedHour(v)
+                  }}
+                  className="w-16 px-2 py-1 rounded border border-border text-sm"
+                />
+                <label className="text-sm text-muted-foreground">Min.</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={selectedMinute}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.min(59, Number(e.target.value || 0)))
+                    setSelectedMinute(v)
+                  }}
+                  className="w-16 px-2 py-1 rounded border border-border text-sm"
+                />
+              </div>
 
-function safeFormatDisplay(internal: string | null) {
-  try {
-    const parsed = parseSafeDate(internal)
-    if (!parsed) return ''
-    return parsed.toLocaleDateString()
-  } catch (e) {
-    console.error('DateInput format error', e)
-    return ''
-  }
-}
+              <div className="ml-auto flex items-center gap-2">
+                <button type="button" onClick={clearSelection} className="text-sm px-2 py-1 rounded border border-border hover:bg-accent/10">Wyczyść</button>
+                <button type="button" onClick={applySelection} className="text-sm px-2 py-1 rounded bg-accent text-accent-foreground hover:opacity-95">Zastosuj</button>
+              </div>
+            </div>
+         )}
+       </div>
+     )
+   } catch (e) {
+     console.error('DateInput render error:', e)
+     popupElement = null
+   }
+
+   return (
+     <div ref={ref} className="relative w-full">
+       <input
+         type="text"
+         id={id}
+         placeholder={placeholder}
+         required={required}
+         disabled={disabled}
+         readOnly
+         value={safeFormatDisplay(internal)}
+         onPointerDown={(e) => {
+          e.stopPropagation();
+          suppressCloseRef.current = Date.now() + 250;
+          // when includeTime is enabled, prefill selectedDate so time controls are usable immediately
+          if (includeTime) {
+            const parsed = parseSafeDate(internal) ?? new Date()
+            setSelectedDate(parsed)
+            setSelectedHour(parsed.getHours())
+            setSelectedMinute(parsed.getMinutes())
+            setViewMonth(new Date(parsed.getFullYear(), parsed.getMonth(), 1))
+            setOpen(true)
+            // focus hour input shortly after opening
+            setTimeout(() => { try { hourInputRef.current?.focus() } catch (err) { /* ignore */ } }, 0)
+            return
+          }
+          setOpen(true)
+         }}
+         aria-haspopup="dialog"
+         aria-expanded={open}
+         // allow callers to override / extend input classes to match surrounding inputs
+         className={`${"w-full px-3 py-2 text-sm rounded-md border border-border focus:ring-1 focus:ring-accent focus:outline-none"} ${inputClassName ?? ''}`}
+         style={{ color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
+         ref={inputRef}
+       />
+       {open && (() => {
+         try {
+           return createPortal(
+             <ErrorBoundary>
+               {popupElement}
+             </ErrorBoundary>,
+             document.body
+           )
+         } catch (e) {
+           console.error('DateInput portal error', e)
+           return null
+         }
+       })()}
+     </div>
+   )
+ }
+
+ function safeFormatDisplay(internal: string | null) {
+   try {
+     const parsed = parseSafeDate(internal)
+     if (!parsed) return ''
+     // if time component is present (ISO with T), show both date and time
+     if (internal && internal.includes('T')) return parsed.toLocaleString()
+     return parsed.toLocaleDateString()
+   } catch (e) {
+     console.error('DateInput format error', e)
+     return ''
+   }
+ }

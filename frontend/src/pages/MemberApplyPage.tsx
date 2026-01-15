@@ -125,6 +125,7 @@ export function MemberApplyPage() {
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground">Data urodzenia</label>
                                 <DateInput
+                                    includeTime={false}
                                     value={birthDate || null}
                                     onChange={(v) => setBirthDate(v ?? '')}
                                     required
