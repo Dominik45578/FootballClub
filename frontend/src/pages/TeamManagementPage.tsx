@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams } from '@/lib/userApi'
+import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams, getTeamDetails, updateTeam } from '@/lib/userApi'
 import { OFFLINE, getUserRoles, hasRole } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Eye, UserCheck, UserX, Wrench, Search as SearchIcon, RotateCw, Calendar } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
+import TeamSearchModal from '@/components/TeamSearchModal'
 
 const schema = z.object({
     teamId: z.coerce.number().int().positive('Podaj poprawne ID zespołu'),
@@ -29,7 +30,7 @@ const TEAM_CATEGORIES = ['academy', 'junior', 'senior', 'u19', 'u17'] as const
 
 // Types for members and team form (moved to top to be available for state initialization)
 type Member = { id: number; fullName: string; number: number; status: string; roles: string[] }
-type TeamForm = { id: number; name: string; code: string; city?: string; founded?: number; status: string; category: string }
+type TeamForm = { id: number; name: string; code: string; status: string; category: string; description?: string }
 
 const mockMembers: Member[] = Array.from({ length: 8 }).map((_, i) => ({
     id: i + 1,
@@ -39,7 +40,28 @@ const mockMembers: Member[] = Array.from({ length: 8 }).map((_, i) => ({
     roles: i % 2 === 0 ? ['PLAYER'] : ['PLAYER', 'GOALKEEPER'],
 }))
 
-const mockTeam: TeamForm = { id: 101, name: 'Mój zespół', code: 'ABC123', city: 'City', founded: 2020, status: 'ACTIVE', category: 'Senior' }
+const mockTeam: TeamForm = { id: 101, name: 'Mój zespół', code: 'ABC123', status: 'ACTIVE', category: 'senior', description: 'Opis zespołu (mock)' }
+
+// Mapowania kategorii pomiędzy backendem (TeamCategory enum - np. SENIOR, U19) a frontendem (lowercase strings)
+const BACKEND_TO_FRONT: Record<string, string> = {
+    SENIOR: 'senior',
+    U19: 'u19',
+    U17: 'u17',
+    JUNIOR: 'junior',
+    ACADEMY: 'academy',
+}
+const FRONT_TO_BACK: Record<string, string> = Object.fromEntries(Object.entries(BACKEND_TO_FRONT).map(([k, v]) => [v, k])) as Record<string, string>
+
+// prosta walidacja teamForm, zwraca mapę błędów (pole -> komunikat)
+function validateTeamForm(form: TeamForm) {
+    const errors: Record<string, string> = {}
+    if (!form.name || form.name.trim().length < 5 || form.name.trim().length > 128) errors.name = 'Nazwa zespołu musi mieć 5–128 znaków'
+    if (!form.code || form.code.trim().length < 6 || form.code.trim().length > 32) errors.code = 'Kod zespołu musi mieć 6–32 znaków'
+    if (!form.category || !Object.keys(FRONT_TO_BACK).includes(form.category)) errors.category = 'Wybierz kategorię'
+    if (!form.description || form.description.trim().length < 10 || form.description.trim().length > 4095) errors.description = 'Opis musi mieć 10–4095 znaków'
+    if (!form.status) errors.status = 'Wybierz status'
+    return errors
+}
 
 // Top-level ErrorBoundary component so it can be used in JSX reliably
 class ErrorBoundary extends React.Component<{ children?: React.ReactNode }, { error: any }> {
@@ -68,12 +90,15 @@ class ErrorBoundary extends React.Component<{ children?: React.ReactNode }, { er
 }
 
 export function TeamManagementPage() {
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
+    const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
     const navigate = useNavigate()
     const [members, setMembers] = useState<Member[]>(mockMembers)
     const [teamForm, setTeamForm] = useState<TeamForm>(mockTeam)
     const [tab, setTab] = useState<'manual' | 'members' | 'team' | 'create'>('manual')
     const [memberAllowed, setMemberAllowed] = useState(true)
     const [memberError, setMemberError] = useState<string | null>(null)
+    const [loadingDescription, setLoadingDescription] = useState(false)
     // create-form validation schema and hook (live validation)
     const createSchema = z.object({
         category: z.enum(['academy', 'junior', 'senior', 'u19', 'u17'] as const),
@@ -166,12 +191,91 @@ export function TeamManagementPage() {
         }
     }
 
-    const handleSaveTeam = () => {
-        toast.success('Zapisano zespół (mock)', { description: `${teamForm.name || 'Bez nazwy'}, ${teamForm.city || '—'}` })
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+    // When a team is selected (selectedTeamId changes), fetch its details and populate the form
+    useEffect(() => {
+        if (!selectedTeamId) return
+        let mounted = true
+        ;(async () => {
+            setLoadingDescription(true)
+            // clear description so mock isn't visible while loading
+            setTeamForm((prev) => ({ ...prev, description: '' }))
+            try {
+                const details = await getTeamDetails(selectedTeamId, { forceReal: true })
+                if (!mounted) return
+                setTeamForm((prev: TeamForm) => ({
+                    id: details.id ?? selectedTeamId,
+                    name: details.name ?? prev.name,
+                    code: (details as any).code ?? prev.code,
+                    status: (details as any).status ?? prev.status,
+                    category: BACKEND_TO_FRONT[(details as any).category ?? ''] ?? prev.category,
+                    description: (details as any).description ?? '',
+                }))
+            } catch (err: any) {
+                console.warn('Failed to fetch team details for selectedTeamId', selectedTeamId, err)
+                if (mounted) {
+                    setTeamForm((prev) => ({ ...prev, description: '' }))
+                }
+                toast.error('Nie udało się pobrać szczegółów zespołu', { description: err?.message })
+            } finally {
+                if (mounted) setLoadingDescription(false)
+            }
+        })()
+        return () => { mounted = false }
+    }, [selectedTeamId])
+
+    const handleSaveTeam = async () => {
+        const id = teamForm.id
+        if (!id) {
+            toast.error('Brak wybranego zespołu do zapisu')
+            return
+        }
+        // walidacja
+        const errs = validateTeamForm(teamForm)
+        setValidationErrors(errs)
+        if (Object.keys(errs).length > 0) return
+
+        try {
+            const backendCategory = FRONT_TO_BACK[teamForm.category] ?? undefined
+            await updateTeam(id, { name: teamForm.name, code: teamForm.code, status: teamForm.status, category: backendCategory, description: teamForm.description })
+            toast.success('Zapisano zespół', { description: `${teamForm.name || 'Bez nazwy'}` })
+            // Odśwież szczegóły
+            try {
+                const refreshed = await getTeamDetails(id, { forceReal: true })
+                setTeamForm((prev) => ({ ...prev, name: refreshed.name ?? prev.name, code: (refreshed as any).code ?? prev.code, category: (refreshed as any).category ?? prev.category, description: (refreshed as any).description ?? prev.description }))
+            } catch (_) {
+                // ignore refresh failures
+            }
+        } catch (err: any) {
+            toast.error('Nie udało się zapisać zespołu', { description: err?.message })
+        }
     }
-    const handleResetTeam = () => {
+    const handleResetTeam = async () => {
+        // jeśli mamy wybrany zespół — pobierz jego aktualne dane z backendu
+        if (selectedTeamId) {
+            try {
+                const details = await getTeamDetails(selectedTeamId, { forceReal: true })
+                setTeamForm({
+                    id: details.id ?? selectedTeamId,
+                    name: details.name ?? '',
+                    code: (details as any).code ?? '',
+                    status: (details as any).status ?? 'ACTIVE',
+                    category: BACKEND_TO_FRONT[(details as any).category ?? ''] ?? 'academy',
+                    description: (details as any).description ?? '',
+                })
+                setValidationErrors({})
+                toast.info('Przywrócono dane z serwera')
+                return
+            } catch (err: any) {
+                toast.error('Nie udało się pobrać danych z serwera', { description: err?.message })
+            }
+        }
+        // fallback
         setTeamForm(mockTeam)
-        toast.info('Mock: przywrócono dane zespołu')
+        setSelectedTeamId(mockTeam.id)
+        setValidationErrors({})
+        toast.info('Przywrócono dane lokalne')
     }
 
     if (!memberAllowed && !OFFLINE) {
@@ -426,9 +530,34 @@ export function TeamManagementPage() {
                         <Card className="shadow-sm">
                             <CardHeader>
                                 <CardTitle>Aktualizuj zespół</CardTitle>
-                                <CardDescription>Mock UI: zmiana nazwy, miasta, kodu dołączenia.</CardDescription>
+                                <CardDescription>Mock UI: zmiana nazwy, kodu dołączenia.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Button onClick={() => setIsSearchOpen(true)} variant="outline">Wybierz zespół do edycji</Button>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">{selectedTeamId ? `Wybrano zespół ID: ${selectedTeamId}` : 'Nie wybrano zespołu'}</div>
+                                </div>
+                                <TeamSearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelect={async (teamId) => {
+                                    setIsSearchOpen(false)
+                                    try {
+                                        const details = await getTeamDetails(teamId, { forceReal: true })
+                                        setSelectedTeamId(teamId)
+                                        setTeamForm((prev: TeamForm) => ({
+                                            id: details.id ?? teamId,
+                                            name: details.name ?? prev.name,
+                                            code: (details as any).code ?? prev.code,
+                                            status: (details as any).status ?? prev.status,
+                                            category: BACKEND_TO_FRONT[(details as any).category ?? ''] ?? prev.category,
+                                            description: (details as any).description ?? '',
+                                        }))
+                                    } catch (err: any) {
+                                        toast.error('Nie udało się pobrać szczegółów zespołu', { description: err?.message })
+                                        // ensure description is empty on failure
+                                        setTeamForm((prev) => ({ ...prev, description: '' }))
+                                    }
+                                }} />
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div className="space-y-1">
                                         <label className="text-sm font-medium">Nazwa zespołu</label>
@@ -455,24 +584,9 @@ export function TeamManagementPage() {
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-sm font-medium">Miasto</label>
-                                        <Input value={teamForm.city}
-                                               onChange={(e) => setTeamForm((t: TeamForm) => ({...t, city: e.target.value}))}/>
-                                    </div>
-
-                                    <div className="space-y-1">
                                         <label className="text-sm font-medium">Kod dołączenia</label>
                                         <Input value={teamForm.code}
                                                onChange={(e) => setTeamForm((t: TeamForm) => ({...t, code: e.target.value}))}/>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <label className="text-sm font-medium">Rok założenia</label>
-                                        <Input type="number" value={teamForm.founded}
-                                               onChange={(e) => setTeamForm((t: TeamForm) => ({
-                                                   ...t,
-                                                   founded: Number(e.target.value || 0)
-                                               }))}/>
                                     </div>
 
                                     <div className="space-y-1">
@@ -495,9 +609,27 @@ export function TeamManagementPage() {
                                         </Select>
                                     </div>
                                 </div>
+                                <div className="sm:col-span-2 mt-2">
+                                    <label className="text-sm font-medium">Opis zespołu</label>
+                                    {loadingDescription ? (
+                                        <div className="w-full rounded-md border border-border shadow-sm p-2 bg-transparent text-sm">
+                                            <Skeleton className="h-20 w-full" />
+                                        </div>
+                                    ) : (
+                                        // If server returned empty description, show placeholder so user knows it's missing from backend
+                                        <>
+                                            {teamForm.description === undefined || teamForm.description === '' ? (
+                                                <div className="w-full rounded-md border border-border shadow-sm p-3 text-sm text-muted-foreground">Brak opisu z serwera</div>
+                                            ) : (
+                                                <textarea value={teamForm.description ?? ''} onChange={(e) => setTeamForm((t) => ({ ...t, description: e.target.value }))} rows={4} className="w-full rounded-md border border-border shadow-sm p-2 bg-transparent text-sm" />
+                                            )}
+                                        </>
+                                    )}
+                                    {validationErrors.description && <p className="text-destructive text-sm mt-1">{validationErrors.description}</p>}
+                                </div>
                                 <div className="flex gap-2">
-                                    <Button type="button" onClick={handleSaveTeam}>
-                                        <Wrench className="mr-2 h-4 w-4"/>Zapisz zmiany (mock)
+                                    <Button type="button" onClick={handleSaveTeam} disabled={Object.keys(validateTeamForm(teamForm)).length > 0}>
+                                        <Wrench className="mr-2 h-4 w-4"/>Zapisz zmiany
                                     </Button>
                                     <Button type="button" variant="outline" onClick={handleResetTeam}>
                                         Usuń zespół (mock)
@@ -656,10 +788,9 @@ export function TeamManagementPage() {
                          id: foundId,
                          name: found.teamName ?? (found as any).name ?? values.name,
                          code: (found as any).code ?? values.code ?? prev.code,
-                         city: (found as any).city ?? prev.city,
-                         founded: (found as any).founded ?? prev.founded,
                         status: (found as any).status ?? values.status,
-                        category: (found as any).category ?? values.category,
+                        category: BACKEND_TO_FRONT[(found as any).category ?? ''] ?? values.category,
+                        description: (found as any).description ?? prev.description,
                      }))
                  } else {
                     setTeamForm((t: TeamForm) => ({ ...t, name: values.name, code: values.code, status: values.status, category: values.category }))
@@ -683,4 +814,3 @@ export function TeamManagementPage() {
 }
 
 export default TeamManagementPage
-

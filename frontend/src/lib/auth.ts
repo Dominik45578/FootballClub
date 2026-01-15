@@ -215,6 +215,8 @@ export function authHeader(): Record<string, string> {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
   }
+  // NOTE: do NOT attach X-User-Id from the browser - gateway sets this header server-side.
+  // Attaching it here caused CORS preflight failures because the backend didn't allow this header in Access-Control-Allow-Headers.
   return headers
 }
 

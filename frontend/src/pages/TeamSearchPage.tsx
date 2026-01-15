@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { Eye, Search as SearchIcon, RotateCw, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 
 export function TeamSearchPage() {
     const [name, setName] = useState('')
@@ -25,14 +26,26 @@ export function TeamSearchPage() {
     const fetchClubs = async () => {
         setLoading(true)
         try {
-            const res = await getTeams({ mode: 'ALL_TEAMS', name, page, size }, { allowUnauth: true })
+            const res = await getTeams({ mode: 'ALL_TEAMS', name, page, size })
             setClubs({ items: res.items, total: res.total ?? res.items.length })
         } finally {
             setLoading(false)
         }
     }
 
-    useEffect(() => { fetchClubs() }, [page])
+    // Safe wrapper with error handling to avoid uncaught promise rejections
+    const fetchClubsSafe = async () => {
+        try {
+            await fetchClubs()
+        } catch (err: any) {
+            console.error('TeamSearchPage.fetchClubs error', err)
+            setClubs({ items: [], total: 0 })
+            toast.error('Błąd podczas wyszukiwania zespołów', { description: err?.message })
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => { fetchClubsSafe() }, [page])
 
     const totalPages = useMemo(() => Math.max(1, Math.ceil((clubs.total || 0) / size)), [clubs.total, size])
 
@@ -79,7 +92,6 @@ export function TeamSearchPage() {
                                         <th className="text-left py-2 px-3">Nazwa zespołu</th>
                                         <th className="text-left py-2 px-3">Kategoria</th>
                                         <th className="text-left py-2 px-3">Liczba członków</th>
-                                        <th className="text-left py-2 px-3">Mój status</th>
                                         <th className="text-left py-2 px-3 rounded-tr-lg">Akcje</th>
                                     </tr>
                                 </thead>
@@ -87,7 +99,7 @@ export function TeamSearchPage() {
                                     {loading && clubs.items.length === 0 && (
                                         Array.from({ length: 4 }).map((_, i) => (
                                             <tr key={`skeleton-${i}`} className="border-t">
-                                                <td className="px-3 py-3" colSpan={6}>
+                                                <td className="px-3 py-3" colSpan={5}>
                                                     <Skeleton className="h-4 w-full" />
                                                 </td>
                                             </tr>
@@ -106,7 +118,6 @@ export function TeamSearchPage() {
                                             </td>
                                             <td className="py-2 px-3">{c.category || '—'}</td>
                                             <td className="py-2 px-3">{c.numberOfMembers ?? '—'}</td>
-                                            <td className="py-2 px-3">{c.myStatus ?? '—'}</td>
                                             <td className="py-2 px-3">
                                                 <div className="flex gap-2">
                                                     <Button size="sm" variant="outline" onClick={() => clubId && navigate(`/team-details/${clubId}`)} disabled={!clubId}>
@@ -118,7 +129,7 @@ export function TeamSearchPage() {
                                         </tr>
                                     )})}
                                     {clubs.items.length === 0 && !loading && (
-                                        <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">Brak wyników</td></tr>
+                                        <tr><td colSpan={5} className="py-4 text-center text-muted-foreground">Brak wyników</td></tr>
                                     )}
                                 </tbody>
                             </table>
