@@ -108,41 +108,30 @@ if (typeof window !== 'undefined') {
 type ApiRequestOptions = RequestInit & { dontRedirectOnAuthError?: boolean; skipAuthHeader?: boolean }
 
 async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
-  const { dontRedirectOnAuthError, skipAuthHeader, ...rest } = opts
-  const auth = skipAuthHeader ? {} : authHeader()
-  const method = (rest.method || 'GET').toString().toUpperCase()
-  const requestHasBody = !!rest.body
-  // Debug: pokaż czy mamy token/auth header oraz istotne opcje. Uwaga: nie logujemy całego tokena (security)
-  try {
-    // eslint-disable-next-line no-console
-    console.debug('[fetchJson] request', { url, method, hasAuth: !!Object.keys(auth).length, dontRedirectOnAuthError, skipAuthHeader })
-  } catch (e) {
-    // noop
-  }
-  // Do not set Content-Type for GET/HEAD to avoid CORS preflight. Set it only for requests with body or methods that usually send JSON.
-  const headers: any = { ...(rest.headers as any || {}), ...auth }
-  if (requestHasBody || (method !== 'GET' && method !== 'HEAD')) {
-    headers['Content-Type'] = 'application/json'
-  }
-  const res = await fetch(url, { ...rest, headers, credentials: 'include' })
-  try {
-    // eslint-disable-next-line no-console
-    console.debug('[fetchJson] response', { url, status: res.status, ok: res.ok })
-  } catch (e) {
-    // noop
-  }
-  if (!res.ok) {
-    if ((res.status === 401 || res.status === 403) && !dontRedirectOnAuthError) {
-      logout()
-      if (typeof window !== 'undefined') window.location.href = '/login'
-    }
-    const text = await res.text().catch(() => '')
-    const message = text || res.statusText
-    const err: any = new Error(message)
-    err.status = res.status
-    throw err
-  }
+    const { dontRedirectOnAuthError, skipAuthHeader, ...rest } = opts
+    const auth = skipAuthHeader ? {} : authHeader()
+    const method = (rest.method || 'GET').toString().toUpperCase()
+    const requestHasBody = !!rest.body
 
+    const headers: any = { ...(rest.headers as any || {}), ...auth }
+    if (requestHasBody || (method !== 'GET' && method !== 'HEAD')) {
+        headers['Content-Type'] = 'application/json'
+    }
+    const res = await fetch(url, { ...rest, headers, credentials: 'include' })
+
+
+    if (!res.ok) {
+        if (res.status === 401 && !dontRedirectOnAuthError) {
+            logout()
+            if (typeof window !== 'undefined') window.location.href = '/login'
+        }
+
+        const text = await res.text().catch(() => '')
+        const message = text || res.statusText
+        const err: any = new Error(message)
+        err.status = res.status
+        throw err
+    }
   // Bezpieczne parsowanie - jeśli brak treści lub nie-json, zwracamy null
   const contentType = res.headers.get('content-type') || ''
   const contentLength = res.headers.get('content-length')
@@ -369,10 +358,10 @@ export async function createTeam(payload: { name: string; code?: string; status?
 }
 
 // Aktualizuje zespół (PUT /user/teams/{id}) — jeśli backend używa PATCH/inna ścieżka, zmień tutaj.
-export async function updateTeam(teamId: number, payload: { name?: string; code?: string; status?: string; category?: string; description?: string }) {
+export async function updateTeam(payload: {id:number ; name?: string; code?: string; status?: string; category?: string; description?: string }) {
   if (OFFLINE) {
     // Aktualizuj mockTeams
-    const idx = mockTeams.findIndex(t => t.teamId === teamId)
+    const idx = mockTeams.findIndex(t => t.teamId === payload.id)
     if (idx >= 0) {
       const t = mockTeams[idx]
       const updated = { ...t }
@@ -384,7 +373,7 @@ export async function updateTeam(teamId: number, payload: { name?: string; code?
       mockTeams[idx] = updated
     }
     // Aktualizuj mockTeamDetails jeśli pasuje
-    if (mockTeamDetails.id === teamId) {
+    if (mockTeamDetails.id === payload.id) {
       if (payload.name) mockTeamDetails.name = payload.name
       if (payload.code) mockTeamDetails.code = payload.code
       if (payload.category) mockTeamDetails.category = payload.category
@@ -402,8 +391,9 @@ export async function updateTeam(teamId: number, payload: { name?: string; code?
   if (payload.category !== undefined) body.category = payload.category
   if (payload.description !== undefined) body.description = payload.description
 
+    body.id = payload.id
   // Wyślij PUT do endpointu aktualizacji — użyj PUT jako domyślnego; jeśli backend wymaga PATCH, zmień metodę.
-  await fetchJson(`${USER_BASE}/teams/${teamId}`, { method: 'PUT', body: JSON.stringify(body) })
+  await fetchJson(`${USER_BASE}/teams/update`, { method: 'PATCH', body: JSON.stringify(body) })
   return true
 }
 
@@ -699,6 +689,24 @@ export async function removeTeamMember(teamMemberId: number) {
     // fallback to full URL
     return fetchJson(fullUrl, { method: 'DELETE' })
   }
+}
+
+// Usuwa zespół (DELETE /user/teams/del/{teamId})
+export async function removeTeam(teamId: number): Promise<boolean> {
+    if (OFFLINE) {
+        const idx = mockTeams.findIndex(t => t.teamId === teamId)
+        if (idx !== -1) {
+            mockTeams.splice(idx, 1)
+            // Opcjonalnie: usuń też szczegóły z mockTeamDetails jeśli to ten sam zespół
+            if (mockTeamDetails.id === teamId) {
+                // w mocku resetujemy lub zostawiamy - zależy od strategii, tutaj proste usunięcie z listy
+            }
+        }
+        return Promise.resolve(true)
+    }
+        const fullUrl = `${USER_BASE}/teams/del/${teamId}`
+        await fetchJson(fullUrl, { method: 'DELETE' })
+        return true
 }
 
 // Pobierz listę członków zespołu (może przyjmować opcjonalny parametr status: ACTIVE | WAITING | ...)

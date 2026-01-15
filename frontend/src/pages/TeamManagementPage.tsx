@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams, getTeamDetails, updateTeam, getTeamMembers } from '@/lib/userApi'
+import { addMemberManually, TEAM_ROLES, approveTeamMember, removeTeamMember, getMyProfile, createTeam, getTeams, getTeamDetails, updateTeam, getTeamMembers, removeTeam } from '@/lib/userApi'
 import { OFFLINE, getUserRoles, hasRole } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,16 @@ import { Eye, UserCheck, UserX, Wrench, Search as SearchIcon, RotateCw, Calendar
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
 import TeamSearchModal from '@/components/TeamSearchModal'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose
+} from '@/components/ui/dialog'
 
 const schema = z.object({
     teamId: z.coerce.number().int().positive('Podaj poprawne ID zespołu'),
@@ -137,7 +147,7 @@ export function TeamManagementPage() {
         category: z.enum(['academy', 'junior', 'senior', 'u19', 'u17'] as const),
         code: z.string().min(10, 'Kod zespołu musi mieć 10–16 znaków').max(16, 'Kod zespołu musi mieć 10–16 znaków'),
         name: z.string().min(1, 'Nazwa zespołu jest wymagana'),
-        status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED'] as const),
+        status: z.enum(['ACTIVE', 'SUSPENDED', 'ARCHIVED', 'CREATED'] as const),
         description: z.string().min(50, 'Opis musi mieć co najmniej 50 znaków').max(4095, 'Opis może mieć maksymalnie 4095 znaków'),
     })
     type CreateFormValues = z.infer<typeof createSchema>
@@ -147,6 +157,8 @@ export function TeamManagementPage() {
         defaultValues: { category: 'academy', code: '', name: '', status: 'ACTIVE', description: '' },
     })
     const [creating, setCreating] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
     useEffect(() => {
         const prev = document.title
@@ -350,17 +362,17 @@ export function TeamManagementPage() {
                 })
                 console.debug('[TeamManagementPage] mapped members (fallback getTeamMembers final)', mapped2)
                 await mergeTeamPlayersFromAllTeams(mapped2)
-             } catch (e2) {
-                 console.warn('[TeamManagementPage] final getTeamMembers fallback also failed', e2)
-                 setMembers([])
-             }
-         } catch (err: any) {
-             toast.error('Nie udało się pobrać członków', { description: err?.message })
-             setMembers([])
-         } finally {
-             setLoading(false)
-         }
-     }
+            } catch (e2) {
+                console.warn('[TeamManagementPage] final getTeamMembers fallback also failed', e2)
+                setMembers([])
+            }
+        } catch (err: any) {
+            toast.error('Nie udało się pobrać członków', { description: err?.message })
+            setMembers([])
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const approveMember = async (id: number) => {
         try {
@@ -458,7 +470,7 @@ export function TeamManagementPage() {
 
         try {
             const backendCategory = FRONT_TO_BACK[teamForm.category] ?? undefined
-            await updateTeam(id, { name: teamForm.name, code: teamForm.code, status: teamForm.status, category: backendCategory, description: teamForm.description })
+            await updateTeam({id: id, name: teamForm.name, code: teamForm.code, status: teamForm.status, category: backendCategory, description: teamForm.description })
             toast.success('Zapisano zespół', { description: `${teamForm.name || 'Bez nazwy'}` })
             // Odśwież szczegóły
             try {
@@ -496,6 +508,32 @@ export function TeamManagementPage() {
         setSelectedTeamId(mockTeam.id)
         setValidationErrors({})
         toast.info('Przywrócono dane lokalne')
+    }
+
+    const handleDeleteTeam = async () => {
+        if (!teamForm.id) return
+
+        setIsDeleting(true)
+        try {
+            await removeTeam(teamForm.id)
+            toast.success('Zespół został pomyślnie usunięty')
+            setIsDeleteDialogOpen(false)
+            // Przekierowanie do listy zespołów lub dashboardu
+            navigate('/team-management')
+        } catch (error: any) {
+            console.error('Failed to delete team:', error)
+            const msg = error.message || 'Wystąpił błąd podczas usuwania zespołu.'
+            // Obsługa błędów zgodna z resztą aplikacji (toast)
+            if (error.status === 403) {
+                toast.error('Brak uprawnień', { description: 'Wymagana rola COACH lub ADMIN.' })
+            } else if (error.status === 404) {
+                toast.error('Nie znaleziono zespołu', { description: 'Zespół mógł zostać już usunięty.' })
+            } else {
+                toast.error('Błąd usuwania', { description: msg })
+            }
+        } finally {
+            setIsDeleting(false)
+        }
     }
 
     // NOTE: Previously we returned early here when memberAllowed was false which prevented
@@ -760,7 +798,7 @@ export function TeamManagementPage() {
                                     </div>
                                     <div className="text-sm text-muted-foreground">{selectedTeamId ? `Wybrano zespół ID: ${selectedTeamId}` : 'Nie wybrano zespołu'}</div>
                                 </div>
-                                <TeamSearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} onSelect={async (teamId) => {
+                                <TeamSearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} hideArchived={true} onSelect={async (teamId) => {
                                     setIsSearchOpen(false)
                                     try {
                                         const details = await getTeamDetails(teamId, { forceReal: true, allowUnauth: true })
@@ -852,9 +890,38 @@ export function TeamManagementPage() {
                                     <Button type="button" onClick={handleSaveTeam} disabled={Object.keys(validateTeamForm(teamForm)).length > 0}>
                                         <Wrench className="mr-2 h-4 w-4"/>Zapisz zmiany
                                     </Button>
+
                                     <Button type="button" variant="outline" onClick={handleResetTeam}>
-                                        Usuń zespół (mock)
+                                        <RotateCw className="mr-2 h-4 w-4"/>Przywróć
                                     </Button>
+
+                                    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button variant="destructive" disabled={isDeleting || !teamForm.id}>
+                                                {isDeleting ? 'Usuwanie...' : 'Usuń zespół'}
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Czy na pewno chcesz usunąć ten zespół?</DialogTitle>
+                                                <DialogDescription>
+                                                    Ta operacja jest nieodwracalna. Zespół <b>{teamForm.name}</b> zostanie trwale usunięty wraz z historią.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <DialogFooter>
+                                                <DialogClose asChild>
+                                                    <Button variant="outline">Anuluj</Button>
+                                                </DialogClose>
+                                                <Button
+                                                    variant="destructive"
+                                                    onClick={handleDeleteTeam}
+                                                    disabled={isDeleting}
+                                                >
+                                                    {isDeleting ? 'Usuwanie...' : 'Potwierdź usunięcie'}
+                                                </Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
                                 </div>
                             </CardContent>
                         </Card>
@@ -862,124 +929,124 @@ export function TeamManagementPage() {
 
                     <TabsContent value="create">
                         <ErrorBoundary>
-                        <Card className="shadow-sm">
-                            <CardHeader>
-                                <CardTitle>Dodaj nowy zespół</CardTitle>
-                                <CardDescription>Wprowadź dane zespołu (te same pola co w aktualizacji)</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <Form {...createFormHook}>
-                                 <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="space-y-1">
-                                        <FormField
-                                            control={createFormHook.control as any}
-                                            name="category"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Kategoria zespołu</FormLabel>
-                                                    <FormControl>
-                                                        <Select onValueChange={field.onChange} value={field.value}>
-                                                            <SelectTrigger className="w-full">
-                                                                <SelectValue placeholder="Wybierz kategorię" />
-                                                            </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
-                                                                {TEAM_CATEGORIES.map((c) => (
-                                                                    <SelectItem
-                                                                        key={c}
-                                                                        value={c}
-                                                                        className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700 hover:bg-accent/10"
-                                                                    >
-                                                                        {c}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <FormField
-                                            control={createFormHook.control as any}
-                                            name="code"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Kod zespołu</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} placeholder="10-16 znaków" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-sm font-medium">Nazwa zespołu</label>
-                                        <FormField
-                                            control={createFormHook.control as any}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <FormField
-                                            control={createFormHook.control as any}
-                                            name="status"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Status</FormLabel>
-                                                    <FormControl>
-                                                        <Select onValueChange={field.onChange} value={field.value}>
-                                                            <SelectTrigger className="w-full">
-                                                                <SelectValue placeholder="Wybierz status" />
-                                                            </SelectTrigger>
-                                                            <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
-                                                                <SelectItem value="ACTIVE">Aktywny</SelectItem>
-                                                                <SelectItem value="INACTIVE">Nieaktywny</SelectItem>
-                                                                <SelectItem value="ARCHIVED">Zarchiwizowany</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="sm:col-span-2 space-y-1">
-                                        <FormField
-                                            control={createFormHook.control as any}
-                                            name="description"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormControl>
-                                                        <textarea {...field} rows={4} className="w-full rounded-md border border-border shadow-sm p-2 bg-transparent text-sm" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button type="button" onClick={createFormHook.handleSubmit(handleCreateTeam)} disabled={creating}>
-                                        {creating ? 'Tworzenie...' : 'Utwórz zespół'}
-                                    </Button>
-                                    <Button variant="outline" onClick={() => createFormHook.reset()}>Wyczyść</Button>
-                                </div>
-                                </Form>
-                             </CardContent>
-                         </Card>
-                         </ErrorBoundary>
-                     </TabsContent>
+                            <Card className="shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Dodaj nowy zespół</CardTitle>
+                                    <CardDescription>Wprowadź dane zespołu (te same pola co w aktualizacji)</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <Form {...createFormHook}>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <div className="space-y-1">
+                                                <FormField
+                                                    control={createFormHook.control as any}
+                                                    name="category"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Kategoria zespołu</FormLabel>
+                                                            <FormControl>
+                                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                                    <SelectTrigger className="w-full">
+                                                                        <SelectValue placeholder="Wybierz kategorię" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
+                                                                        {TEAM_CATEGORIES.map((c) => (
+                                                                            <SelectItem
+                                                                                key={c}
+                                                                                value={c}
+                                                                                className="bg-white dark:bg-slate-900 data-[state=checked]:bg-slate-200 dark:data-[state=checked]:bg-slate-800 data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700 hover:bg-accent/10"
+                                                                            >
+                                                                                {c}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <FormField
+                                                    control={createFormHook.control as any}
+                                                    name="code"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Kod zespołu</FormLabel>
+                                                            <FormControl>
+                                                                <Input {...field} placeholder="10-16 znaków" />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium">Nazwa zespołu</label>
+                                                <FormField
+                                                    control={createFormHook.control as any}
+                                                    name="name"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <Input {...field} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <FormField
+                                                    control={createFormHook.control as any}
+                                                    name="status"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Status</FormLabel>
+                                                            <FormControl>
+                                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                                    <SelectTrigger className="w-full">
+                                                                        <SelectValue placeholder="Wybierz status" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
+                                                                        <SelectItem value="ACTIVE">Aktywny</SelectItem>
+                                                                        <SelectItem value="INACTIVE">Nieaktywny</SelectItem>
+                                                                        <SelectItem value="ARCHIVED">Zarchiwizowany</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="sm:col-span-2 space-y-1">
+                                                <FormField
+                                                    control={createFormHook.control as any}
+                                                    name="description"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <textarea {...field} rows={4} className="w-full rounded-md border border-border shadow-sm p-2 bg-transparent text-sm" />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button type="button" onClick={createFormHook.handleSubmit(handleCreateTeam)} disabled={creating}>
+                                                {creating ? 'Tworzenie...' : 'Utwórz zespół'}
+                                            </Button>
+                                            <Button variant="outline" onClick={() => createFormHook.reset()}>Wyczyść</Button>
+                                        </div>
+                                    </Form>
+                                </CardContent>
+                            </Card>
+                        </ErrorBoundary>
+                    </TabsContent>
                 </Tabs>
             </main>
         </div>
@@ -987,8 +1054,8 @@ export function TeamManagementPage() {
 
 
     async function handleCreateTeam(values: CreateFormValues) {
-         setCreating(true)
-         try {
+        setCreating(true)
+        try {
             const categoryMap: Record<string, string> = {
                 academy: 'ACADEMY',
                 junior: 'JUNIOR',
@@ -1007,21 +1074,21 @@ export function TeamManagementPage() {
                 if (found) {
                     const foundId = found.teamId ?? (found as any).id ?? (found as any).teamId
                     setTeamForm((prev: TeamForm) => ({
-                         id: foundId,
-                         name: found.teamName ?? (found as any).name ?? values.name,
-                         code: (found as any).code ?? values.code ?? prev.code,
+                        id: foundId,
+                        name: found.teamName ?? (found as any).name ?? values.name,
+                        code: (found as any).code ?? values.code ?? prev.code,
                         status: (found as any).status ?? values.status,
                         category: BACKEND_TO_FRONT[(found as any).category ?? ''] ?? values.category,
                         description: (found as any).description ?? prev.description,
-                     }))
-                 } else {
+                    }))
+                } else {
                     setTeamForm((t: TeamForm) => ({ ...t, name: values.name, code: values.code, status: values.status, category: values.category }))
-                     console.warn('Utworzono zespół, ale nie znaleziono go w GET /teams (MOŻLIWE OPÓŹNIENIE indeksowania)')
-                 }
-             } catch (e) {
+                    console.warn('Utworzono zespół, ale nie znaleziono go w GET /teams (MOŻLIWE OPÓŹNIENIE indeksowania)')
+                }
+            } catch (e) {
                 setTeamForm((t: TeamForm) => ({ ...t, name: values.name, code: values.code, status: values.status, category: values.category }))
-                 console.warn('getTeams failed after createTeam', e)
-             }
+                console.warn('getTeams failed after createTeam', e)
+            }
 
             toast.success('Utworzono zespół')
             createFormHook.reset()
@@ -1043,12 +1110,12 @@ export function TeamManagementPage() {
             if (!Array.isArray(allTeams) || allTeams.length === 0) return current
 
             const teamDetailsPromises = allTeams.map((t: any) => {
-                 const id = t.teamId ?? t.id
+                const id = t.teamId ?? t.id
                 return id ? getTeamDetails(Number(id), { forceReal: true, allowUnauth: true }).catch((e) => {
-                     console.warn('[TeamManagementPage] getTeamDetails failed for ALL_TEAMS team', id, e)
-                     return null
-                 }) : null
-             }).filter(Boolean) as Promise<any>[]
+                    console.warn('[TeamManagementPage] getTeamDetails failed for ALL_TEAMS team', id, e)
+                    return null
+                }) : null
+            }).filter(Boolean) as Promise<any>[]
 
             const settled = await Promise.all(teamDetailsPromises)
             const collected: Member[] = []

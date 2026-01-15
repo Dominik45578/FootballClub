@@ -47,7 +47,7 @@ export function DashboardPage() {
     const handleProfile = async () => {
         try {
             const status = await ensureMemberStatus()
-            if (status === 'member') {
+            if (status === 'member' || hasRole('ROLE_MEMBER')) {
                 navigate('/member-profile')
                 return
             }

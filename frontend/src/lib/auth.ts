@@ -1,4 +1,9 @@
 export const OFFLINE = import.meta.env.VITE_OFFLINE === 'true'
+if(typeof window !== 'undefined') {
+    try{
+        console.info('[auth] offline =', OFFLINE)
+    }catch(e){}
+}
 const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
 // Prefiks API do gateway (np. /api); dla bezpośredniego połączenia z identity zostanie pominięty
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
