@@ -352,50 +352,55 @@ export async function createTeam(payload: { name: string; code?: string; status?
     return Promise.resolve(newTeam)
   }
   // Backend expects PUT /user/teams/new with AddTeamRequest
-  const body = { name: payload.name, category: payload.category, code: payload.code, description: payload.description }
-  await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(body) })
-  return true
-}
+  // Map frontend status -> backend expected value if necessary
+  // Jeśli frontend lub stary UI wysyła 'INACTIVE', zamapuj na 'SUSPENDED' (backendowy enum)
+  const mappedStatus = payload.status === 'INACTIVE' ? 'SUSPENDED' : payload.status
+  const body: any = { name: payload.name, category: payload.category, code: payload.code, description: payload.description }
+  if (mappedStatus !== undefined) body.status = mappedStatus
+  console.debug('[userApi.createTeam] sending body', body)
+   await fetchJson(`${USER_BASE}/teams/new`, { method: 'PUT', body: JSON.stringify(body) })
+   return true
+ }
 
 // Aktualizuje zespół (PUT /user/teams/{id}) — jeśli backend używa PATCH/inna ścieżka, zmień tutaj.
-export async function updateTeam(payload: {id:number ; name?: string; code?: string; status?: string; category?: string; description?: string }) {
-  if (OFFLINE) {
-    // Aktualizuj mockTeams
-    const idx = mockTeams.findIndex(t => t.teamId === payload.id)
-    if (idx >= 0) {
-      const t = mockTeams[idx]
-      const updated = { ...t }
-      if (payload.name) updated.teamName = payload.name
-      if (payload.category) updated.category = payload.category
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (payload.description) updated.description = payload.description
-      mockTeams[idx] = updated
-    }
-    // Aktualizuj mockTeamDetails jeśli pasuje
-    if (mockTeamDetails.id === payload.id) {
-      if (payload.name) mockTeamDetails.name = payload.name
-      if (payload.code) mockTeamDetails.code = payload.code
-      if (payload.category) mockTeamDetails.category = payload.category
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (payload.description) (mockTeamDetails as any).description = payload.description
-    }
-    return Promise.resolve(true)
-  }
+ export async function updateTeam(payload: {id:number ; name?: string; code?: string; status?: string; category?: string; description?: string }) {
+   if (OFFLINE) {
+     // Aktualizuj mockTeams
+     const idx = mockTeams.findIndex(t => t.teamId === payload.id)
+     if (idx >= 0) {
+       const t = mockTeams[idx]
+       const updated = { ...t }
+       if (payload.name) updated.teamName = payload.name
+       if (payload.category) updated.category = payload.category
+       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+       // @ts-ignore
+       if (payload.description) updated.description = payload.description
+       mockTeams[idx] = updated
+     }
+     // Aktualizuj mockTeamDetails jeśli pasuje
+     if (mockTeamDetails.id === payload.id) {
+       if (payload.name) mockTeamDetails.name = payload.name
+       if (payload.code) mockTeamDetails.code = payload.code
+       if (payload.category) mockTeamDetails.category = payload.category
+       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+       // @ts-ignore
+       if (payload.description) (mockTeamDetails as any).description = payload.description
+     }
+     return Promise.resolve(true)
+   }
 
-  const body: any = {}
-  if (payload.name !== undefined) body.name = payload.name
-  if (payload.code !== undefined) body.code = payload.code
-  if (payload.status !== undefined) body.status = payload.status
-  if (payload.category !== undefined) body.category = payload.category
-  if (payload.description !== undefined) body.description = payload.description
+   const body: any = {}
+   if (payload.name !== undefined) body.name = payload.name
+   if (payload.code !== undefined) body.code = payload.code
+   if (payload.status !== undefined) body.status = (payload.status === 'INACTIVE' ? 'SUSPENDED' : payload.status)
+   if (payload.category !== undefined) body.category = payload.category
+   if (payload.description !== undefined) body.description = payload.description
 
     body.id = payload.id
   // Wyślij PUT do endpointu aktualizacji — użyj PUT jako domyślnego; jeśli backend wymaga PATCH, zmień metodę.
   await fetchJson(`${USER_BASE}/teams/update`, { method: 'PATCH', body: JSON.stringify(body) })
   return true
-}
+ }
 
 export async function joinTeam(teamCode: string, opts?: { allowUnauth?: boolean }): Promise<void> {
   if (OFFLINE) {

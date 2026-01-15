@@ -112,10 +112,12 @@ public class TeamServiceImpl implements TeamService {
             throw new TeamAlreadyExistExceptions();
         }
         try{
-            if(springSecurityService.hasRole(UserRole.ROLE_COACH) && !springSecurityService.hasRole(UserRole.ROLE_ADMIN)){
+            log.debug("[TeamServiceImpl.addTeam] received AddTeamRequest: name={}, code={}, category={}, status={}, descriptionLen={}",
+                    team.getName(), team.getCode(), team.getCategory(), team.getStatus(), team.getDescription() == null ? 0 : team.getDescription().length());
+             if(springSecurityService.hasRole(UserRole.ROLE_COACH) && !springSecurityService.hasRole(UserRole.ROLE_ADMIN)){
 
-            }
-            teamRepository.save(
+             }
+            Team saved = teamRepository.save(
                     Team.builder()
                             .name(team.getName())
                             .category(team.getCategory())
@@ -124,10 +126,11 @@ public class TeamServiceImpl implements TeamService {
                             .status(team.getStatus())
                             .build()
             );
-            return true;
-        }catch (Exception e){
-            return false;
-        }
+            log.debug("[TeamServiceImpl.addTeam] saved Team id={} status={}", saved.getId(), saved.getStatus());
+             return true;
+         }catch (Exception e){
+             return false;
+         }
 
     }
 
