@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("external/teams")
+@RequestMapping("/external/teams")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('PLAYER')")
 public class TeamsController {
