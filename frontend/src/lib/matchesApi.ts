@@ -107,6 +107,49 @@ export async function getMyMatches(page = 0, size = 20): Promise<Page<MatchRespo
   }
 }
 
+// --- DODANO: pobierz wszystkie mecze (GET /match/all) ---
+export async function getAllMatches(page = 0, size = 20): Promise<Page<MatchResponse>> {
+  if (OFFLINE) return Promise.resolve({ content: [MOCK_MATCH], totalElements: 1, totalPages: 1, number: 0, size })
+  // backend: GET /match/all
+  const url = `${BASE}/all?page=${page}&size=${size}`
+  try {
+    return await fetchJson<Page<MatchResponse>>(url, { method: 'GET' })
+  } catch (e: any) {
+    // Jeśli endpoint nie istnieje jeszcze na serwerze, spróbuj fallback do getMyMatches aby UX nie padł
+    if (e && (e.status === 404 || String(e).includes('404'))) {
+      console.warn('[matchesApi] GET /all returned 404 — falling back to /my-matches')
+      return getMyMatches(page, size)
+    }
+
+    // --- DODANE: spróbuj ponownie bez Authorization header w razie 403 ---
+    if (e && e.status === 403) {
+      try {
+        // Spróbuj wykonać zwykły fetch bez dodatkowych nagłówków (ale z credentials: include)
+        const res = await fetch(url, { method: 'GET', credentials: 'include' })
+        if (res.ok) {
+          const ct = res.headers.get('content-type') || ''
+          if (res.status === 204 || !ct.includes('application/json')) return { content: [], totalElements: 0, totalPages: 0, number: page, size }
+          const data = await res.json()
+          return data?.content ? data : { content: data?.content ?? data ?? [], totalElements: data?.totalElements ?? data?.total ?? (Array.isArray(data) ? data.length : 0), totalPages: data?.totalPages ?? 1, number: page, size }
+        }
+      } catch (innerErr) {
+        console.warn('[matchesApi] unauth fetch /all failed', innerErr)
+      }
+
+      // jeśli nadal 403 -> fallback do moich meczów
+      try {
+        console.warn('[matchesApi] GET /all returned 403 — falling back to /my-matches')
+        return await getMyMatches(page, size)
+      } catch (ex) {
+        // jeśli getMyMatches też zawiedzie, rzuć oryginalny błąd
+        throw e
+      }
+    }
+
+    throw e
+  }
+}
+
 export async function getMatchById(matchId: number): Promise<MatchResponse> {
   if (OFFLINE) return Promise.resolve({ ...MOCK_MATCH, matchId })
   const url = `${BASE}/${matchId}`

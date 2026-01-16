@@ -8,7 +8,10 @@ import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import DateInput from '@/components/DateInput'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import { canManageMatches, createMatch, updateMatch, deleteMatch, getMyTeamsForSelect, getExternalTeams, getMyMatches } from '@/lib/matchesApi'
+import { getToken, authHeader } from '@/lib/auth'
+import { canManageMatches, createMatch, updateMatch, deleteMatch, getMyTeamsForSelect, getExternalTeams, getMyMatches, getAllMatches } from '@/lib/matchesApi'
+import { ArrowLeft } from 'lucide-react'
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
 
 type MatchItem = {
     id: number
@@ -45,10 +48,24 @@ export function MatchesManagementPage() {
     const [externalTeamsOptions, setExternalTeamsOptions] = useState<Array<{ id: number; name: string }>>([])
     const [loadingTeams, setLoadingTeams] = useState(false)
     const [loadingMatches, setLoadingMatches] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [infoMessage, setInfoMessage] = useState<string | null>(null)
+    const [lastRequest, setLastRequest] = useState<{ url: string; headers?: Record<string, string | undefined>; status?: number | null; body?: string | null } | null>(null)
 
     const emptyForm: Partial<MatchItem> = { opponent: '', date: null, venue: '', source: 'internal', status: 'SCHEDULED' }
     const [form, setForm] = useState<Partial<MatchItem>>(emptyForm)
     const [externalTeamName, setExternalTeamName] = useState<string>('')
+
+    // map backend MatchResponse -> local MatchItem (shared helper)
+    const mapResponse = (m: any): MatchItem => {
+        const isHomeInternal = !!m.homeTeam?.isInternal
+        const opponent = isHomeInternal ? (m.awayTeam?.name ?? '—') : (m.homeTeam?.name ?? '—')
+        const source = isHomeInternal ? 'internal' : 'external'
+        const date = m.matchDate ? m.matchDate.split('T')[0] : null
+        const internalTeamId = m.homeTeam?.isInternal ? m.homeTeam.id : (m.awayTeam?.isInternal ? m.awayTeam.id : undefined)
+        const externalTeamId = m.homeTeam?.isInternal ? m.awayTeam?.id : (m.awayTeam?.isInternal ? m.homeTeam?.id : undefined)
+        return { id: m.matchId, opponent, date, venue: '—', source, status: m.status, internalTeamId, externalTeamId }
+    }
 
     function getStatusLabel(val: string | undefined) {
         if (!val) return ''
@@ -81,34 +98,154 @@ export function MatchesManagementPage() {
         return () => { mounted = false }
     }, [])
 
-    // Load matches from API (my matches) on mount; fallback to initialMock
+    // Load matches from API on mount: prefer all matches, fallback to my-matches, then mock
     useEffect(() => {
         let mounted = true
         setLoadingMatches(true)
-        getMyMatches(0, 50)
+
+        // Try all matches first
+        getAllMatches(0, 50)
             .then(page => {
                 if (!mounted) return
-                // map MatchResponse -> MatchItem
-                const mapped = page.content.map((m) => {
-                    // Determine which side is internal
-                    const isHomeInternal = !!m.homeTeam?.isInternal
-                    const opponent = isHomeInternal ? (m.awayTeam?.name ?? '—') : (m.homeTeam?.name ?? '—')
-                    const source = isHomeInternal ? 'internal' : 'external' // source 'internal' means our team is internal
-                    const date = m.matchDate ? m.matchDate.split('T')[0] : null
-                    // internal/external team ids for form
-                    const internalTeamId = m.homeTeam?.isInternal ? m.homeTeam.id : (m.awayTeam?.isInternal ? m.awayTeam.id : undefined)
-                    const externalTeamId = m.homeTeam?.isInternal ? m.awayTeam?.id : (m.awayTeam?.isInternal ? m.homeTeam?.id : undefined)
-                    return { id: m.matchId, opponent, date, venue: '—', source, status: m.status, internalTeamId, externalTeamId } as any as MatchItem
-                })
-                if (mapped.length) setMatches(mapped)
+                const mapped = page.content.map(mapResponse)
+                if (mapped.length) {
+                    setMatches(mapped)
+                    setErrorMessage(null)
+                    setInfoMessage(null)
+                    return
+                }
+                // if empty, fallthrough to try my-matches
+                return Promise.reject({ fallbackToMy: true })
             })
-            .catch(e => {
-                console.warn('[matches] failed to load my matches, using local mock', e)
-                // keep existing mock
+            .catch(async (err) => {
+                // if server returned 403 or explicit fallback request, try my-matches
+                if (err && (err.status === 403 || String(err).includes('403') || err?.fallbackToMy)) {
+                    try {
+                        const page = await getMyMatches(0, 50)
+                        if (!mounted) return
+                        const mapped = page.content.map(mapResponse)
+                        if (mapped.length) {
+                            setMatches(mapped)
+                            setErrorMessage(null)
+                            setInfoMessage(null)
+                            return
+                        }
+                    } catch (e2) {
+                        console.error('[matches] getMyMatches also failed', e2)
+                        const status = (e2 as any)?.status ?? ''
+                        setErrorMessage(`getMyMatches failed ${status}: ${String((e2 as any)?.message ?? e2)}`)
+                    }
+                } else {
+                    console.error('[matches] getAllMatches failed', err)
+                    const status = (err as any)?.status ?? ''
+                    setErrorMessage(`getAllMatches failed ${status}: ${String((err as any)?.message ?? err)}`)
+                }
+                // As a last resort, try anonymous fetch to /api/match/all (no Authorization header)
+                try {
+                    const anonUrl = `${API_PREFIX}/match/all?page=0&size=50`
+                    const headers = { ...(authHeader() || {}) }
+                    setLastRequest({ url: anonUrl, headers })
+                    const resp = await fetch(anonUrl, { method: 'GET', credentials: 'include', headers })
+                    if (resp.ok) {
+                        const data = await resp.json()
+                        const mappedAnon = data.content.map(mapResponse)
+                        if (mappedAnon.length) {
+                            setMatches(mappedAnon)
+                            setErrorMessage(null)
+                            return
+                        }
+                    } else {
+                        const txt = await resp.text().catch(() => '')
+                        console.error('[matches] anonymous fetch returned', resp.status, txt)
+                        setLastRequest(prev => ({ url: prev?.url ?? anonUrl, headers: prev?.headers ?? headers, status: resp.status, body: txt }))
+                        setErrorMessage(`Anonymous fetch failed ${resp.status}: ${txt || resp.statusText}`)
+                    }
+                } catch (anonErr) {
+                    console.error('[matches] anonymous fetch failed', anonErr)
+                    setLastRequest(prev => ({ url: prev?.url ?? (API_PREFIX + '/match/all?page=0&size=50'), headers: prev?.headers ?? (authHeader() || {}), status: null, body: String((anonErr as any)?.message ?? anonErr) }))
+                    setErrorMessage(`Anonymous fetch error: ${String((anonErr as any)?.message ?? anonErr)}`)
+                }
+                // keep existing mock if both fail
             })
             .finally(() => { if (mounted) setLoadingMatches(false) })
+
         return () => { mounted = false }
     }, [])
+
+    // Ręczne przeładowanie: spróbuj relatywnie, potem pełnym URL-em do gateway (jeśli VITE_GATEWAY_URL ustawione)
+    const reloadMatches = async () => {
+        setLoadingMatches(true)
+        setErrorMessage(null)
+        setInfoMessage(null)
+        const token = getToken()
+        try {
+            const all = await getAllMatches(0, 50)
+            const mapped = all.content.map(mapResponse)
+            if (mapped.length) { setMatches(mapped); setLoadingMatches(false); return }
+        } catch (e: any) {
+            console.error('[matches.reload] getAllMatches failed', e)
+             // jeśli mamy gateway URL spróbuj bezpośrednio
+             const gateway = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:12001'
+             const apiPrefix = import.meta.env.VITE_API_PREFIX ?? '/api'
+             if (gateway && token) {
+                const full = `${gateway.replace(/\/$/, '')}${apiPrefix}/match/all?page=0&size=50`
+                try {
+                    console.info('[matches.reload] trying full gateway URL', full)
+                    const headers = { 'Authorization': `Bearer ${token}` }
+                    setLastRequest({ url: full, headers })
+                    const resp = await fetch(full, { method: 'GET', headers, credentials: 'include' })
+                     if (resp.ok) {
+                         const data = await resp.json()
+                         const mapped = data.content.map(mapResponse)
+                         setMatches(mapped)
+                         setLoadingMatches(false)
+                         setErrorMessage(null)
+                         return
+                     }
+                     const txt = await resp.text().catch(() => '')
+                     setLastRequest(prev => ({ url: prev?.url ?? full, headers: prev?.headers ?? headers, status: resp.status, body: txt }))
+                     setErrorMessage(`Server returned ${resp.status}: ${txt || resp.statusText}`)
+                 } catch (err2) {
+                     console.error('[matches.reload] full gateway fetch failed', err2)
+                     const status2 = (err2 as any)?.status ?? ''
+                     setLastRequest(prev => ({ url: prev?.url ?? full, headers: prev?.headers ?? ( { 'Authorization': `Bearer ${token}` } ), status: status2, body: String((err2 as any)?.message ?? err2) }))
+                     setErrorMessage(`Gateway fetch failed ${status2}: ${String((err2 as any)?.message ?? err2)}`)
+                 }
+             }
+            // Try anonymous relative fetch as a last fallback
+            try {
+                const anonUrl = `${API_PREFIX}/match/all?page=0&size=50`
+                const headers = { ...(authHeader() || {}) }
+                setLastRequest({ url: anonUrl, headers })
+                const respAnon = await fetch(anonUrl, { method: 'GET', credentials: 'include', headers })
+                if (respAnon.ok) {
+                    const data = await respAnon.json()
+                    const mapped = data.content.map(mapResponse)
+                    setMatches(mapped)
+                    setErrorMessage(null)
+                    return
+                } else {
+                    const txt = await respAnon.text().catch(() => '')
+                    console.error('[matches.reload] anonymous fetch returned', respAnon.status, txt)
+                    setLastRequest(prev => ({ url: prev?.url ?? anonUrl, headers: prev?.headers ?? headers, status: respAnon.status, body: txt }))
+                    setErrorMessage(`Anonymous fetch failed ${respAnon.status}: ${txt || respAnon.statusText}`)
+                }
+            } catch (anonErr) {
+                console.error('[matches.reload] anonymous fetch failed', anonErr)
+                setLastRequest(prev => ({ url: prev?.url ?? (API_PREFIX + '/match/all?page=0&size=50'), headers: prev?.headers ?? (authHeader() || {}), status: null, body: String((anonErr as any)?.message ?? anonErr) }))
+                setErrorMessage(`Anonymous fetch error: ${String((anonErr as any)?.message ?? anonErr)}`)
+            }
+         } finally {
+             setLoadingMatches(false)
+         }
+     }
+
+    // Show token helper for debugging in UI
+    const showToken = () => {
+        const token = getToken()
+        const payload = token ? (() => { try { return JSON.stringify(((s: string) => { try { const p = s.split('.')[1]; return JSON.parse(atob(p.replace(/-/g, '+').replace(/_/g, '/'))) } catch { return null } })(token), null, 2) } catch { return null } })() : null
+        alert(`Token (short): ${token ? token.slice(0, 30) + '...' : '<brak>'}\nPayload:\n${payload ?? '<brak payload>'}`)
+    }
 
     const filtered = useMemo(
         () => matches.filter(m => m.opponent.toLowerCase().includes(query.toLowerCase()) || m.venue.toLowerCase().includes(query.toLowerCase())),
@@ -261,8 +398,11 @@ export function MatchesManagementPage() {
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold">Zarządzanie meczami</h1>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => navigate('/dashboard')}>Wróć</Button>
+                        <Button variant="outline" onClick={() => navigate('/team-management')}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
+                        </Button>
                         <Button onClick={openAdd} disabled={!canManageMatches()}>Dodaj mecz</Button>
+                        <Button variant="outline" onClick={reloadMatches}>Przeładuj z serwera</Button>
                     </div>
                 </div>
             </header>
@@ -353,6 +493,27 @@ export function MatchesManagementPage() {
                         )}
 
                         {loadingMatches && <div className="text-sm text-muted-foreground">Ładowanie meczów…</div>}
+                        {errorMessage && (
+                            <div className="rounded-lg border bg-red-600/10 text-red-600 p-4">
+                                <p className="text-sm">{errorMessage}</p>
+                                <div className="flex gap-2 mt-2">
+                                    <Button variant="outline" onClick={reloadMatches} disabled={loadingMatches}>
+                                        {loadingMatches ? 'Trwa przeładowanie...' : 'Spróbuj ponownie'}
+                                    </Button>
+                                    <Button variant="link" onClick={showToken}>Pokaż token</Button>
+                                </div>
+                                {lastRequest && (
+                                    <div className="mt-3 text-xs text-muted-foreground bg-white/5 p-2 rounded">
+                                        <div><strong>Last request:</strong></div>
+                                        <div>URL: <code className="break-all">{lastRequest.url}</code></div>
+                                        <div>Authorization: {lastRequest.headers?.Authorization ? <span className="font-mono">{String(lastRequest.headers.Authorization).slice(0,40)}...</span> : <em>brak</em>}</div>
+                                        <div>Status: {lastRequest.status ?? '—'}</div>
+                                        {lastRequest.body && <div className="mt-1">Body: <pre className="whitespace-pre-wrap break-all text-[11px]">{lastRequest.body}</pre></div>}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {infoMessage && <div className="rounded-lg border bg-green-600/10 text-green-600 p-4 text-sm">{infoMessage}</div>}
                         <div className="space-y-3">
                             {filtered.map(m => (
                                 <div key={m.id} className="rounded-lg border bg-slate-900/60 text-slate-100 p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

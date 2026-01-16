@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft } from 'lucide-react'
 
 export function ActivateAccountPage() {
   useEffect(() => {
@@ -98,7 +99,9 @@ export function ActivateAccountPage() {
                 <Button variant="secondary" className="flex-1" type="button" onClick={handleResend} disabled={resendLoading || resendLeft > 0}>
                   {resendLoading ? 'Wysyłanie...' : resendLeft > 0 ? `Wyślij ponownie za ${resendLeft}s` : 'Wyślij kod ponownie'}
                 </Button>
-                <Button variant="outline" onClick={() => navigate('/login')} className="flex-1">Powrót do logowania</Button>
+                <Button variant="outline" onClick={() => navigate('/login')} className="flex-1">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
+                </Button>
               </div>
             </div>
           </form>
