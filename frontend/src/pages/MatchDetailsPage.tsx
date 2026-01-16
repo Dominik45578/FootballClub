@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getMatchById, statusToLabel, isTeamEditable, type MatchResponse } from '@/lib/matchesApi'
 
@@ -76,7 +77,9 @@ export function MatchDetailsPage() {
           )}
 
            <div className="flex gap-2">
-             <Button variant="outline" onClick={() => navigate('/matches')}>Powrót do listy meczów</Button>
+             <Button variant="outline" onClick={() => navigate('/matches')}>
+               <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
+             </Button>
            </div>
          </CardContent>
        </Card>

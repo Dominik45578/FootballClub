@@ -4,12 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Implement football matches integration">
+    <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Add time selection support to DateInput and fix UI for match service">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ErrorBoundary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ErrorBoundary.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AccessDeniedPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AccessDeniedPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ActivateAccountPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ActivateAccountPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberApplyPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberPublicProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberPublicProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberSearchPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -146,7 +158,7 @@
     &quot;Spring Boot.Notification-service.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.NotificationApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.User-service.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;frontend&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;G:/Studia/Projekt/FootballClub/frontend/public&quot;,
@@ -434,10 +446,7 @@
       <workItem from="1768233427565" duration="3357000" />
       <workItem from="1768266837803" duration="5500000" />
       <workItem from="1768318287849" duration="8767000" />
-      <workItem from="1768458660653" duration="14258000" />
-      <workItem from="1768473113484" duration="74000" />
-      <workItem from="1768473470008" duration="2393000" />
-      <workItem from="1768506064311" duration="8322000" />
+      <workItem from="1768558780432" duration="7437000" />
     </task>
     <task id="LOCAL-00001" summary="Edited login page. Partially added dashboard.">
       <option name="closed" value="true" />
@@ -519,23 +528,7 @@
       <option name="project" value="LOCAL" />
       <updated>1768229995237</updated>
     </task>
-    <task id="LOCAL-00011" summary="Upgraded team status and squad display">
-      <option name="closed" value="true" />
-      <created>1768469997246</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1768469997246</updated>
-    </task>
-    <task id="LOCAL-00012" summary="Implement football matches integration">
-      <option name="closed" value="true" />
-      <created>1768475838116</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1768475838116</updated>
-    </task>
-    <option name="localTasksCounter" value="13" />
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -566,9 +559,7 @@
     <MESSAGE value="Implement logout functionality and enhance member status handling" />
     <MESSAGE value="Sending password reset mail works" />
     <MESSAGE value="Improve frontend role handling" />
-    <MESSAGE value="Upgraded team status and squad display" />
-    <MESSAGE value="Implement football matches integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement football matches integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improve frontend role handling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
