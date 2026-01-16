@@ -230,6 +230,7 @@ public class TeamServiceImpl implements TeamService {
                 .category(team.getCategory())
                 .status(team.getStatus())
                 .createdAt(team.getCreatedAt())
+                .description(team.getDescription())
                 .numberOfMembers(team.getMembers() != null ? team.getMembers().size() : 0)
                 .build();
     }
