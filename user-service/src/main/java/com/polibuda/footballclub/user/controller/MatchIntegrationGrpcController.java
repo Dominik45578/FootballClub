@@ -1,7 +1,11 @@
 package com.polibuda.footballclub.user.controller;
 
+import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.match.grpc.*;
+import com.polibuda.footballclub.user.exceptions.business.TeamNotIntendedToJoinExceptions;
 import com.polibuda.footballclub.user.exceptions.notFound.ResourceNotFoundException;
+import com.polibuda.footballclub.user.exceptions.notFound.TeamMemberNotFoundException;
 import com.polibuda.footballclub.user.mappers.MatchGrpcMapper;
 import com.polibuda.footballclub.user.service.MatchDataService;
 import io.grpc.Status;
@@ -35,7 +39,12 @@ public class MatchIntegrationGrpcController extends MatchIntegrationServiceGrpc.
             responseObserver.onError(Status.NOT_FOUND
                     .withDescription(e.getMessage())
                     .asRuntimeException());
-        } catch (Exception e) {
+
+        }catch (TeamNotIntendedToJoinExceptions e){
+            log.warn("gRPC: Team not intended to join: {}", request.getTeamId());
+            responseObserver.onError(Status.RESOURCE_EXHAUSTED.withDescription(e.getMessage()).asRuntimeException());
+        }
+        catch (Exception e) {
             log.error("gRPC: Unexpected error fetching team {}", request.getTeamId(), e);
             responseObserver.onError(Status.INTERNAL
                     .withDescription("Internal server error")
@@ -56,7 +65,12 @@ public class MatchIntegrationGrpcController extends MatchIntegrationServiceGrpc.
             responseObserver.onError(Status.NOT_FOUND
                     .withDescription(e.getMessage())
                     .asRuntimeException());
-        } catch (Exception e) {
+
+        }catch (TeamNotIntendedToJoinExceptions e){
+            log.warn("gRPC: Team not intended to join: {}", request.getTeamMemberId());
+            responseObserver.onError(Status.RESOURCE_EXHAUSTED.withDescription(e.getMessage()).asRuntimeException());
+        }
+        catch (Exception e) {
             log.error("gRPC: Unexpected error fetching team member {}", request.getTeamMemberId(), e);
             responseObserver.onError(Status.INTERNAL.asRuntimeException());
         }

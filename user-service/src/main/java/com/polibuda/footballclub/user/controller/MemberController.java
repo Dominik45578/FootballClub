@@ -37,7 +37,7 @@ public class MemberController {
     }
 
     @PreAuthorize("hasAnyRole('MEMBER')")
-    @GetMapping("search")
+    @GetMapping("/search")
     public ResponseEntity<MemberSearchResponse> searchMembers(
             @RequestParam String query,
             @PageableDefault(size = 20) Pageable pageable) {

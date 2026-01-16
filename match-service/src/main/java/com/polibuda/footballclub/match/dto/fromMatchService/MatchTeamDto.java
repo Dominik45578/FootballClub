@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.match.dto.fromMatchService;
 
+import com.polibuda.footballclub.common.database.TeamStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class MatchTeamDto {
     private Long teamId;
     private String teamName;
     private String category;
+    private TeamStatus status;
     private List<MatchMemberDto> members;
 }

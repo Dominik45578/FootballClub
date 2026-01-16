@@ -30,7 +30,7 @@ public class MatchDataService {
 
     @Transactional(readOnly = true)
     public Team getTeamWithMembers(Long teamId) {
-        return teamRepository.findById(teamId)
+        return teamRepository.findByIdAndMembers_Status(teamId, TeamMemberStatus.ACTIVE)
                 .orElseThrow(() -> new TeamNotFoundException(teamId));
     }
 

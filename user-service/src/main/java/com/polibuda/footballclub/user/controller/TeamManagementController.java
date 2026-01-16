@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/user/team-management")
 @RequiredArgsConstructor
-public class TeamManagementController {
+public class  TeamManagementController {
 
     private final TeamMemberService teamMemberService;
 

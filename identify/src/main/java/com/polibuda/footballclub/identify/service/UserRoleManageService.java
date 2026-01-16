@@ -10,6 +10,7 @@ import com.polibuda.footballclub.identify.entity.User;
 import com.polibuda.footballclub.identify.repository.RoleRepository;
 import com.polibuda.footballclub.identify.repository.UserRepository;
 import com.polibuda.identify.grpc.RoleAssignmentStatus;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -58,29 +59,34 @@ public class UserRoleManageService {
     }
 
     @Transactional
-    public boolean updateUser(UpdateUserRequest request, Long userId){
-        if(request == null){
-            return false;
+    public void updateUser(UpdateUserRequest request, Long userId) {
+        if (request == null) {
+            throw new IllegalArgumentException("UpdateUserRequest must not be null");
         }
-        if(!userRepository.existsById(userId)){
-            return false;
-        }
-        User user = userRepository.findById(userId).orElseThrow();
-        if(request.getUsername() != null){
-            User newUser = userRepository.findByUsername(request.getUsername()).orElseThrow(null);
-            if(newUser != null)
-                return false;
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User with id " + userId + " not found"));
+
+        if (request.getUsername() != null) {
+            userRepository.findByUsername(request.getUsername())
+                    .filter(u -> !u.getId().equals(user.getId()))
+                    .ifPresent(u -> {
+                        throw new IllegalArgumentException("Username already exists");
+                    });
             user.setUsername(request.getUsername());
         }
-        if(request.getEmail() != null){
-            User newUser = userRepository.findByEmail(request.getEmail()).orElseThrow(null);
-            if(newUser != null)
-                return false;
+
+        if (request.getEmail() != null) {
+            userRepository.findByEmail(request.getEmail())
+                    .filter(u -> !u.getId().equals(user.getId()))
+                    .ifPresent(u -> {
+                        throw new IllegalArgumentException("Email already exists");
+                    });
             user.setEmail(request.getEmail());
         }
-        userRepository.save(user);
-        return true;
     }
+
 
 
 

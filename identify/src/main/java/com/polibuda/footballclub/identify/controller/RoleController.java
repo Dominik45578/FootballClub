@@ -28,11 +28,12 @@ public class RoleController {
        return userRoleManageService.getUserDTO(userId);
     }
     @PostMapping("/me")
-    public ResponseEntity<Boolean> update(
+    public ResponseEntity<Void> update(
             @RequestBody UpdateUserRequest updateUserRequest,
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
     ) {
-        return userRoleManageService.updateUser(updateUserRequest,userId) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        userRoleManageService.updateUser(updateUserRequest,userId);
+        return ResponseEntity.ok().build();
     }
 
 }

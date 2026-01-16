@@ -112,4 +112,26 @@ public class UserRoleGrpcController extends UserRoleServiceGrpc.UserRoleServiceI
                     .asRuntimeException());
         }
     }
+
+    @Override
+    public void getUserEmail(UserRequest request, StreamObserver<UserResponse> responseObserver) {
+        try{
+            User user = userService.findById(request.getUserId());
+
+            UserResponse response= UserResponse.newBuilder()
+                    .setEmail(user.getEmail())
+                    .setUserId(user.getId())
+                    .setNickname(user.getUsername())
+                    .setNonblocked(user.getAccountNonLocked())
+                            .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }catch(Exception e){
+            log.error("Error in isBlocked", e);
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                    .withDescription("Internal server error: " + e.getMessage())
+                    .asRuntimeException());
+        }
+    }
 }

@@ -48,10 +48,12 @@ public class Match extends BaseEntity {
 
     @Min(0)
     @Builder.Default
+    @Column(nullable = false)
     private Long internalTeamScore = 0L;
 
     @Min(0)
     @Builder.Default
+    @Column(nullable = false)
     private Long externalTeamScore = 0L;
 
 }

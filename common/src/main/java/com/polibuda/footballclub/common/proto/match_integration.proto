@@ -37,7 +37,8 @@ message TeamForMatchResponse {
   int64 team_id = 1;
   string team_name = 2;
   string category = 3;
-  repeated MatchTeamMemberDto members = 4;
+  MatchTeamStatus status = 4;
+  repeated MatchTeamMemberDto members = 5;
 }
 
 message MatchTeamMemberDto {
@@ -94,4 +95,11 @@ enum MatchFieldPosition {
   DEFENDER = 3;
   MIDFIELDER = 4;
   STRIKER = 5;
+}
+
+enum MatchTeamStatus {
+  T_CREATED = 0;
+  T_ACTIVE = 1;
+  T_SUSPENDED = 2;
+  T_ARCHIVED = 3;
 }

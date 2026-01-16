@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.user.repository;
 
+import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.user.entity.Team;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import jakarta.validation.constraints.NotBlank;
@@ -26,6 +27,16 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @EntityGraph(attributePaths = {"members", "members.member", "members.roles"})
     Optional<Team> findById(Long id);
+
+    @EntityGraph(attributePaths = {
+            "members",
+            "members.member",
+            "members.roles"
+    })
+    Optional<Team> findByIdAndMembers_Status(
+            Long id,
+            TeamMemberStatus status
+    );
 
     boolean existsTeamsByName(@NotBlank(message = "Nazwa teamu jest wymagana") String name);
 }

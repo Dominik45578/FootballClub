@@ -1,5 +1,6 @@
 package com.polibuda.footballclub.match.mappers;
 
+import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.match.dto.fromMatchService.MatchMemberDto;
 import com.polibuda.footballclub.match.dto.fromMatchService.MatchTeamDto;
 import com.polibuda.footballclub.match.dto.fromMatchService.PhysicalProfileDto;
@@ -22,6 +23,7 @@ public class MatchProtoMapper {
                 .teamName(response.getTeamName())
                 .category(response.getCategory())
                 .members(mapMembers(response.getMembersList()))
+                .status(mapStatus(response.getStatus()))
                 .build();
     }
 
@@ -81,4 +83,14 @@ public class MatchProtoMapper {
             return null;
         }
     }
+    private TeamStatus mapStatus(MatchTeamStatus status) {
+        return switch (status){
+            case T_CREATED -> TeamStatus.CREATED;
+            case T_ACTIVE -> TeamStatus.ACTIVE;
+            case T_SUSPENDED -> TeamStatus.SUSPENDED;
+            case T_ARCHIVED -> TeamStatus.ARCHIVED;
+            case UNRECOGNIZED -> TeamStatus.SUSPENDED;
+        };
+    }
+
 }

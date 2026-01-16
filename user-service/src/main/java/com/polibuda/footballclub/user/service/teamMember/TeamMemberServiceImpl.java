@@ -118,6 +118,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     }
 
     @Override
+    @Transactional
     public TeamMemberListItemDto getTeamMemberById(Long teamMemberId) {
         if(!teamMemberRepository.existsById(teamMemberId)) {
             throw new MemberNotFoundException(teamMemberId);

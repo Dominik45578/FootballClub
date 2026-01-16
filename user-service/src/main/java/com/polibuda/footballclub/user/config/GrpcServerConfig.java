@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class GrpcServerConfig {
 
-    @Value("${grpc.server.port:9095}")
+    @Value("${grpc.server.port:9094}")
     private int port;
 
     /**

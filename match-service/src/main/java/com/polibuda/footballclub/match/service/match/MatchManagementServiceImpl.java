@@ -1,16 +1,14 @@
 package com.polibuda.footballclub.match.service.match;
 
+import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.match.MatchStatus;
 import com.polibuda.footballclub.match.dto.fromMatchService.MatchTeamDto;
 import com.polibuda.footballclub.match.dto.request.CreateMatchRequestDTO;
 import com.polibuda.footballclub.match.dto.request.UpdateMatchRequestDTO;
-import com.polibuda.footballclub.match.dto.response.TeamBasicResponseDTO;
 import com.polibuda.footballclub.match.dto.response.TeamDetailsResponseDTO;
 import com.polibuda.footballclub.match.dto.response.wrappers.MatchResponseDTO;
 import com.polibuda.footballclub.match.entity.Match;
-import com.polibuda.footballclub.match.exceptions.InsufficientPermissionsException;
-import com.polibuda.footballclub.match.exceptions.MatchSerwisExceptions;
-import com.polibuda.footballclub.match.exceptions.ResourceNotFoundException;
+import com.polibuda.footballclub.match.exceptions.*;
 import com.polibuda.footballclub.match.mappers.MatchMapper;
 import com.polibuda.footballclub.match.model.SecurityContextHelper;
 import com.polibuda.footballclub.match.service.domain.MatchEntityService;
@@ -22,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -33,8 +32,6 @@ public class MatchManagementServiceImpl implements MatchManagementService {
     private final TeamProviderService teamProviderService;
     private final SecurityContextHelper securityHelper;
     private final MatchMapper matchMapper;
-
-    // --- ODCZYT (READ) ---
 
     @Override
     @Transactional(readOnly = true)
@@ -48,55 +45,56 @@ public class MatchManagementServiceImpl implements MatchManagementService {
     public Page<MatchResponseDTO> getMyMatches(Pageable pageable) {
         Long userId = securityHelper.getCurrentUserId();
 
-        // 1. Pobieramy ID zespołów użytkownika z User Service
         List<Long> userTeamIds = teamProviderService.getInternalTeamIds(userId);
 
         if (userTeamIds.isEmpty()) {
             return Page.empty(pageable);
         }
 
-        // 2. Pobieramy mecze dla tych zespołów
         Page<Match> matches = matchEntityService.getAllByInternalTeamIdIn(userTeamIds, pageable);
-
-        // 3. Mapujemy i wzbogacamy o nazwy drużyn
         return matches.map(this::enrichAndMap);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<MatchResponseDTO> getMatchesByTeamId(Long internalTeamId, Pageable pageable) {
-        // Pobieramy mecze konkretnej drużyny (np. widok terminarza)
         Page<Match> matches = matchEntityService.getAllByInternalTeamId(internalTeamId, pageable);
         return matches.map(this::enrichAndMap);
     }
 
-    // --- ZAPIS / EDYCJA (WRITE) ---
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MatchResponseDTO> getAllMatches(Pageable pageable) {
+        Page<Match> matches = matchEntityService.getAllMatches(pageable);
+        return matches.map(this::enrichAndMap);
+    }
+
 
     @Override
     @Transactional
     public MatchResponseDTO createMatch(CreateMatchRequestDTO request) {
         Long userId = securityHelper.getCurrentUserId();
 
-        // 1. Walidacja uprawnień: Tylko Admin lub Trener tej drużyny może dodać mecz
-        validateCoachOrAdmin(request.getInternalTeamId(), userId);
-
-        // 2. Walidacja terminu: Czy drużyna nie ma już meczu w tym czasie?
-        if (matchEntityService.isTermTaken(request.getInternalTeamId(), request.getMatchDate())) {
-            throw new MatchSerwisExceptions("Wybrany termin jest już zajęty przez inny mecz tej drużyny.");
+        // 1. Walidacja uprawnień (delegacja do providera)
+        if (!securityHelper.isAdmin()) {
+            teamProviderService.validateUserIsCoach(userId, request.getInternalTeamId());
         }
 
-        // 3. Tworzenie encji
+        validateMatchCreationLogic(request);
+
+        verifyTeamsAvailability(request.getInternalTeamId(), request.getExternalTeamId());
+
+
         Match match = Match.builder()
                 .internalTeamId(request.getInternalTeamId())
                 .externalTeamId(request.getExternalTeamId())
                 .matchDate(request.getMatchDate())
                 .isInternalTeamHome(request.getIsHome())
-                .status(MatchStatus.SCHEDULED) // Domyślnie planowany
+                .status(MatchStatus.SCHEDULED)
                 .build();
 
         Match saved = matchEntityService.save(match);
         log.info("MATCH_CREATED: ID={} by User={}", saved.getId(), userId);
-
         return enrichAndMap(saved);
     }
 
@@ -106,39 +104,19 @@ public class MatchManagementServiceImpl implements MatchManagementService {
         Long userId = securityHelper.getCurrentUserId();
         Match match = matchEntityService.getById(matchId);
 
-        // 1. Walidacja uprawnień do edycji tego konkretnego meczu
-        validateCoachOrAdmin(match.getInternalTeamId(), userId);
 
-        // 2. Aktualizacja pól (jeśli zostały przesłane)
-        boolean dateChanged = false;
-
-        if (request.getMatchDate() != null) {
-            // Jeśli data się zmienia, sprawdzamy czy nowy termin jest wolny
-            if (!request.getMatchDate().isEqual(match.getMatchDate())) {
-                if (matchEntityService.isTermTaken(match.getInternalTeamId(), request.getMatchDate())) {
-                    throw new MatchSerwisExceptions("Nowy termin jest kolizyjny z innym meczem.");
-                }
-                match.setMatchDate(request.getMatchDate());
-                dateChanged = true;
-            }
+        if (!securityHelper.isAdmin()) {
+            teamProviderService.validateUserIsCoach(userId, match.getInternalTeamId());
         }
 
-        if (request.getIsHome() != null) {
-            match.setIsInternalTeamHome(request.getIsHome());
-        }
+        validateMatchUpdateLogic(match, request);
 
-        if (request.getStatus() != null) {
-            match.setStatus(request.getStatus());
-        }
-        if(request.getExternalTeamScore()!=null){
-            match.setExternalTeamScore(request.getExternalTeamScore());
-        }
-        if (request.getInternalTeamScore()!=null){
-            match.setInternalTeamScore(request.getInternalTeamScore());
-        }
+        boolean dateChanged = handleDateChange(match, request.getMatchDate());
+
+        updateMatchFields(match, request);
 
         Match updated = matchEntityService.save(match);
-        if(dateChanged) {
+        if (dateChanged) {
             log.info("MATCH_RESCHEDULED: ID={} NewDate={}", updated.getId(), updated.getMatchDate());
         }
 
@@ -151,64 +129,93 @@ public class MatchManagementServiceImpl implements MatchManagementService {
         Long userId = securityHelper.getCurrentUserId();
         Match match = matchEntityService.getById(matchId);
 
-        // 1. Walidacja uprawnień
-        validateCoachOrAdmin(match.getInternalTeamId(), userId);
+        if (!securityHelper.isAdmin()) {
+            teamProviderService.validateUserIsCoach(userId, match.getInternalTeamId());
+        }
 
-        // 2. Usunięcie
         matchEntityService.delete(matchId);
         log.info("MATCH_DELETED: ID={} by User={}", matchId, userId);
     }
 
-    @Override
-    public Page<MatchResponseDTO> getAllMatches(Pageable pageable) {
-        var matches = matchEntityService.getAllMatches(pageable);
-        return matches.map(this::enrichAndMap);
+    // --- PRYWATNE METODY POMOCNICZE (Private Helpers) ---
+
+    private void validateMatchCreationLogic(CreateMatchRequestDTO request) {
+        if (request.getInternalTeamId().equals(request.getExternalTeamId())) {
+            throw new InvalidTeamPairingException("A team cannot play a match against itself.");
+        }
+        if (request.getMatchDate().isBefore(LocalDateTime.now())) {
+            throw new MatchDateInPastException("Cannot schedule a new match in the past.");
+        }
+        if (matchEntityService.isTermTaken(request.getInternalTeamId(), request.getMatchDate())) {
+            throw new MatchDateConflictException("The internal team already has a match scheduled within 2 hours of this time.");
+        }
     }
 
-    // --- METODY POMOCNICZE (PRIVATE) ---
+    private void verifyTeamsAvailability(Long internalTeamId, Long externalTeamId) {
+        MatchTeamDto team = teamProviderService.getInternalTeam(internalTeamId);
+        if (team.getStatus() != TeamStatus.ACTIVE) {
+            throw new TeamMustBeActiveException("Internal team status must be ACTIVE to schedule matches.");
+        }
+        // Sprawdzenie czy zewnętrzny zespół istnieje (rzuca wyjątek jeśli nie)
+        teamProviderService.getExternalTeamDetails(externalTeamId);
+    }
 
-    /**
-     * Wzbogaca "gołą" encję Match o dane drużyn pobrane z mikroserwisów.
-     */
+    private void validateMatchUpdateLogic(Match match, UpdateMatchRequestDTO request) {
+        // Walidacja statusu
+        if (request.getStatus() != null) {
+            if (match.getStatus() == MatchStatus.FINISHED && request.getStatus() == MatchStatus.SCHEDULED) {
+                throw new InvalidMatchStatusTransitionException("Cannot revert a FINISHED match to SCHEDULED status.");
+            }
+            if (match.getStatus() == MatchStatus.CANCELLED) {
+                throw new InvalidMatchStatusTransitionException("Cannot update a CANCELLED match.");
+            }
+        }
+
+        // Walidacja wyników
+        if (request.getInternalTeamScore() != null || request.getExternalTeamScore() != null) {
+            if (match.getStatus() == MatchStatus.SCHEDULED) {
+                throw new InvalidMatchScoreException("Cannot set scores for a match that is only SCHEDULED.");
+            }
+            validateScoreNonNegative(request.getInternalTeamScore());
+            validateScoreNonNegative(request.getExternalTeamScore());
+        }
+    }
+
+    private void validateScoreNonNegative(Long score) {
+        if (score != null && score < 0) {
+            throw new InvalidMatchScoreException("Match scores cannot be negative.");
+        }
+    }
+
+    private boolean handleDateChange(Match match, LocalDateTime newDate) {
+        if (newDate == null || newDate.isEqual(match.getMatchDate())) {
+            return false;
+        }
+        if (matchEntityService.isTermTaken(match.getInternalTeamId(), newDate)) {
+            throw new MatchDateConflictException("The new date conflicts with another match within 2 hours.");
+        }
+        match.setMatchDate(newDate);
+        return true;
+    }
+
+    private void updateMatchFields(Match match, UpdateMatchRequestDTO request) {
+        if (request.getIsHome() != null) {
+            match.setIsInternalTeamHome(request.getIsHome());
+        }
+        if (request.getStatus() != null) {
+            match.setStatus(request.getStatus());
+        }
+        if (request.getExternalTeamScore() != null) {
+            match.setExternalTeamScore(request.getExternalTeamScore());
+        }
+        if (request.getInternalTeamScore() != null) {
+            match.setInternalTeamScore(request.getInternalTeamScore());
+        }
+    }
+
     private MatchResponseDTO enrichAndMap(Match match) {
-        // Pobieramy dane bezpiecznie (try-catch wewnątrz metod), żeby awaria gRPC nie kładła całego get-a
-        var internal = fetchInternalTeamSafe(match.getInternalTeamId());
-        var external = fetchExternalTeamSafe(match.getExternalTeamId());
-
-        return matchMapper.toDto(match,internal,external);
-    }
-
-    private MatchTeamDto fetchInternalTeamSafe(Long id) {
-        try {
-            return teamProviderService.getInternalTeam(id);
-        } catch (Exception e) {
-            log.warn("Failed to fetch internal team info for ID: {}", id);
-            return MatchTeamDto.builder().teamId(id).teamName("Unknown Internal Team").build();
-        }
-    }
-
-    private TeamDetailsResponseDTO fetchExternalTeamSafe(Long id) {
-        try {
-            return teamProviderService.getExternalTeamDetails(id);
-        } catch (Exception e) {
-            log.warn("Failed to fetch external team info for ID: {}", id);
-            throw new ResourceNotFoundException("External Team not found via gRPC, id: " + id);
-        }
-    }
-
-    /**
-     * Sprawdza, czy użytkownik ma prawo zarządzać meczami danej drużyny.
-     * Prawo ma ADMIN oraz TRENER (COACH) tej drużyny.
-     */
-    private void validateCoachOrAdmin(Long teamId, Long userId) {
-        if (securityHelper.isAdmin()) {
-            return;
-        }
-        // Delegujemy sprawdzenie do TeamProviderService, który odpyta User Service via gRPC
-        boolean isCoach = teamProviderService.isUserCoachOfTeam(userId, teamId);
-
-        if (!isCoach) {
-            throw new InsufficientPermissionsException("Nie masz uprawnień trenera do zarządzania meczami tej drużyny.");
-        }
+        var internal = teamProviderService.getInternalTeam(match.getInternalTeamId());
+        var external = teamProviderService.getExternalTeamDetails(match.getExternalTeamId());
+        return matchMapper.toDto(match, internal, external);
     }
 }

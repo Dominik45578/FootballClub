@@ -628,7 +628,6 @@ export async function searchMembers(query: string, page = 0, size = 10, opts?: {
 }
 
 export async function getMemberProfile(id: number, opts?: { allowUnauth?: boolean; skipAuthHeader?: boolean }) {
-  if (OFFLINE) return Promise.resolve({ id, firstName: 'Jan', lastName: 'Kowalski', age: 36 })
 
   const relUrl = `${API_PREFIX}/user/members?id=${id}`
   const fullUrl = `${USER_BASE}/members?id=${id}`
@@ -824,3 +823,48 @@ export async function setNewPassword(payload: NewPasswordPayload): Promise<NewPa
   const _refs = [applyForMembership, getMemberProfile, login, refreshToken]
   void _refs
 })()
+
+export type UserRoleDTO = {
+    role: string          // Było 'name', teraz jest 'role' zgodnie z JSON
+    description?: string | null
+}
+
+export type UserAccount = {
+    userId: number
+    userName: string
+    userEmail: string
+    createdAt?: string    // Data utworzenia w formacie ISO
+    updatedAt?: string | null
+    userRole?: UserRoleDTO[]
+}
+
+export type UpdateUserAccountPayload = {
+    username: string; // Java: Request body ma pole "username"
+    email: string;    // Java: Request body ma pole "email"
+}
+
+// --- Metody API ---
+
+/**
+ * Pobiera dane konta (tożsamości) z endpointu /auth/me
+ */
+export async function getMyAccount(opts?: { allowUnauth?: boolean }): Promise<UserAccount> {
+    // Używamy AUTH_BASE zdefiniowanego w userApi.ts, który wskazuje na .../auth
+    return fetchJson(`${AUTH_BASE}/me`, { dontRedirectOnAuthError: opts?.allowUnauth });
+}
+
+/**
+ * Aktualizuje dane konta (username, email) przez endpoint POST /auth/me
+ */
+export async function updateMyAccount(payload: UpdateUserAccountPayload): Promise<boolean> {
+    if (OFFLINE) {
+        console.log('[Mock] Updating account:', payload);
+        return Promise.resolve(true);
+    }
+    // Backend zwraca ResponseEntity<Boolean> -> true/false
+    const res = await fetchJson(`${AUTH_BASE}/me`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+    return !!res;
+}

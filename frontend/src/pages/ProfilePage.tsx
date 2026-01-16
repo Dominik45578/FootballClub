@@ -7,44 +7,79 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { logout } from '@/lib/auth';
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateMyProfile } from '@/lib/userApi'
-import type { MemberProfile } from '@/lib/userApi'
+import {
+    getMyProfile,
+    updateMyProfile,
+    getMyAccount,
+    updateMyAccount
+} from '@/lib/userApi'
+import type { MemberProfile, UserAccount } from '@/lib/userApi'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle } from 'lucide-react'
-import { ArrowLeft } from 'lucide-react'
+import { AlertCircle, ArrowLeft, UserCog, User as UserIcon, Shield, Calendar } from 'lucide-react'
 
 export function ProfilePage() {
+    const navigate = useNavigate();
+
+    // --- State: Member Profile (Lewa strona) ---
+    const [profile, setProfile] = useState<MemberProfile | null>(null)
+    const [height, setHeight] = useState<string>('')
+    const [weight, setWeight] = useState<string>('')
+    const [phone, setPhone] = useState<string>('')
+
+    // --- State: User Account (Prawa strona) ---
+    const [account, setAccount] = useState<UserAccount | null>(null)
+    const [username, setUsername] = useState<string>('')
+    const [email, setEmail] = useState<string>('')
+
+    // --- State: General ---
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
     useEffect(() => {
         const prev = document.title
         document.title = 'Profil użytkownika'
         return () => { document.title = prev }
     }, [])
-    const navigate = useNavigate();
-    const [profile, setProfile] = useState<MemberProfile | null>(null)
-    const [height, setHeight] = useState<string>('')
-    const [weight, setWeight] = useState<string>('')
-    const [phone, setPhone] = useState<string>('')
-    const [error, setError] = useState<string | null>(null)
 
+    // Pobieranie danych równolegle
     useEffect(() => {
         let mounted = true
-        getMyProfile({ allowUnauth: true }).then(p => {
-            if (!mounted) return
-            setError(null)
-            setProfile(p)
-            setHeight(p.height ? String(p.height) : '')
-            setWeight(p.weight ? String(p.weight) : '')
-            setPhone(p.phoneNumber || '')
-        }).catch((err: any) => {
-            if (!mounted) return
-            console.error(err)
-            if (err?.status === 401 || err?.status === 403) {
-                // Traktujemy jak błąd pobrania, nie pokazujemy "Brak dostępu"
-                setError('Nie udało się pobrać profilu')
-            } else {
-                setError('Nie udało się pobrać profilu')
+
+        const fetchData = async () => {
+            try {
+                // Fetch Member Profile
+                const profileData = await getMyProfile({ allowUnauth: true }).catch(err => {
+                    console.warn('Failed to fetch profile', err);
+                    return null;
+                });
+
+                if (mounted && profileData) {
+                    setProfile(profileData)
+                    setHeight(profileData.height ? String(profileData.height) : '')
+                    setWeight(profileData.weight ? String(profileData.weight) : '')
+                    setPhone(profileData.phoneNumber || '')
+                }
+
+                // Fetch Account Data
+                const accountData = await getMyAccount({ allowUnauth: true }).catch(err => {
+                    console.warn('Failed to fetch account', err);
+                    return null;
+                });
+
+                if (mounted && accountData) {
+                    setAccount(accountData)
+                    setUsername(accountData.userName || '')
+                    setEmail(accountData.userEmail || '')
+                }
+
+            } catch (err: any) {
+                if (mounted) setError('Wystąpił błąd podczas ładowania danych.')
+            } finally {
+                if (mounted) setLoading(false)
             }
-        })
+        }
+
+        fetchData();
         return () => { mounted = false }
     }, [])
 
@@ -54,40 +89,62 @@ export function ProfilePage() {
         navigate('/');
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // --- Handlers: Left Side (Member) ---
+    const handleMemberUpdate = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const updated = await updateMyProfile({ height: height ? Number(height) : undefined, weight: weight ? Number(weight) : undefined, phoneNumber: phone || undefined })
+            const updated = await updateMyProfile({
+                height: height ? Number(height) : undefined,
+                weight: weight ? Number(weight) : undefined,
+                phoneNumber: phone || undefined
+            })
             setProfile(updated)
-            toast.success('Zaktualizowano profil (mock)')
+            toast.success('Zaktualizowano dane profilowe')
         } catch (err: any) {
-            toast.error('Błąd', { description: err?.message || 'Nie udało się zaktualizować' })
+            toast.error('Błąd aktualizacji profilu', { description: err?.message })
         }
     }
 
-    const initials = profile ? `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase() || 'U' : 'U'
-    const fullName = profile ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'Użytkownik' : 'Użytkownik'
-    const maskedPesel = profile?.maskedPesel || '—'
-    const age = profile?.age ?? '—'
-    const email = (profile as any)?.email || '—'
+    // --- Handlers: Right Side (Account) ---
+    const handleAccountUpdate = async (e: React.FormEvent) => {
+        e.preventDefault()
 
-    const errorView = (
-        <Card className="shadow-sm">
-            <CardHeader className="flex flex-col gap-2">
-                <CardTitle className="flex items-center gap-2"><AlertCircle className="h-5 w-5 text-destructive" />Wystąpił błąd</CardTitle>
-                <CardDescription>{error}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Button onClick={() => window.location.reload()}>Spróbuj ponownie</Button>
-            </CardContent>
-        </Card>
-    )
+        // Prosta walidacja email regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            toast.error('Błąd walidacji', { description: 'Podaj poprawny adres email.' });
+            return;
+        }
+
+        try {
+            await updateMyAccount({
+                username: username,
+                email: email
+            });
+            toast.success('Zaktualizowano dane konta', { description: 'Zmiany mogą wymagać przelogowania.' })
+            // Opcjonalnie odświeżamy dane
+            const refreshed = await getMyAccount();
+            setAccount(refreshed);
+        } catch (err: any) {
+            toast.error('Błąd aktualizacji konta', { description: err?.message || 'Nie udało się zapisać zmian.' })
+        }
+    }
+
+    const initials = profile ? `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase() : 'U'
+    const fullName = profile ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() : 'Użytkownik'
+
+    if (loading && !profile && !account) {
+        return <div className="p-8 space-y-4 container"><Skeleton className="h-12 w-1/3" /><Skeleton className="h-64 w-full" /></div>
+    }
 
     return (
         <div className="min-h-screen bg-background">
+            {/* Header */}
             <header className="border-b bg-card">
                 <div className="container flex h-16 items-center justify-between px-4">
-                    <h1 className="text-2xl font-bold">Profil użytkownika</h1>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <UserIcon className="h-6 w-6" /> Profil użytkownika
+                    </h1>
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" onClick={() => navigate('/dashboard')} className="cursor-pointer">
                             <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
@@ -96,100 +153,154 @@ export function ProfilePage() {
                     </div>
                 </div>
             </header>
-            <main className="container py-8 space-y-6">
-                {error ? errorView : null}
-                {
-                    <>
-                        <Card className="shadow-sm">
-                            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-semibold">
-                                        {profile ? initials : <Skeleton className="h-full w-full rounded-full" />}
-                                    </div>
-                                    <div>
-                                        <CardTitle className="text-2xl">{profile ? fullName : <Skeleton className="h-6 w-40" />}</CardTitle>
-                                        <CardDescription className="flex flex-wrap items-center gap-2 mt-1">
-                                            <span>Email: {profile ? email : <Skeleton className="h-4 w-24" />}</span>
-                                            <Badge variant="outline">PESEL: {maskedPesel}</Badge>
-                                            <Badge variant="secondary">Wiek: {age}</Badge>
-                                        </CardDescription>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Badge variant="secondary">Wzrost: {profile?.height ? `${profile.height} cm` : '—'}</Badge>
-                                    <Badge variant="secondary">Waga: {profile?.weight ? `${profile.weight} kg` : '—'}</Badge>
-                                </div>
+
+            <main className="container py-8 space-y-6 px-4">
+                {error && (
+                    <Card className="border-destructive/50 bg-destructive/10">
+                        <CardHeader><CardTitle className="text-destructive flex gap-2"><AlertCircle /> Błąd</CardTitle></CardHeader>
+                        <CardContent>{error}</CardContent>
+                    </Card>
+                )}
+
+                {/* Top Summary Card */}
+                <Card className="shadow-sm border-l-4 border-l-primary">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold border-2 border-primary">
+                            {initials}
+                        </div>
+                        <div>
+                            <CardTitle className="text-2xl">{fullName}</CardTitle>
+                            <CardDescription className="flex gap-2 mt-1">
+                                {account?.userRole?.map((role, i) => (
+                                    <Badge key={i} variant="secondary" className="text-xs">
+                                        {role.name.replace('ROLE_', '')}
+                                    </Badge>
+                                ))}
+                            </CardDescription>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* GRID 2 COLUMNS */}
+                <div className="grid gap-6 lg:grid-cols-2">
+
+                    {/* --- LEWA STRONA: Member Profile (Dane fizyczne) --- */}
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground border-b pb-2">
+                            <UserIcon className="w-5 h-5" /> Dane Członkowskie
+                        </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Informacje fizyczne</CardTitle>
+                                <CardDescription>Twoje dane sportowe w klubie</CardDescription>
                             </CardHeader>
-                        </Card>
-
-                        <div className="grid gap-6 lg:grid-cols-2">
-                            <Card className="shadow-sm">
-                                <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <CardTitle>Informacje o koncie</CardTitle>
-                                        <CardDescription>Podstawowe dane pobrane z profilu</CardDescription>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-3 text-sm">
-                                    {!profile && (
+                            <CardContent>
+                                <form onSubmit={handleMemberUpdate} className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Skeleton className="h-4 w-48" />
-                                            <Skeleton className="h-4 w-64" />
-                                            <Skeleton className="h-4 w-56" />
+                                            <Label>PESEL</Label>
+                                            <Input value={profile?.maskedPesel || ''} disabled className="bg-muted" />
                                         </div>
-                                    )}
-                                    {profile && (
-                                        <div className="grid gap-3 sm:grid-cols-2">
-                                            <div className="rounded-lg border bg-muted/20 p-3">
-                                                <div className="text-xs uppercase text-muted-foreground">Imię i nazwisko</div>
-                                                <div className="text-base font-semibold">{fullName}</div>
-                                            </div>
-                                            <div className="rounded-lg border bg-muted/20 p-3">
-                                                <div className="text-xs uppercase text-muted-foreground">PESEL (maskowany)</div>
-                                                <div className="text-base font-semibold">{maskedPesel}</div>
-                                            </div>
-                                            <div className="rounded-lg border bg-muted/20 p-3">
-                                                <div className="text-xs uppercase text-muted-foreground">Wiek</div>
-                                                <div className="text-base font-semibold">{age}</div>
-                                            </div>
-                                            <div className="rounded-lg border bg-muted/20 p-3">
-                                                <div className="text-xs uppercase text-muted-foreground">Telefon</div>
-                                                <div className="text-base font-semibold">{profile.phoneNumber || '—'}</div>
-                                            </div>
+                                        <div className="space-y-2">
+                                            <Label>Wiek</Label>
+                                            <Input value={profile?.age || ''} disabled className="bg-muted" />
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                    </div>
 
-                            <Card className="shadow-sm">
-                                <CardHeader>
-                                    <CardTitle>Edycja profilu</CardTitle>
-                                    <CardDescription>Wzrost, waga i numer telefonu</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <form onSubmit={handleSubmit} className="grid gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="height">Wzrost (cm)</Label>
-                                            <Input id="height" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="np. 180" />
+                                            <Input id="height" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="180" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="weight">Waga (kg)</Label>
-                                            <Input id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="np. 75" />
+                                            <Input id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="75" />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="phone">Numer telefonu</Label>
-                                            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="np. +48123456789" />
-                                        </div>
-                                        <div className="flex gap-2 flex-wrap">
-                                            <Button type="submit">Zapisz</Button>
-                                            <Button type="button" variant="ghost" onClick={handleLogout}>Wyloguj się</Button>
-                                        </div>
-                                    </form>
-                                </CardContent>
-                            </Card>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone">Numer telefonu</Label>
+                                        <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+48..." />
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <Button type="submit" className="w-full">Zapisz dane członkowskie</Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* --- PRAWA STRONA: User Account (Dane systemowe) --- */}
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground border-b pb-2">
+                            <UserCog className="w-5 h-5" /> Ustawienia Konta
                         </div>
-                    </>
-                }
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Dane logowania</CardTitle>
+                                <CardDescription>Identyfikacja w systemie i dostęp</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleAccountUpdate} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>ID Użytkownika</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="text-sm px-3 py-1">#{account?.userId}</Badge>
+                                            {account?.createdAt && (
+                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" /> Utworzono: {new Date(account.createdAt).toLocaleDateString()}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="username">Nazwa użytkownika (Login)</Label>
+                                        <Input
+                                            id="username"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            placeholder="Login"
+                                        />
+                                        <p className="text-[0.8rem] text-muted-foreground">
+                                            Unikalna nazwa używana do logowania.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Adres Email</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="name@example.com"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 pt-2">
+                                        <div className="text-sm font-medium mb-1 flex items-center gap-1"><Shield className="w-3 h-3"/> Przypisane role systemowe</div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {account?.userRole?.length ? account.userRole.map((role, i) => (
+                                                <Badge key={i} variant="secondary" className="font-mono text-xs">
+                                                    {role.name}
+                                                </Badge>
+                                            )) : <span className="text-xs text-muted-foreground">Brak ról</span>}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <Button type="submit" variant="secondary" className="w-full">Aktualizuj konto</Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                </div>
             </main>
         </div>
     )

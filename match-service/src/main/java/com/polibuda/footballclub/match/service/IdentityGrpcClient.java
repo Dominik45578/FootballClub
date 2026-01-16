@@ -1,7 +1,7 @@
-package com.polibuda.footballclub.user.service;
+package com.polibuda.footballclub.match.service;
 
 import com.polibuda.footballclub.common.UserRole;
-import com.polibuda.footballclub.user.dto.UserDto;
+import com.polibuda.footballclub.match.dto.UserDto;
 import com.polibuda.identify.grpc.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

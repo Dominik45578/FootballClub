@@ -15,6 +15,7 @@ export type MatchMember = {
   status?: string
   roles?: string[]
   fieldPosition?: string
+    number?: number
 }
 
 export type MatchTeamData = {
@@ -30,6 +31,8 @@ export type MatchStatus = 'SCHEDULED' | 'LIVE' | 'FINISHED' | 'CANCELLED' | 'POS
 export type MatchResponse = {
   matchId: number
   matchDate: string // ISO
+  homeTeamScore: number
+  awayTeamScore: number
   status: MatchStatus
   homeTeam: MatchTeamData
   awayTeam: MatchTeamData
@@ -78,6 +81,8 @@ async function fetchJson<T = any>(url: string, opts: RequestInit = {}): Promise<
 
 // Mocky (tylko gdy OFFLINE=true)
 const MOCK_MATCH: MatchResponse = {
+    awayTeamScore:1,
+    homeTeamScore:2,
   matchId: 101,
   matchDate: new Date().toISOString(),
   status: 'SCHEDULED',

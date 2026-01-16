@@ -11,6 +11,7 @@ service UserRoleService {
   rpc GrantRoles (GrantRolesRequest) returns (GrantRolesResponse);
   rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
   rpc IsBlocked (UserBlockedRequest) returns (UserBlockedResponse);
+  rpc getUserEmail (UserRequest) returns (UserResponse);
 }
 
 message GrantRolesRequest {
@@ -57,4 +58,14 @@ message UserBlockedResponse{
 
 message UserBlockedRequest{
   int64 userId =1;
+}
+
+message UserRequest{
+  int64 userId =1;
+}
+message UserResponse{
+  int64 userId =1;
+  string nickname = 2;
+  string email = 3;
+  bool nonblocked = 4;
 }

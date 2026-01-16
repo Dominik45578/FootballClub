@@ -45,4 +45,5 @@ public class IdentityGrpcClientConfig {
         // Spring automatycznie wstrzyknie bean 'identityChannel' zdefiniowany wyżej
         return UserRoleServiceGrpc.newBlockingStub(identityChannel);
     }
+
 }

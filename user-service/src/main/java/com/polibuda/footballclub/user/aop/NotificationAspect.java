@@ -8,6 +8,7 @@ import com.polibuda.footballclub.user.model.UserEmailTemplates;
 import com.polibuda.footballclub.user.repository.MemberRepository;
 import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
+import com.polibuda.footballclub.user.service.IdentityGrpcClient;
 import com.polibuda.footballclub.user.service.RabbitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class NotificationAspect {
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final IdentityGrpcClient  grpcService;
 
     // Przechwytujemy dołączenie do zespołu
     @AfterReturning(pointcut = "execution(* com.polibuda.footballclub.user.service.teamMember.TeamMemberServiceImpl.joinTeam(..)) && args(userId, request)", argNames = "userId,request")
@@ -32,6 +34,7 @@ public class NotificationAspect {
         try {
             Member member = memberRepository.findByUserId(userId).orElseThrow();
             Team team = teamRepository.findByCode(request.getTeamCode()).orElseThrow();
+            grpcService.getUser(userId).getEmail();
 
             String email = "pobrany_z_identity_lub_naglowka@test.pl"; 
 

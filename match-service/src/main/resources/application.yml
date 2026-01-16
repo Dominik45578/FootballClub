@@ -47,4 +47,7 @@ grpc:
     port: ${FED_GRPC_PORT:9090}
   user-service:
     host: ${USER_SERVICE_NAME:user-service}
-    port : ${USER_SERVER_GRPC_PORT:9095}
+    port : ${USER_SERVER_GRPC_PORT:9094}
+  identify:
+    host: ${IDENTIFY_NAME:identify}
+    port: ${IDENTIFY_GRPC_PORT:9092}

@@ -3,6 +3,7 @@ package com.polibuda.footballclub.user.mappers;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.claims.FieldPosition;
 import com.polibuda.footballclub.common.database.TeamRole;
+import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.match.grpc.*;
 import com.polibuda.footballclub.user.entity.Member;
 import com.polibuda.footballclub.user.entity.Team;
@@ -14,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.polibuda.footballclub.match.grpc.MatchTeamStatus.T_ACTIVE;
 
 @Component
 public class MatchGrpcMapper {
@@ -31,6 +34,7 @@ public class MatchGrpcMapper {
                 .setTeamName(team.getName())
                 .setCategory(team.getCategory().name())
                 .addAllMembers(mapMembers(team.getMembers()))
+                .setStatus(mapStatus(team.getStatus()))
                 .build();
     }
 
@@ -110,5 +114,15 @@ public class MatchGrpcMapper {
         } catch (IllegalArgumentException e) {
             return MatchTeamRole.ROLE_UNSPECIFIED;
         }
+    }
+
+    private MatchTeamStatus mapStatus(TeamStatus status) {
+        return switch (status){
+            case ACTIVE -> MatchTeamStatus.T_ACTIVE;
+            case ARCHIVED -> MatchTeamStatus.T_ARCHIVED;
+            case SUSPENDED -> MatchTeamStatus.T_SUSPENDED;
+            case CREATED -> MatchTeamStatus.T_CREATED;
+            default -> MatchTeamStatus.UNRECOGNIZED;
+        };
     }
 }

@@ -18,6 +18,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByPesel(String pesel);
     boolean existsByUserId(Long userId);
 
+
     // FIX: Dodano brakującą metodę wyszukiwania
     @Query("SELECT m FROM Member m WHERE " +
             "LOWER(m.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
