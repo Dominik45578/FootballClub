@@ -9,11 +9,11 @@ import ActivateAccountPage from './pages/ActivateAccountPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import { getMemberStatus, type MemberStatus, ensureMemberStatus } from './lib/userApi'
 import { hasOnlyRoleUser } from './lib/auth'
+import { MemberProfilePage } from './pages/MemberProfilePage'
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
 const TeamSearchPage = lazy(() => import('./pages/TeamSearchPage').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
 const TeamDetailsPage = lazy(() => import('./pages/TeamDetailsPage').then(m => ({ default: (m as any).default || (m as any).TeamDetailsPage })));
-const MemberProfilePage = lazy(() => import('./pages/MemberProfilePage').then(m => ({ default: (m as any).default || (m as any).MemberProfilePage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: (m as any).default || (m as any).ProfilePage })));
 const TeamsPage = lazy(() => import('./pages/TeamsPage').then(m => ({ default: (m as any).default || (m as any).TeamsPage })));
 const TeamManagementPage = lazy(() => import('./pages/TeamManagementPage').then(m => ({ default: (m as any).default || (m as any).TeamManagementPage })));

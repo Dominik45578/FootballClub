@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ArrowLeft } from 'lucide-react'
 
 export default function AccessDeniedPage() {
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ export default function AccessDeniedPage() {
           <CardContent>
             <p className="mb-4">Jeśli uważasz, że to błąd, skontaktuj się z administratorem lub sprawdź swoje uprawnienia.</p>
             <div className="flex gap-2">
-              <Button onClick={() => navigate('/dashboard')}>Powrót do dashboardu</Button>
+              <Button variant="outline" onClick={() => navigate('/dashboard')}><ArrowLeft className="mr-2 h-4 w-4" /> Powrót</Button>
               <Button variant="ghost" onClick={() => window.location.reload()}>Odśwież</Button>
             </div>
           </CardContent>
@@ -30,4 +30,3 @@ export default function AccessDeniedPage() {
     </div>
   )
 }
-
