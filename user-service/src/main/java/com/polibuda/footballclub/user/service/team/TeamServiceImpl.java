@@ -4,10 +4,7 @@ import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.database.TeamStatus;
-import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
-import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
-import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
-import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
+import com.polibuda.footballclub.user.dto.request.*;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
 import com.polibuda.footballclub.user.dto.response.summary.TeamSummaryResponse;
@@ -152,7 +149,7 @@ public class TeamServiceImpl implements TeamService {
 
     @Transactional
     @Override
-    public boolean updateMembership(UpdateTeamMemberRequestDTO request,  Long requesterUserId) {
+    public boolean updateMembership(ManageTeamMemberRequest request, Long requesterUserId) {
        if(!teamMemberRepository.existsById(request.getTeamMemberId())){
            return false;
        }
@@ -163,7 +160,7 @@ public class TeamServiceImpl implements TeamService {
         return true;
     }
 
-    private TeamMember checkDtoAndSetChanges(UpdateTeamMemberRequestDTO request, TeamMember membership){
+    private TeamMember checkDtoAndSetChanges(ManageTeamMemberRequest request, TeamMember membership){
         if(request.getNewRoles()!=null){
             membership.addRole(request.getNewRoles());
         }
@@ -172,6 +169,12 @@ public class TeamServiceImpl implements TeamService {
         }
         if(request.getStatus()!=null){
             membership.setStatus(request.getStatus());
+        }
+        if(request.getNumber()!= null){
+            membership.setNumber(request.getNumber());
+        }
+        if(request.getNewFieldPosition()!=null){
+            membership.setFieldPosition(request.getNewFieldPosition());
         }
         return membership;
     }
@@ -243,6 +246,7 @@ public class TeamServiceImpl implements TeamService {
                         .status(tm.getStatus())
                         .sienceDate(tm.getCreatedAt())
                         .fieldPosition(tm.getFieldPosition())
+                        .number(tm.getNumber())
                         .build())
                 .collect(Collectors.toList());
 

@@ -4,6 +4,8 @@ import com.polibuda.footballclub.common.actions.TeamMemberStatus;
 import com.polibuda.footballclub.common.claims.FieldPosition;
 import com.polibuda.footballclub.common.database.TeamRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.util.HashSet;
@@ -61,6 +63,10 @@ public class TeamMember extends AbstractAuditableEntity {
     public boolean isCoach() {
         return roles.contains(TeamRole.ROLE_TEAM_HEAD_COACH) || roles.contains(TeamRole.ROLE_TEAM_ASSISTANT_COACH);
     }
+
+    @Builder.Default
+    @Min(0)
+    private int number =0;
 
     public void addRole(Set<TeamRole> roles) {
         this.roles.addAll(roles);

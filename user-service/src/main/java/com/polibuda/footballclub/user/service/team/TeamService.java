@@ -1,10 +1,7 @@
 package com.polibuda.footballclub.user.service.team;
 
 import com.polibuda.footballclub.common.actions.TeamFetchMode;
-import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
-import com.polibuda.footballclub.user.dto.request.UpdateMemberProfileRequest;
-import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
-import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
+import com.polibuda.footballclub.user.dto.request.*;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
 import com.polibuda.footballclub.user.dto.response.summary.TeamSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
@@ -40,6 +37,6 @@ public interface TeamService {
     TeamSummaryResponse getTeamProfile(Long teamId);
     boolean addTeam(AddTeamRequest team, Long requesterUserId);
     boolean updateTeam(UpdateTeamRequestDTO request, Long requesterUserId);
-    boolean updateMembership(UpdateTeamMemberRequestDTO request, Long requesterUserId);
+    boolean updateMembership(ManageTeamMemberRequest request, Long requesterUserId);
     boolean deleteTeam(Long teamId, Long requesterUserId);
 }

@@ -22,10 +22,11 @@ public class ManageTeamMemberRequest {
     private Long teamMemberId;
 
     @NotNull(message = "Status jest wymagany")
-    private TeamMemberStatus newStatus;
+    private TeamMemberStatus status;
 
     private FieldPosition newFieldPosition;
     // Opcjonalne: przy okazji zmiany statusu można nadać role
     private Set<TeamRole> newRoles;
-    private Set<TeamRole> removerRoles;
+    private Set<TeamRole> removedRoles;
+    private Integer number;
 }

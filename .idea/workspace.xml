@@ -5,14 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Upgraded team status and squad display">
-      <change afterPath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DateInput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/proto/match_integration.proto" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/proto/match_integration.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/MatchMemberDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/MatchMemberDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/request/UpdateMatchRequestDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/request/UpdateMatchRequestDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/response/wrappers/MatchResponseDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/response/wrappers/MatchResponseDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/entity/Match.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/entity/Match.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchProtoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchProtoMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/service/match/MatchManagementServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/service/match/MatchManagementServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManageTeamMemberRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/ManageTeamMemberRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/UpdateTeamMemberRequestDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/request/UpdateTeamMemberRequestDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/TeamMemberListItemDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/TeamMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/entity/TeamMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/mappers/MatchGrpcMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/mappers/MatchGrpcMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,9 +70,12 @@
     <setting file="jar://$USER_HOME$/.jdks/openjdk-25.0.1/lib/src.zip!/java.base/java/lang/RuntimeException.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3-sources.jar!/org/apache/http/conn/HttpHostConnectException.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/glassfish/jersey/core/jersey-client/3.1.11/jersey-client-3.1.11-sources.jar!/org/glassfish/jersey/client/ClientRuntime.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/3.5.5/spring-data-commons-3.5.5-sources.jar!/org/springframework/data/annotation/CreatedDate.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/3.5.5/spring-data-commons-3.5.5-sources.jar!/org/springframework/data/repository/PagingAndSortingRepository.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-core/6.5.6/spring-security-core-6.5.6-sources.jar!/org/springframework/security/core/userdetails/UserDetailsService.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-oauth2-jose/6.5.6/spring-security-oauth2-jose-6.5.6-sources.jar!/org/springframework/security/oauth2/jwt/Jwt.java" root0="SKIP_INSPECTION" />
     <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-web/6.5.6/spring-security-web-6.5.6-sources.jar!/org/springframework/security/web/server/ServerAuthenticationEntryPoint.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/spring-aop/6.2.12/spring-aop-6.2.12-sources.jar!/org/springframework/aop/framework/ReflectiveMethodInvocation.java" root0="SKIP_INSPECTION" />
   </component>
   <component name="HttpClientOnboardingState">{
   &quot;isOnboardingCommentShown&quot;: true
@@ -234,14 +249,14 @@
       </set>
     </option>
   </component>
-  <component name="RunManager" selected="Docker.Docker_standalone">
-    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" requestIdentifier="#1" runType="Run single request">
+  <component name="RunManager" selected="Docker.Docker">
+    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" requestIdentifier="#3" runType="Run single request">
+    <configuration name="generated-requests | #3 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="3" runType="Run single request">
       <method v="2" />
     </configuration>
-    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" requestIdentifier="#4" runType="Run single request">
+    <configuration name="generated-requests | #4 (1)" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="generated-requests | #4" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" index="4" runType="Run single request">

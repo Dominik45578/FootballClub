@@ -4,6 +4,7 @@ import com.polibuda.footballclub.common.actions.TeamFetchMode;
 import com.polibuda.footballclub.common.claims.MutationHeaderClaims;
 import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.AddTeamRequest;
+import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
@@ -88,7 +89,7 @@ public class TeamController {
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
     @PatchMapping("/membership/update")
     public ResponseEntity<Boolean> updateMembership(
-            @RequestBody UpdateTeamMemberRequestDTO request,
+            @RequestBody ManageTeamMemberRequest request,
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
     ){
         return teamService.updateMembership(request, userId)?ResponseEntity.ok().build() : ResponseEntity.badRequest().build();

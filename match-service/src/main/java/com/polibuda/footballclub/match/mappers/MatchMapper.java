@@ -1,13 +1,17 @@
 package com.polibuda.footballclub.match.mappers;
 
+import com.polibuda.footballclub.match.dto.fromMatchService.MatchMemberDto;
 import com.polibuda.footballclub.match.dto.fromMatchService.MatchTeamDto;
+import com.polibuda.footballclub.match.dto.response.PlayerResponseDTO;
 import com.polibuda.footballclub.match.dto.response.TeamBasicResponseDTO;
+import com.polibuda.footballclub.match.dto.response.TeamDetailsResponseDTO;
 import com.polibuda.footballclub.match.dto.response.wrappers.MatchResponseDTO;
 import com.polibuda.footballclub.match.dto.response.wrappers.MatchTeamDataDTO;
 import com.polibuda.footballclub.match.entity.Match;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Component
 public class MatchMapper {
@@ -16,7 +20,7 @@ public class MatchMapper {
      * Główna metoda mapująca.
      * Łączy dane z bazy (Match) + dane z User Service (internalTeam) + dane z Football Data (externalTeam).
      */
-    public MatchResponseDTO toDto(Match match, MatchTeamDto internalTeam, TeamBasicResponseDTO externalTeam) {
+    public MatchResponseDTO toDto(Match match, MatchTeamDto internalTeam, TeamDetailsResponseDTO externalTeam) {
         
         // 1. Przygotuj wrappery dla obu zespołów
         MatchTeamDataDTO internalTeamWrapper = mapInternalTeam(internalTeam);
@@ -25,13 +29,19 @@ public class MatchMapper {
         // 2. Ustal kto jest gospodarzem na podstawie flagi w bazie
         MatchTeamDataDTO homeTeam;
         MatchTeamDataDTO awayTeam;
+        Long awayTeamScore;
+        Long homeTeamScore;
 
         if (Boolean.TRUE.equals(match.getIsInternalTeamHome())) {
             homeTeam = internalTeamWrapper;
             awayTeam = externalTeamWrapper;
+            homeTeamScore = match.getInternalTeamScore();
+            awayTeamScore = match.getExternalTeamScore();
         } else {
             homeTeam = externalTeamWrapper;
             awayTeam = internalTeamWrapper;
+            homeTeamScore = match.getExternalTeamScore();
+            awayTeamScore = match.getInternalTeamScore();
         }
 
         // 3. Zbuduj odpowiedź
@@ -41,6 +51,8 @@ public class MatchMapper {
                 .status(match.getStatus())
                 .homeTeam(homeTeam)
                 .awayTeam(awayTeam)
+                .homeTeamScore(homeTeamScore)
+                .awayTeamScore(awayTeamScore)
                 .build();
     }
 
@@ -58,12 +70,11 @@ public class MatchMapper {
                 .id(source.getTeamId())
                 .name(source.getTeamName())
                 .isInternal(true)
-                // Przepisujemy skład pobrany z gRPC
                 .squad(source.getMembers() != null ? source.getMembers() : Collections.emptyList())
                 .build();
     }
 
-    private MatchTeamDataDTO mapExternalTeam(TeamBasicResponseDTO source) {
+    private MatchTeamDataDTO mapExternalTeam(TeamDetailsResponseDTO source) {
         if (source == null) {
             return MatchTeamDataDTO.builder()
                     .id(0L)
@@ -72,12 +83,19 @@ public class MatchMapper {
                     .build();
         }
         return MatchTeamDataDTO.builder()
-                .id(source.getId())
-                .name(source.getName())
+                .id(source.getTeamInfo().getId())
+                .name(source.getTeamInfo().getName())
                 .isInternal(false)
-                // Dla zespołów zewnętrznych (basic info) skład może być pusty
-                // lub dociągany w osobnej metodzie jeśli będzie potrzebny
-                .squad(Collections.emptyList()) 
+                .squad(source.getSquad().stream().map(this::mapMatchTeam).collect(Collectors.toList()))
+                .build();
+    }
+
+    private MatchMemberDto mapMatchTeam(PlayerResponseDTO source) {
+        return MatchMemberDto.builder()
+                .memberId(source.getId())
+                .firstName(source.getName())
+                .fieldPosition(source.getPosition())
+                .number(source.getNumber())
                 .build();
     }
 }

@@ -34,6 +34,7 @@ public class MatchProtoMapper {
                 .status(response.getStatus().name())
                 .fieldPosition(response.getFieldPosition().name())
                 .roles(mapRoles(response.getRolesList()))
+                .number(response.getNumber())
                 .build();
     }
 
@@ -62,6 +63,7 @@ public class MatchProtoMapper {
                 .status(proto.getStatus().name())
                 .fieldPosition(proto.getFieldPosition().name())
                 .roles(mapRoles(proto.getRolesList()))
+                .number(proto.getNumber())
                 .build();
     }
 

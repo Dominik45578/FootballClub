@@ -199,14 +199,14 @@ public class TeamMemberServiceImpl implements TeamMemberService {
 
 
     private TeamMember checkRequest(ManageTeamMemberRequest request, TeamMember member){
-        if(request.getNewStatus()!=null){
-            member.setStatus(request.getNewStatus());
+        if(request.getStatus()!=null){
+            member.setStatus(request.getStatus());
         }
         if(request.getNewRoles()!=null){
             member.addRole(request.getNewRoles());
         }
-        if(request.getRemoverRoles()!=null){
-            member.removeRole(request.getRemoverRoles());
+        if(request.getRemovedRoles()!=null){
+            member.removeRole(request.getRemovedRoles());
         }
         if(request.getNewFieldPosition()!=null){
             member.setFieldPosition(request.getNewFieldPosition());
@@ -214,7 +214,6 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         return  member;
     }
 
-    // --- Private Helpers ---
 
     private TeamMember getTargetTeamMember(Long teamMemberId) {
         return teamMemberRepository.findById(teamMemberId)

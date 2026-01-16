@@ -2,6 +2,7 @@ package com.polibuda.footballclub.match.entity;
 
 import com.polibuda.footballclub.match.MatchStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -44,4 +45,13 @@ public class Match extends BaseEntity {
     @Column(name = "status", nullable = false)
     @Builder.Default
     private MatchStatus status = MatchStatus.SCHEDULED;
+
+    @Min(0)
+    @Builder.Default
+    private Long internalTeamScore = 0L;
+
+    @Min(0)
+    @Builder.Default
+    private Long externalTeamScore = 0L;
+
 }

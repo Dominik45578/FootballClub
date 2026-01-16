@@ -29,4 +29,5 @@ public class TeamMemberListItemDto implements AbstractSummaryResponse {
     private Set<TeamRole> roles;
     private TeamMemberStatus status;
     private FieldPosition fieldPosition;
+    private int number;
 }

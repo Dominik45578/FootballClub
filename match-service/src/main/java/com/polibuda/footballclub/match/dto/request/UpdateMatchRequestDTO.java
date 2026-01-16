@@ -17,4 +17,6 @@ public class UpdateMatchRequestDTO {
     private LocalDateTime matchDate;
     private Boolean isHome;
     private MatchStatus status;
+    private Long internalTeamScore;
+    private Long externalTeamScore;
 }

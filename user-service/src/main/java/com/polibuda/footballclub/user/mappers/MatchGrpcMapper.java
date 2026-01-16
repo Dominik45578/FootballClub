@@ -44,6 +44,7 @@ public class MatchGrpcMapper {
                 .setStatus(mapStatus(teamMember.getStatus()))
                 .setFieldPosition(mapFieldPosition(teamMember.getFieldPosition()))
                 .addAllRoles(mapRoles(teamMember.getRoles()))
+                .setNumber(teamMember.getNumber())
                 .build();
     }
 
@@ -72,6 +73,7 @@ public class MatchGrpcMapper {
                         .setStatus(mapStatus(tm.getStatus()))
                         .setFieldPosition(mapFieldPosition(tm.getFieldPosition()))
                         .addAllRoles(mapRoles(tm.getRoles()))
+                        .setNumber(tm.getNumber())
                         .build())
                 .collect(Collectors.toList());
     }

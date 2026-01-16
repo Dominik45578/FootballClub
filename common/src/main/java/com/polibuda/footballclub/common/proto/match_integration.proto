@@ -47,7 +47,8 @@ message MatchTeamMemberDto {
   string last_name = 4;
   MatchTeamMemberStatus status = 5;
   repeated MatchTeamRole roles = 6;
-  MatchFieldPosition field_position = 7;
+  int32 number= 7;
+  MatchFieldPosition field_position = 8;
 }
 
 message TeamMemberForMatchResponse {
@@ -58,7 +59,8 @@ message TeamMemberForMatchResponse {
   string last_name = 5;
   MatchTeamMemberStatus status = 6;
   repeated MatchTeamRole roles = 7;
-  MatchFieldPosition field_position = 8;
+  int32 number =8;
+  MatchFieldPosition field_position = 9;
 }
 
 message PlayerPhysicalProfileResponse {

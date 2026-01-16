@@ -17,6 +17,8 @@ public class MatchResponseDTO {
     private Long matchId;
     private LocalDateTime matchDate;
     private MatchStatus status;
+    private Long homeTeamScore;
+    private Long awayTeamScore;
 
     // Sekcja 2: Wrappery drużyn
     private MatchTeamDataDTO homeTeam;

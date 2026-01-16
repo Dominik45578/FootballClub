@@ -18,5 +18,4 @@ public class UpdateTeamMemberRequestDTO {
     private Set<TeamRole> removedRoles;
 
     private TeamMemberStatus status;
-
 }

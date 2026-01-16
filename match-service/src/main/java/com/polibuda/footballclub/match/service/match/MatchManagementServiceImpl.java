@@ -130,6 +130,12 @@ public class MatchManagementServiceImpl implements MatchManagementService {
         if (request.getStatus() != null) {
             match.setStatus(request.getStatus());
         }
+        if(request.getExternalTeamScore()!=null){
+            match.setExternalTeamScore(request.getExternalTeamScore());
+        }
+        if (request.getInternalTeamScore()!=null){
+            match.setInternalTeamScore(request.getInternalTeamScore());
+        }
 
         Match updated = matchEntityService.save(match);
         if(dateChanged) {
@@ -169,7 +175,7 @@ public class MatchManagementServiceImpl implements MatchManagementService {
         var internal = fetchInternalTeamSafe(match.getInternalTeamId());
         var external = fetchExternalTeamSafe(match.getExternalTeamId());
 
-        return matchMapper.toDto(match,internal,external.getTeamInfo() );
+        return matchMapper.toDto(match,internal,external);
     }
 
     private MatchTeamDto fetchInternalTeamSafe(Long id) {
