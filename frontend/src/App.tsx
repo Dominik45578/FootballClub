@@ -27,22 +27,21 @@ const MemberPublicProfilePage = lazy(() => import('./pages/MemberPublicProfilePa
 const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
 const MatchesManagementPage = lazy(() => import('./pages/MatchesManagementPage').then(m => ({ default: (m as any).default || (m as any).MatchesManagementPage })));
 
+// --- NOWE STRONY ---
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage').then(m => ({ default: (m as any).default || (m as any).AdminUsersPage })));
+
+
 const ProfileRoute = ({ children }: { children: React.ReactElement }) => {
     const [status, setStatus] = useState<MemberStatus>(getMemberStatus())
     useEffect(() => {
         ensureMemberStatus().then(setStatus).catch(() => setStatus(getMemberStatus()))
     }, [])
 
-    // Jeśli frontend wykryje, że użytkownik ma tylko rolę USER -> pokaż toast i pozostaw użytkownika na tej samej stronie (UX-only)
     useEffect(() => {
         if (hasOnlyRoleUser()) {
             toast.error('Niewystarczające uprawnienia')
         }
-    // uruchom tylko raz przy montowaniu
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-    // renderuj normalnie — backend powinien ostatecznie zweryfikować dostęp
 
     return status === 'member' ? <Navigate to="/member-profile" replace /> : children
 }
@@ -70,6 +69,9 @@ function App() {
                     }
                 />
 
+                {/* Admin Panel */}
+                <Route path="/admin/users" element={<Suspense fallback={<div>Ładowanie...</div>}> <AdminUsersPage /> </Suspense>} />
+
                 {/* Team and member related pages */}
                 <Route path="/team-search" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamSearchPage /> </Suspense>} />
                 <Route path="/team-details/:teamId?" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamDetailsPage /> </Suspense>} />
@@ -93,7 +95,7 @@ function App() {
                 {/* Activate Account */}
                 <Route path="/activate-account" element={<ActivateAccountPage />} />
 
-                {/* Catch-all: show start page for unknown routes (avoid auto redirect to backend login during frontend-only dev) */}
+                {/* Catch-all */}
                 <Route path="*" element={<StartPage />} />
             </Routes>
             <Toaster richColors closeButton position="top-right" />

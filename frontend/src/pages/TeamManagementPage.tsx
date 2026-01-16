@@ -471,7 +471,10 @@ export function TeamManagementPage() {
         <div className="min-h-screen bg-background">
             <header className="border-b bg-card">
                 <div className="container flex h-16 items-center justify-between px-4">
-                    <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>
+                    <div className="flex items-center gap-3">
+                        <img src="/favicon.png" alt="Logo" className="h-8 w-8 object-contain" />
+                        <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>
+                    </div>
                     <div className="flex items-center gap-8">
                         <Button
                             size="lg"
@@ -488,7 +491,7 @@ export function TeamManagementPage() {
                 </div>
             </header>
 
-            <main className="container py-8 space-y-8 px-4 sm:px-6 lg:px-8">
+            <main className="container py-8 space-y-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
                 {!memberAllowed && (
                     <div className="rounded-md border border-amber-500 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
                         {memberError}. Zostań zatwierdzonym członkiem, aby zarządzać zespołem.

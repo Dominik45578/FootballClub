@@ -1,19 +1,41 @@
 import { Button } from '@/components/ui/button'
-import { UserPlus, Users, Search, CalendarClock, Settings2, LogOut, Eye } from 'lucide-react'
+import { Users, Search, CalendarClock, Settings2, LogOut, Eye, ShieldAlert, User, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { OFFLINE, getUserRoles, hasRole } from '@/lib/auth'
-import { apiLogout, getMemberStatus, type MemberStatus, ensureMemberStatus } from '@/lib/userApi'
+import { OFFLINE, getUserRoles } from '@/lib/auth'
+import { apiLogout, getMemberStatus, getMyAccount, type MemberStatus, type UserAccount } from '@/lib/userApi'
 import { useEffect, useState } from 'react'
 
 export function DashboardPage() {
-    // set tab title for Dashboard
+    // Ustaw tytuł strony
     useEffect(() => {
         const prev = document.title
         document.title = 'Dashboard'
         return () => { document.title = prev }
     }, [])
+
     const navigate = useNavigate()
+
+    // --- STAŁA: DANE UŻYTKOWNIKA (UserAccount) ---
+    const [currentUser, setCurrentUser] = useState<UserAccount | null>(null)
+
+    // --- POBIERANIE DANYCH PRZY ŁADOWANIU ---
+    useEffect(() => {
+        let mounted = true;
+        const fetchUserData = async () => {
+            try {
+                // Pobieramy UserAccount (zgodnie z Twoim typem)
+                const accountData = await getMyAccount({ allowUnauth: true });
+                if (mounted && accountData) {
+                    setCurrentUser(accountData);
+                }
+            } catch (e) {
+                console.error("Nie udało się pobrać danych użytkownika", e);
+            }
+        };
+        fetchUserData();
+        return () => { mounted = false; };
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -24,42 +46,35 @@ export function DashboardPage() {
         }
     }
 
+    // --- LOGIKA UPRAWNIEŃ NA PODSTAWIE POBRANEGO OBIEKTU ---
+    // Pobieramy role z obiektu currentUser, a jeśli jeszcze się nie załadował, bierzemy z tokena (fallback)
+    const currentRoles = currentUser?.userRole?.map(r => r.role) || getUserRoles();
+
+    // 1. Czy jest Memberem?
     const status: MemberStatus = getMemberStatus()
-    const showApply = !OFFLINE && status === 'guest'
+    const isMember = status === 'member' || currentRoles.includes('ROLE_MEMBER') || currentRoles.includes('ROLE_PLAYER') || currentRoles.includes('ROLE_COACH');
+
+    const showApply = !OFFLINE && status === 'guest' && !isMember
     const showPending = !OFFLINE && status === 'pending'
 
-    // Only allow team management for admin or any coach role (e.g. ROLE_TEAM_HEAD_COACH, ROLE_TEAM_ASSISTANT_COACH)
+    // 2. Czy może zarządzać zespołem? (COACH lub ADMIN)
     const userCanManageTeam = () => {
-        if (OFFLINE) return true
-        try {
-            // Quick check for explicit ADMIN
-            if (hasRole('ADMIN')) return true
-            const roles = getUserRoles()
-            // allow any role that contains 'COACH' (normalized roles use ROLE_ prefix, e.g. ROLE_TEAM_HEAD_COACH)
-            if (roles.some(r => r.toUpperCase().includes('COACH'))) return true
-        } catch (e) {
-            // if anything goes wrong, default to not allowing management
-        }
-        return false
+        if (currentRoles.includes('ROLE_ADMIN')) return true
+        return currentRoles.some(r => r.toUpperCase().includes('COACH'));
     }
     const canManageTeam = userCanManageTeam()
 
-    const handleProfile = async () => {
-        try {
-            const status = await ensureMemberStatus()
-            if (status === 'member' || hasRole('ROLE_MEMBER')) {
-                navigate('/member-profile')
-                return
-            }
-            toast.error('Brak uprawnień do profilu członka')
-        } catch {
-            toast.error('Brak uprawnień do profilu członka')
-        }
+    // 3. Czy jest Adminem?
+    const isAdmin = currentRoles.includes('ROLE_ADMIN') || OFFLINE
+
+    // --- NAVIGACJA ---
+    const handleProfile = () => {
+        navigate('/member-profile')
     }
 
     const handleTeamManagement = () => {
-        if (!userCanManageTeam()) {
-            toast.error('Brak uprawnień do zarządzania zespołem')
+        if (!canManageTeam) {
+            toast.error('Brak uprawnień do zarządzania zespołem (wymagana rola Trenera)')
             return
         }
         navigate('/team-management')
@@ -67,105 +82,187 @@ export function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <header className="border-b bg-card">
+            <header className="border-b bg-card shadow-sm sticky top-0 z-20">
                 <div className="container flex h-16 items-center justify-between px-4">
-                    <h1 className="text-2xl font-bold">Panel klubu piłkarskiego</h1>
-                    <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleProfile}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Profil
-                        </Button>
-                        <Button variant="outline" onClick={handleLogout}>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Wyloguj się
-                        </Button>
+
+                    {/* LEWA STRONA: LOGO KLUBU I TYTUŁ */}
+                    <div className="flex items-center gap-3">
+                        {/* LOGO KLUBU - Zakładam, że plik jest w folderze public jako logo.png */}
+                        {/* Jeśli nie ma pliku, wyświetli się tarcza jako fallback */}
+                        <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
+                            <img
+                                src="/favicon.png"
+                                alt="Logo Klubu"
+                                className="h-full w-full object-contain"
+                                onError={(e) => {
+                                    // Fallback jeśli obrazek nie istnieje
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                            />
+                            <Shield className="h-8 w-8 text-primary fill-primary/20 hidden" />
+                        </div>
+                        <h1 className="text-xl md:text-2xl font-bold truncate tracking-tight">
+                            Panel Klubu
+                        </h1>
+                    </div>
+
+                    {/* PRAWA STRONA: DANE USERA I PRZYCISKI */}
+                    <div className="flex items-center gap-4">
+
+                        {/* Wyświetlanie danych z obiektu currentUser */}
+                        {currentUser && (
+                            <div className="hidden md:flex flex-col items-end text-sm animate-in fade-in">
+                                <span className="font-semibold text-lg text-foreground flex items-center gap-1">
+                                    Cześć, {currentUser.userName}!
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                    {currentUser.userEmail}
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex gap-2">
+                            <Button variant="secondary" onClick={handleProfile} size="sm" className="hidden sm:flex">
+                                <Eye className="mr-2 h-4 w-4" />
+                                Profil
+                            </Button>
+                            <Button variant="ghost" onClick={handleProfile} size="icon" className="sm:hidden">
+                                <User className="h-5 w-5" />
+                            </Button>
+
+                            <Button variant="outline" onClick={handleLogout} size="sm" className="hidden sm:flex">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Wyloguj
+                            </Button>
+                            <Button variant="ghost" onClick={handleLogout} size="icon" className="sm:hidden">
+                                <LogOut className="h-5 w-5" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </header>
-            <main className="container py-8 px-4 sm:px-6 lg:px-8 overflow-x-hidden bg-background">
+
+            {/* Główny kontener */}
+            <main className="container py-8 px-4 sm:px-6 lg:px-8 overflow-x-hidden bg-background max-w-5xl mx-auto">
+
+                {/* Informacje o statusie wniosku (Górne Banery) */}
                 {showApply && (
-                    <div className="mb-6 p-4 rounded-lg border bg-card shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div className="mb-6 p-6 rounded-xl border border-primary/20 bg-primary/5 shadow-sm flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
                         <div>
-                            <h2 className="text-lg font-semibold">Zostań członkiem</h2>
-                            <p className="text-sm text-muted-foreground">Uzupełnij dane wniosku i poczekaj na akceptację trenera/admina. (mock, bez backendu)</p>
+                            <h2 className="text-xl font-bold text-primary">Dołącz do nas!</h2>
+                            <p className="text-muted-foreground">Jesteś nowym użytkownikiem? Uzupełnij dane, aby zostać zawodnikiem.</p>
                         </div>
-                        <Button onClick={() => navigate('/member-apply')}>Złóż wniosek</Button>
+                        <Button size="lg" onClick={() => navigate('/member-apply')} className="shadow-md">
+                            Złóż wniosek członkowski
+                        </Button>
                     </div>
                 )}
                 {showPending && (
-                    <div className="mb-6 p-4 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-100 flex flex-wrap items-center justify-between gap-3">
+                    <div className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100 flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
                         <div>
-                            <h2 className="text-lg font-semibold">Wniosek oczekuje</h2>
-                            <p className="text-sm text-slate-200/80">Czekasz na akceptację. Po zatwierdzeniu dostaniesz dostęp do drużyny.</p>
+                            <h2 className="text-lg font-semibold flex items-center gap-2">
+                                <CalendarClock className="h-5 w-5" /> Wniosek oczekuje
+                            </h2>
+                            <p className="text-sm opacity-90">Twój wniosek jest weryfikowany przez trenera.</p>
                         </div>
-                        <Button variant="outline" onClick={() => navigate('/member-apply')}>
-                            <Eye className="mr-2 h-4 w-4" />
+                        <Button variant="outline" className="border-amber-500/30 hover:bg-amber-500/20" onClick={() => navigate('/member-apply')}>
                             Podgląd wniosku
                         </Button>
                     </div>
                 )}
 
-                {/* CTA przyciski pod kartami */}
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-2">
-                    {/* lokalne stany hover aby wymusić efekt rozjaśnienia nawet jeśli CSS jest nadpisany */}
-                    {/* Button A */}
+                {/* Główne kafelki nawigacyjne */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-4">
                     <HoverableCTA onClick={() => navigate('/team-search')}>
                         <div className="flex items-center gap-4">
-                            <Search className="h-7 w-7 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Wyszukiwanie zespołów</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Przejrzyj i wyszukaj drużyny</p>
+                            <div className="p-3 bg-blue-500/10 rounded-full">
+                                <Search className="h-6 w-6 text-blue-600 dark:text-blue-400 shrink-0" />
+                            </div>
+                            <div className="text-left">
+                                <h4 className="text-lg font-bold">Wyszukiwanie zespołów</h4>
+                                <p className="text-sm text-muted-foreground mt-1">Przejrzyj i wyszukaj drużyny w lidze</p>
                             </div>
                         </div>
                     </HoverableCTA>
 
-                    {/* Button B */}
                     <HoverableCTA onClick={() => navigate('/matches')}>
                         <div className="flex items-center gap-4">
-                            <CalendarClock className="h-7 w-7 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Mecze</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Zobacz harmonogram i szczegóły</p>
+                            <div className="p-3 bg-green-500/10 rounded-full">
+                                <CalendarClock className="h-6 w-6 text-green-600 dark:text-green-400 shrink-0" />
+                            </div>
+                            <div className="text-left">
+                                <h4 className="text-lg font-bold">Mecze</h4>
+                                <p className="text-sm text-muted-foreground mt-1">Harmonogram, wyniki i szczegóły spotkań</p>
                             </div>
                         </div>
                     </HoverableCTA>
                 </section>
 
-                {/* Sekcja: Zostań członkiem / Dołącz do zespołu (pod wyszukiwaniem i meczami) */}
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-6">
-                    <HoverableCTA onClick={() => navigate('/member-apply')}>
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-6">
+                    {/* Przycisk "Dołącz do zespołu" */}
+                    <HoverableCTA
+                        onClick={() => navigate('/join-team')}
+                        disabled={!isMember}
+                        className={`md:col-span-2 ${!isMember ? "opacity-70 grayscale" : ""}`}
+                    >
                         <div className="flex items-center gap-4">
-                            <UserPlus className="h-7 w-7 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Zostań członkiem</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Złóż wniosek o nadanie roli członka w klubie.</p>
+                            <div className={`p-3 rounded-full ${!isMember ? "bg-gray-500/10" : "bg-purple-500/10"}`}>
+                                <Users className={`h-6 w-6 shrink-0 ${!isMember ? "text-gray-500" : "text-purple-600 dark:text-purple-400"}`} />
                             </div>
-                        </div>
-                    </HoverableCTA>
-
-                    <HoverableCTA onClick={() => navigate('/join-team')}>
-                        <div className="flex items-center gap-4">
-                            <Users className="h-7 w-7 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Dołącz do zespołu</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Wpisz kod zespołu aby dołączyć do konkretnej drużyny.</p>
-                            </div>
-                        </div>
-                    </HoverableCTA>
-                </section>
-
-                {/* Sekcja: Zarządzanie zespołem - przeniesiona niżej */}
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-6">
-                    <HoverableCTA onClick={handleTeamManagement} disabled={!canManageTeam} className="md:col-span-2">
-                        <div className="flex items-center gap-4">
-                            <Settings2 className="h-7 w-7 text-muted-foreground shrink-0" />
-                            <div>
-                                <h4 className="text-lg font-semibold">Zarządzanie zespołem</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Panel trenera/admina</p>
+                            <div className="text-left">
+                                <h4 className="text-lg font-bold">Dołącz do zespołu</h4>
+                                <p className={`text-sm mt-1 ${!isMember ? "text-destructive font-medium" : "text-muted-foreground"}`}>
+                                    {!isMember
+                                        ? "Najpierw musisz zostać członkiem (wniosek na górze)."
+                                        : "Masz kod drużyny? Dołącz tutaj."
+                                    }
+                                </p>
                             </div>
                         </div>
                     </HoverableCTA>
                 </section>
+
+                {/* Sekcja Administracyjna i Zarządzania */}
+                {(canManageTeam || isAdmin) && (
+                    <div className="mt-10 pt-8 border-t">
+                        <h3 className="text-xs font-bold text-muted-foreground mb-6 uppercase tracking-widest flex items-center gap-2">
+                            <Settings2 className="h-4 w-4" /> Strefa Zarządzania
+                        </h3>
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+
+                            {/* Zarządzanie Zespołem (Trener/Admin) */}
+                            {canManageTeam && (
+                                <HoverableCTA onClick={handleTeamManagement} className="bg-gradient-to-br from-background to-blue-50/50 dark:to-blue-950/20 border-blue-200/50">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-blue-500/10 rounded-full">
+                                            <Settings2 className="h-6 w-6 text-blue-600 shrink-0" />
+                                        </div>
+                                        <div className="text-left">
+                                            <h4 className="text-lg font-bold">Zarządzanie zespołem</h4>
+                                            <p className="text-sm text-muted-foreground mt-1">Edycja składu, taktyki i ustawień</p>
+                                        </div>
+                                    </div>
+                                </HoverableCTA>
+                            )}
+
+                            {/* Zarządzanie Użytkownikami (Tylko Admin) */}
+                            {isAdmin && (
+                                <HoverableCTA onClick={() => navigate('/admin/users')} className="bg-gradient-to-br from-background to-red-50/50 dark:to-red-950/20 border-red-200/50">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-red-500/10 rounded-full">
+                                            <ShieldAlert className="h-6 w-6 text-red-600 shrink-0" />
+                                        </div>
+                                        <div className="text-left">
+                                            <h4 className="text-lg font-bold text-red-700 dark:text-red-400">Użytkownicy (Admin)</h4>
+                                            <p className="text-sm text-muted-foreground mt-1">Blokady kont, nadawanie uprawnień</p>
+                                        </div>
+                                    </div>
+                                </HoverableCTA>
+                            )}
+                        </section>
+                    </div>
+                )}
             </main>
         </div>
     )
@@ -173,15 +270,15 @@ export function DashboardPage() {
 
 export default DashboardPage
 
-// Small helper component: Button with internal hover state that applies inline styles.
 function HoverableCTA({ children, onClick, disabled, className }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; className?: string }) {
     const [hover, setHover] = useState(false)
+
     const hoverStyle: React.CSSProperties = hover && !disabled
         ? {
-              transform: 'translateY(-2px) scale(1.01)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-              backgroundImage: 'linear-gradient(135deg, rgba(91,33,182,0.08), rgba(59,130,246,0.08))'
-          }
+            transform: 'translateY(-4px)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            borderColor: 'hsl(var(--primary) / 0.4)'
+        }
         : {}
 
     return (
@@ -191,7 +288,13 @@ function HoverableCTA({ children, onClick, disabled, className }: { children: Re
             onMouseEnter={() => !disabled && setHover(true)}
             onMouseLeave={() => !disabled && setHover(false)}
             data-hover={hover}
-            className={`w-full py-6 px-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center text-foreground transition duration-200 my-4 border border-slate-700 cursor-pointer bg-slate-900/70 text-slate-100 hover:ring-2 hover:ring-ring/20 focus:ring-2 focus:ring-ring/20 focus:outline-none ${disabled ? 'opacity-60 cursor-not-allowed hover:ring-0' : ''} ${className ?? ''}`}
+            className={`
+                group relative w-full p-6 rounded-2xl border shadow-sm transition-all duration-300 ease-out
+                flex flex-col items-start justify-center text-left
+                bg-gradient-to-br from-card via-card to-secondary/30
+                ${disabled ? 'cursor-not-allowed bg-muted/30 border-dashed' : 'cursor-pointer'}
+                ${className ?? ''}
+            `}
             style={hoverStyle}
             aria-disabled={disabled}
         >

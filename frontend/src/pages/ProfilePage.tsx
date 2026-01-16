@@ -173,7 +173,7 @@ export function ProfilePage() {
                             <CardDescription className="flex gap-2 mt-1">
                                 {account?.userRole?.map((role, i) => (
                                     <Badge key={i} variant="secondary" className="text-xs">
-                                        {role.name.replace('ROLE_', '')}
+                                        {role.role.replace('ROLE_', '')}
                                     </Badge>
                                 ))}
                             </CardDescription>
@@ -286,7 +286,7 @@ export function ProfilePage() {
                                         <div className="flex flex-wrap gap-1">
                                             {account?.userRole?.length ? account.userRole.map((role, i) => (
                                                 <Badge key={i} variant="secondary" className="font-mono text-xs">
-                                                    {role.name}
+                                                    {role.role}
                                                 </Badge>
                                             )) : <span className="text-xs text-muted-foreground">Brak ról</span>}
                                         </div>

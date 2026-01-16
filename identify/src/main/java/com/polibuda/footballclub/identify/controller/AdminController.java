@@ -106,4 +106,9 @@ public class AdminController {
                     """);
         }
     }
+
+    @GetMapping("/get/{userId}")
+    public ResponseEntity<UserResponseDTO> getUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(userRoleManageService.getUserDTO(userId));
+    }
 }

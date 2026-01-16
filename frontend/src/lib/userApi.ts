@@ -107,7 +107,7 @@ if (typeof window !== 'undefined') {
 // Helper for fetch wrapper
 type ApiRequestOptions = RequestInit & { dontRedirectOnAuthError?: boolean; skipAuthHeader?: boolean }
 
-async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
+export async function fetchJson(url: string, opts: ApiRequestOptions = {}) {
     const { dontRedirectOnAuthError, skipAuthHeader, ...rest } = opts
     const auth = skipAuthHeader ? {} : authHeader()
     const method = (rest.method || 'GET').toString().toUpperCase()
@@ -867,4 +867,58 @@ export async function updateMyAccount(payload: UpdateUserAccountPayload): Promis
         body: JSON.stringify(payload)
     });
     return !!res;
+}
+
+export type AdminUserResponse = {
+    userId: number
+    userName: string
+    userEmail: string
+    createdAt?: string
+    userRole?: Array<{ role: string; description?: string }>
+    // Backend AdminController zwraca UserResponseDTO, zakładamy że to ten sam kształt co w getMyAccount
+}
+
+export type AdminRoleRequest = {
+    userId: number
+    roles: string[]
+}
+
+// 1. Pobieranie profilu użytkownika przez Admina
+export async function adminGetUser(userId: number): Promise<AdminUserResponse> {
+    return await fetchJson(`${AUTH_BASE}/admin/get/${userId}`, { method: 'GET' })
+}
+
+// 2. Blokowanie użytkownika
+export async function adminBlockUser(userId: number): Promise<boolean> {
+    if (OFFLINE) return Promise.resolve(true)
+    // Backend zwraca String JSON w body, fetchJson to obsłuży
+    const res = await fetchJson(`${AUTH_BASE}/admin/block?userId=${userId}`, { method: 'PATCH' })
+    return !!res
+}
+
+// 3. Odblokowanie użytkownika
+export async function adminUnblockUser(userId: number): Promise<boolean> {
+    if (OFFLINE) return Promise.resolve(true)
+    const res = await fetchJson(`${AUTH_BASE}/admin/unblock?userId=${userId}`, { method: 'PATCH' })
+    return !!res
+}
+
+// 4. Nadawanie ról
+export async function adminGrantRoles(payload: AdminRoleRequest): Promise<boolean> {
+    if (OFFLINE) return Promise.resolve(true)
+    const res = await fetchJson(`${AUTH_BASE}/admin/role/update`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+    })
+    return !!res
+}
+
+// 5. Usuwanie ról
+export async function adminRevokeRoles(payload: AdminRoleRequest): Promise<boolean> {
+    if (OFFLINE) return Promise.resolve(true)
+    const res = await fetchJson(`${AUTH_BASE}/admin/role/del`, {
+        method: 'DELETE',
+        body: JSON.stringify(payload)
+    })
+    return !!res
 }
