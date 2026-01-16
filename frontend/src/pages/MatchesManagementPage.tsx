@@ -288,7 +288,7 @@ export function MatchesManagementPage() {
                                 <h3 className="font-semibold mb-2">{editing ? `Edycja #${editing.id}` : 'Nowy mecz'}</h3>
                                 <div className="grid sm:grid-cols-3 gap-2 items-start">
                                     <Input disabled={saving || loadingTeams} placeholder="Przeciwnik" value={form.opponent || ''} onChange={(e) => setForm(f => ({ ...f, opponent: e.target.value }))} />
-                                    <DateInput inputClassName={saving || loadingTeams ? 'opacity-50 pointer-events-none' : ''} value={form.date ?? null} onChange={(v) => setForm(f => ({ ...f, date: v ?? null }))} id="matchDate" placeholder="Wybierz datę" />
+                                    <DateInput includeTime={false} inputClassName={saving || loadingTeams ? 'opacity-50 pointer-events-none' : ''} value={form.date ?? null} onChange={(v) => setForm(f => ({ ...f, date: v ?? null }))} id="matchDate" placeholder="Wybierz datę" />
                                     <Input disabled={saving || loadingTeams} placeholder="Miejsce" value={form.venue || ''} onChange={(e) => setForm(f => ({ ...f, venue: e.target.value }))} />
 
                                     <div>
@@ -312,12 +312,12 @@ export function MatchesManagementPage() {
                                     {/* wybór internal/external team (opcjonalne) */}
                                     <div>
                                         <label className="text-xs text-muted-foreground">Nasza drużyna</label>
-                                        <Select disabled={saving || loadingTeams} value={String((form as any).internalTeamId ?? '')} onValueChange={(v) => setForm(f => ({ ...f, internalTeamId: v ? Number(v) : undefined }))}>
+                                        <Select disabled={saving || loadingTeams} value={String((form as any).internalTeamId ?? '')} onValueChange={(v) => setForm(f => ({ ...f, internalTeamId: v && v !== '__none' ? Number(v) : undefined }))}>
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder={loadingTeams ? 'Ładowanie…' : 'Wybierz drużynę'} />
                                             </SelectTrigger>
                                             <SelectContent position="popper" className="bg-white dark:bg-slate-900 text-foreground border border-border shadow-lg">
-                                                {myTeamsOptions.length === 0 && <SelectItem value="">Brak drużyn</SelectItem>}
+                                                {myTeamsOptions.length === 0 && <SelectItem value="__none">Brak drużyn</SelectItem>}
                                                 {myTeamsOptions.map(t => <SelectItem key={t.value} value={String(t.value)}>{t.label}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
