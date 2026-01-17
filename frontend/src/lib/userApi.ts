@@ -54,7 +54,7 @@ export type TeamDetails = {
     category?: string
     createdAt?: string
     description?: string
-    members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string }>
+    members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string ;sienceDate?: string}>
 }
 
 // --- NOWE DTO DO EDYCJI CZŁONKA ---
@@ -238,10 +238,6 @@ export async function getTeams(params?: { mode?: string; teamId?: number; name?:
 
 export async function getTeamDetails(teamId: number, opts?: { forceReal?: boolean; allowUnauth?: boolean; skipAuthHeader?: boolean }): Promise<TeamDetails> {
     const callerForceReal = !!opts?.forceReal
-    if (OFFLINE && !FORCE_REAL_API && ENABLE_MOCKS && !callerForceReal) {
-        return Promise.resolve(teamId === mockTeamDetails.id ? mockTeamDetails : { ...mockTeamDetails, id: teamId, name: `Drużyna ${teamId}` })
-    }
-
     const relUrl = `${API_PREFIX}/user/teams/${teamId}`
     const fullUrl = `${USER_BASE}/teams/${teamId}`
 

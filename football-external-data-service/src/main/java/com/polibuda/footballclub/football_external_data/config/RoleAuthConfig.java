@@ -12,9 +12,9 @@ public class RoleAuthConfig {
     @Bean
     public RoleHierarchy roleHierarchy() {
        return  RoleHierarchyImpl.withDefaultRolePrefix()
-                .role(UserRoleAuth.ADMIN.name()).implies(UserRoleAuth.MANAGER.name())
+                .role(UserRoleAuth.ADMIN.name()).implies(UserRoleAuth.MANAGER.name(), UserRoleAuth.PLAYER.name())
                 .role(UserRoleAuth.MANAGER.name()).implies(UserRoleAuth.COACH.name(), UserRoleAuth.PHYSIO.name())
-                .role(UserRoleAuth.COACH.name()).implies(UserRoleAuth.MEMBER.name())
+                .role(UserRoleAuth.COACH.name()).implies(UserRoleAuth.MEMBER.name() , UserRoleAuth.PLAYER.name())
                 .role(UserRoleAuth.PLAYER.name()).implies(UserRoleAuth.MEMBER.name(),  UserRoleAuth.USER.name())
                 .role(UserRoleAuth.MEMBER.name()).implies(UserRoleAuth.USER.name())
                 .build();

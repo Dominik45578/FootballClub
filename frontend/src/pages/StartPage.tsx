@@ -1,92 +1,139 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogIn, UserPlus } from 'lucide-react'
+import { LogIn, UserPlus, KeyRound, ShieldCheck, ArrowRight } from 'lucide-react'
 
 export function StartPage() {
-  const navigate = useNavigate()
-  const [hovered, setHovered] = useState(false)
+    const navigate = useNavigate()
+    const [isHoveringLeft, setIsHoveringLeft] = useState(false)
 
-  // Overlay opacity: very light normally.
-  // Previous hover opacity was 0.25 reduced by 30% -> 0.175. Now reduce that by 10% more
-  // so the final hover opacity is 10% less faded than the previous version (0.175 * 0.9 = 0.1575).
-  const DEFAULT_OPACITY = 0.05
-  const PREVIOUS_HOVER_OPACITY = 0.25
-  const REDUCTION_FACTOR_30 = 0.3 // previous reduction (30%)
-  const REDUCTION_FACTOR_10 = 0.1 // new reduction (10%)
-  const adjustedHoverOpacity = PREVIOUS_HOVER_OPACITY * (1 - REDUCTION_FACTOR_30) * (1 - REDUCTION_FACTOR_10) // 0.1575
-  const overlayOpacity = hovered ? adjustedHoverOpacity : DEFAULT_OPACITY
+    // Ustawienie tytułu strony
+    useEffect(() => {
+        document.title = 'Zarządzanie klubem - Panel Startowy'
+    }, [])
 
-  const backgroundStyle: React.CSSProperties = {
-    backgroundImage: "url('/logo-bg.jpeg')",
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  }
-
-  // Set the browser tab title when on StartPage and restore previous on unmount
-  useEffect(() => {
-    const previous = document.title
-    document.title = 'Zarządzanie klubem'
-    return () => {
-      document.title = previous
+    // Style tła
+    const backgroundStyle: React.CSSProperties = {
+        backgroundImage: "url('/logo-bg.jpeg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
     }
-  }, [])
 
-  return (
-    <div className="min-h-screen relative flex items-center justify-center" style={backgroundStyle}>
-      {/* overlay to control 'fade' effect, transitions smoothly
-          Animate opacity (not background-color) so change is gradual */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundColor: 'rgba(255,255,255,1)',
-          opacity: overlayOpacity,
-          transition: 'opacity 250ms ease-in-out',
-        }}
-      />
+    // Logika Overlay:
+    // Ciemne tło, które lekko się rozjaśnia przy aktywności użytkownika
+    const overlayClass = isHoveringLeft
+        ? 'bg-slate-900/60 backdrop-blur-sm'
+        : 'bg-slate-900/80 backdrop-blur-md'
 
-      <div className="relative z-10 w-full max-w-lg">
-        <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl">
-          <CardContent className="p-8 text-center shadow-none md:shadow-lg rounded-lg">
-            <div className="mb-6">
-              {/* Replace with your actual logo file if available */}
-              <div className="mx-auto w-32 h-32 rounded-full bg-teal-600 flex items-center justify-center text-white text-4xl font-bold">FC</div>
+    return (
+        <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center p-6" style={backgroundStyle}>
+
+            {/* 1. WARSTWA OVERLAY */}
+            <div
+                className={`absolute inset-0 transition-all duration-700 ease-in-out ${overlayClass}`}
+            />
+
+            {/* 2. GŁÓWNY KONTENER */}
+            <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-center">
+
+                {/* === LEWA STRONA: PANEL AKCJI (DARK THEME) === */}
+                <div
+                    className="bg-slate-950/95 border border-slate-800 shadow-2xl rounded-2xl p-8 md:p-12 transition-transform duration-300 hover:scale-[1.01]"
+                    onMouseEnter={() => setIsHoveringLeft(true)}
+                    onMouseLeave={() => setIsHoveringLeft(false)}
+                >
+                    <div className="mb-8">
+                        {/* Tekst zmieniony na jasny (text-white / text-slate-400) */}
+                        <h2 className="text-2xl font-bold text-white">Panel Dostępu</h2>
+                        <p className="text-slate-400 mt-2">Wybierz akcję, aby kontynuować.</p>
+                    </div>
+
+                    {/* Główne Przyciski */}
+                    <div className="space-y-4 mb-8">
+                        <Button
+                            size="lg"
+                            className="w-full h-14 text-base justify-between group bg-white text-slate-950 hover:bg-slate-200 border-0"
+                            onClick={() => navigate('/login')}
+                        >
+                            <span className="flex items-center gap-3 font-semibold">
+                                <LogIn className="w-5 h-5" />
+                                Zaloguj się
+                            </span>
+                            <ArrowRight className="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className="w-full h-14 text-base justify-start bg-transparent border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white"
+                            onClick={() => navigate('/register')}
+                        >
+                            <UserPlus className="w-5 h-5 mr-3 text-slate-400 group-hover:text-white transition-colors" />
+                            Zarejestruj się
+                        </Button>
+                    </div>
+
+                    {/* Separator (Ciemniejszy) */}
+                    <div className="relative mb-8">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-slate-800" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-slate-950 px-2 text-slate-500 font-medium">Pozostałe opcje</span>
+                        </div>
+                    </div>
+
+                    {/* Przyciski Pomocnicze (Dostosowane do ciemnego tła) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <Button
+                            variant="ghost"
+                            className="h-auto flex flex-col items-start p-4 border border-slate-800 hover:border-teal-500/50 hover:bg-slate-900 transition-all"
+                            onClick={() => navigate('/reset-password')}
+                        >
+                            <KeyRound className="w-5 h-5 mb-2 text-teal-500" />
+                            <span className="text-xs font-semibold text-slate-300">Hasło</span>
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            className="h-auto flex flex-col items-start p-4 border border-slate-800 hover:border-teal-500/50 hover:bg-slate-900 transition-all"
+                            onClick={() => navigate('/activate-account')}
+                        >
+                            <ShieldCheck className="w-5 h-5 mb-2 text-teal-500" />
+                            <span className="text-xs font-semibold text-slate-300">Aktywacja</span>
+                        </Button>
+                    </div>
+                </div>
+
+                {/* === PRAWA STRONA: LOGO I NAZWA KLUBU === */}
+                <div className="flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-right-10 duration-1000">
+
+                    {/* Kontener na Logo z efektem poświaty */}
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-teal-500/20 rounded-full blur-[60px] group-hover:bg-teal-400/30 transition-all duration-700" />
+
+                        <img
+                            src="/favicon.png"
+                            alt="Club Logo"
+                            className="relative w-64 h-64 md:w-80 md:h-80 object-contain drop-shadow-2xl transform transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                    </div>
+
+                    {/* Nazwa Klubu */}
+                    <div className="mt-10 space-y-2">
+                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-wider uppercase drop-shadow-lg">
+                            FC Polibuda
+                        </h1>
+                        <p className="text-teal-400 text-lg md:text-xl font-medium tracking-widest uppercase opacity-90">
+                            Est. 2025
+                        </p>
+                    </div>
+
+                </div>
+
             </div>
-            <h1 className="text-2xl font-bold mb-2">Panel zarządzania klubem</h1>
-            <p className="text-sm text-muted-foreground mb-6">Zarządzaj zawodnikami, meczami i powiadomieniami.</p>
-
-            <div className="flex gap-4 justify-center">
-              <Button
-                aria-label="Zaloguj"
-                className="group min-w-[160px] px-5 py-3 text-base justify-center"
-                onClick={() => navigate('/login')}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-              >
-                <span className="relative flex items-center justify-center w-full">
-                  <LogIn className="absolute left-5 h-5 w-5 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
-                  <span className="transition-transform duration-200 group-hover:translate-x-2">Zaloguj</span>
-                </span>
-              </Button>
-
-              <Button
-                variant="outline"
-                aria-label="Zarejestruj"
-                className="group min-w-[160px] px-5 py-3 text-base justify-center"
-                onClick={() => navigate('/register')}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-              >
-                <span className="relative flex items-center justify-center w-full">
-                  <UserPlus className="absolute left-1 h-5 w-5 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
-                  <span className="transition-transform duration-200 group-hover:translate-x-2">Zarejestruj</span>
-                </span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
+        </div>
+    )
 }

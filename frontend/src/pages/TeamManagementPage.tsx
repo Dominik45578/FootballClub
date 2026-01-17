@@ -27,7 +27,20 @@ import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Eye, Wrench, Search as SearchIcon, RotateCw, Calendar, UserMinus, UserPlus, CheckCircle2, AlertCircle, Trash2, Edit3, User as UserIcon } from 'lucide-react'
+import {
+    Eye,
+    Wrench,
+    Search as SearchIcon,
+    RotateCw,
+    Calendar,
+    UserMinus,
+    UserPlus,
+    CheckCircle2,
+    AlertCircle,
+    Trash2,
+    Edit3,
+    User as UserIcon
+} from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
 import TeamSearchModal from '@/components/TeamSearchModal'
@@ -469,28 +482,58 @@ export function TeamManagementPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <header className="border-b bg-card">
-                <div className="container flex h-16 items-center justify-between px-4">
-                    <div className="flex items-center gap-3">
-                        <img src="/favicon.png" alt="Logo" className="h-8 w-8 object-contain" />
-                        <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>
+            {/*<header className="border-b bg-card">*/}
+            {/*    <div className="container flex h-16 items-center justify-between px-4">*/}
+            {/*        <div className="flex items-center gap-3">*/}
+            {/*            <img src="/favicon.png" alt="Logo" className="h-8 w-8 object-contain" />*/}
+            {/*            <h1 className="text-2xl font-bold">Zarządzanie zespołem</h1>*/}
+            {/*        </div>*/}
+            {/*        <div className="flex items-center gap-8">*/}
+            {/*            <Button*/}
+            {/*                size="lg"*/}
+            {/*                className="group shrink-0 px-8 min-w-[190px] relative"*/}
+            {/*                onClick={() => navigate('/matches-management')}*/}
+            {/*            >*/}
+            {/*                <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 opacity-0 -translate-x-2 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0" />*/}
+            {/*                <span className="w-full flex justify-center items-center leading-tight transition-transform duration-150 group-hover:translate-x-4">*/}
+            {/*                    Zarządzaj meczami*/}
+            {/*                </span>*/}
+            {/*            </Button>*/}
+            {/*            <Button variant="outline" onClick={() => navigate('/dashboard')}>Wróć do panelu</Button>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</header>*/}
+
+            <header className="border-b bg-card bg-[#0f172a]">
+            <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                        <img
+                            src="/favicon.png"
+                            alt="Club Logo"
+                            className="h-full w-full object-contain"
+                        />
                     </div>
-                    <div className="flex items-center gap-8">
-                        <Button
-                            size="lg"
-                            className="group shrink-0 px-8 min-w-[190px] relative"
-                            onClick={() => navigate('/matches-management')}
-                        >
-                            <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 opacity-0 -translate-x-2 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0" />
-                            <span className="w-full flex justify-center items-center leading-tight transition-transform duration-150 group-hover:translate-x-4">
-                                Zarządzaj meczami
-                            </span>
-                        </Button>
-                        <Button variant="outline" onClick={() => navigate('/dashboard')}>Wróć do panelu</Button>
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight text-foreground">Centrum Meczowe</h1>
+                        <p className="text-xs text-muted-foreground hidden sm:block">Zarządzanie rozgrywkami</p>
                     </div>
                 </div>
-            </header>
-
+                <div className="flex items-center gap-8">
+                                <Button
+                                    size="lg"
+                                    className="group shrink-0 px-8 min-w-[190px] relative"
+                                    onClick={() => navigate('/matches-management')}
+                                >
+                                    <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 opacity-0 -translate-x-2 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0" />
+                                    <span className="w-full flex justify-center items-center leading-tight transition-transform duration-150 group-hover:translate-x-4">
+                                        Zarządzaj meczami
+                                    </span>
+                                </Button>
+                                <Button variant="outline" onClick={() => navigate('/dashboard')}>Wróć do panelu</Button>
+                            </div>
+            </div>
+                </header>
             <main className="container py-8 space-y-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
                 {!memberAllowed && (
                     <div className="rounded-md border border-amber-500 bg-amber-50 text-amber-800 px-3 py-2 text-sm">

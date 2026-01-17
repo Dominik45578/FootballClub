@@ -9,6 +9,9 @@ import com.polibuda.footballclub.football_external_data.mapper.PlayerMapper;
 import com.polibuda.footballclub.football_external_data.mapper.TeamMapper;
 import com.polibuda.footballclub.football_external_data.mapper.VenueMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +41,23 @@ public class FootballFacadeService {
     }
 
     @Transactional(readOnly = true)
+    public Page<TeamSummaryDataDTO> searchTeams(String searchTerm, Pageable pageable) {
+        return domainService.searchTeams(searchTerm, pageable)
+                .map(teamMapper::toSummaryDto);
+    }
+    @Transactional(readOnly = true)
+    public Page<TeamSummaryDataDTO> getAllTeamsPaged(Pageable pageable) {
+        return domainService.getAllTeamsPaged(pageable) // Zakładamy, że ta metoda w domenie przyjmuje Pageable
+                .map(teamMapper::toSummaryDto);
+    }
+
+    /**
+     * Pobiera wszystkie zespoły (stronicowane) i mapuje wyniki na DTO.
+     * Dodano argument Pageable, aby umożliwić nawigację po danych.
+     */
+    @Transactional(readOnly = true)
     public List<TeamSummaryDataDTO> getAllTeams() {
-        return domainService.getAllTeams().stream()
-                .map(teamMapper::toSummaryDto)
-                .collect(Collectors.toList());
+        return domainService.getAllTeams().stream().map(teamMapper::toSummaryDto).toList();
     }
 
     @Transactional(readOnly = true)

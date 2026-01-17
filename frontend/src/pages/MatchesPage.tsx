@@ -8,15 +8,17 @@ import {
     Search,
     LayoutList,
     User,
-    CalendarDays,
     ArrowLeft,
     Archive,
     Shield,
-    Eye
+    Eye,
+    PlusCircle,
+    CalendarDays
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getAllMatches, getMyMatches, getMatchById, type MatchResponse, statusToLabel } from '@/lib/matchesApi'
 import { cn } from '@/lib/utils'
+import { hasRole } from '@/lib/auth' // Importujemy helper do ról
 
 type ViewMode = 'all' | 'my' | 'archived'
 
@@ -28,6 +30,9 @@ export function MatchesPage() {
     const [matches, setMatches] = useState<MatchResponse[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Sprawdzenie uprawnień (COACH lub ADMIN)
+    const canCreateMatch = hasRole('ROLE_COACH') || hasRole('ROLE_ADMIN')
 
     // --- LOGIKA POBIERANIA ---
     const fetchList = useCallback(async () => {
@@ -158,10 +163,19 @@ export function MatchesPage() {
                                     />
                                 </div>
 
-                                <Separator />
-                                <Button className="w-full shadow-sm" onClick={() => navigate('/matches/new')}>
-                                    + Dodaj Mecz
-                                </Button>
+                                {/* PRZYCISK TWORZENIA MECZU (Tylko dla uprawnionych) */}
+                                {canCreateMatch && (
+                                    <>
+                                        <Separator />
+                                        <Button
+                                            className="w-full shadow-sm bg-blue-600 hover:bg-blue-700 text-white"
+                                            onClick={() => navigate('/matches-management')}
+                                        >
+                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                            Utwórz mecz
+                                        </Button>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     </aside>
@@ -176,7 +190,11 @@ export function MatchesPage() {
                         <div className="flex gap-2 overflow-x-auto pb-1">
                             <Button size="sm" variant={viewMode==='all'?'default':'outline'} onClick={()=>setViewMode('all')}>Wszystkie</Button>
                             <Button size="sm" variant={viewMode==='my'?'default':'outline'} onClick={()=>setViewMode('my')}>Moje</Button>
-                            <Button size="sm" variant={viewMode==='archived'?'default':'outline'} onClick={()=>setViewMode('archived')}>Archiwum</Button>
+                            {canCreateMatch && (
+                                <Button size="sm" variant="outline" className="text-blue-600 border-blue-200" onClick={() => navigate('/matches-management')}>
+                                    <PlusCircle className="h-4 w-4 mr-1" /> Nowy
+                                </Button>
+                            )}
                         </div>
                     </div>
 
@@ -251,7 +269,6 @@ function MatchCard({ match, onClick }: { match: MatchResponse; onClick: () => vo
     let statusColor = "bg-blue-500"
 
     // 2. Styl badge'a statusu (Środek)
-    // Używamy spójnego stylu: przezroczyste tło, kolorowy tekst i obramowanie
     let statusBadgeStyle = "bg-blue-900/50 text-blue-200 border-blue-700/50"
 
     if (match.status === 'LIVE') {
@@ -269,7 +286,6 @@ function MatchCard({ match, onClick }: { match: MatchResponse; onClick: () => vo
     }
 
     // --- LOGIKA FAVICON ---
-    // Wymuszamy pobranie /favicon.png jeśli isInternal=true
     const homeLogo = match.homeTeam?.isInternal ? '/favicon.png' : match.homeTeam?.logoUrl
     const awayLogo = match.awayTeam?.isInternal ? '/favicon.png' : match.awayTeam?.logoUrl
 
@@ -293,7 +309,7 @@ function MatchCard({ match, onClick }: { match: MatchResponse; onClick: () => vo
                             <span className={cn("text-lg font-bold leading-tight truncate max-w-[160px] md:max-w-[200px] text-white", match.homeTeam?.isInternal && "text-emerald-400")}>
                                 {match.homeTeam?.name || "Gospodarz"}
                             </span>
-                            {/* BADGE GOSPODARZA - Zmieniony na Emerald */}
+                            {/* BADGE GOSPODARZA - Emerald */}
                             <Badge className="mt-1.5 bg-emerald-900/50 text-emerald-200 hover:bg-emerald-900/70 border-emerald-700/50 text-[10px] px-2 shadow-none font-semibold">
                                 GOSPODARZ
                             </Badge>
@@ -304,7 +320,7 @@ function MatchCard({ match, onClick }: { match: MatchResponse; onClick: () => vo
                     {/* ŚRODEK (WYNIK I STATUS) */}
                     <div className="flex flex-col items-center justify-center min-w-[120px] px-2 text-center">
 
-                        {/* BADGE STATUSU - Zmieniony styl na spójny z resztą */}
+                        {/* BADGE STATUSU */}
                         <Badge variant="outline" className={cn("mb-2 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest shadow-sm", statusBadgeStyle)}>
                             {statusToLabel(match.status)}
                         </Badge>

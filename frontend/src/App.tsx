@@ -27,8 +27,10 @@ const MemberPublicProfilePage = lazy(() => import('./pages/MemberPublicProfilePa
 const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
 const MatchesManagementPage = lazy(() => import('./pages/MatchesManagementPage').then(m => ({ default: (m as any).default || (m as any).MatchesManagementPage })));
 
-// --- NOWE STRONY ---
+// --- NOWE STRONY ADMIN ---
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage').then(m => ({ default: (m as any).default || (m as any).AdminUsersPage })));
+// Dodano import dla External Data
+const AdminExternalDataPage = lazy(() => import('./pages/AdminExternalDataPage').then(m => ({ default: (m as any).default || (m as any).AdminExternalDataPage })));
 
 
 const ProfileRoute = ({ children }: { children: React.ReactElement }) => {
@@ -71,6 +73,8 @@ function App() {
 
                 {/* Admin Panel */}
                 <Route path="/admin/users" element={<Suspense fallback={<div>Ładowanie...</div>}> <AdminUsersPage /> </Suspense>} />
+                {/* Nowa trasa dla danych zewnętrznych */}
+                <Route path="/admin/external" element={<Suspense fallback={<div>Ładowanie...</div>}> <AdminExternalDataPage /> </Suspense>} />
 
                 {/* Team and member related pages */}
                 <Route path="/team-search" element={<Suspense fallback={<div>Ładowanie...</div>}> <TeamSearchPage /> </Suspense>} />

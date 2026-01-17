@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("external/manage")
+@RequestMapping("/external/manage")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
 public class ManagingController {
@@ -28,7 +28,7 @@ public class ManagingController {
     }
 
     @PreAuthorize("hasAnyRole('COACH', 'ADMIN')")
-    @PostMapping("/refresh/squad")
+    @PostMapping("/squads/refresh")
     public ResponseEntity<Void> refreshSquad(@RequestParam("teamId") Long teamId) {
         facadeService.refreshSquadForTeam(teamId);
         return ResponseEntity.ok().build();
@@ -36,14 +36,14 @@ public class ManagingController {
 
 
     @PreAuthorize("hasAnyRole('ADMIN')")
-    @DeleteMapping("/team/{teamId}")
+    @DeleteMapping("/teams/{teamId}")
     public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
         managementService.deleteTeam(teamId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
-    @DeleteMapping("/player/{playerId}")
+    @DeleteMapping("/players/{playerId}")
     public ResponseEntity<Void> deletePlayer(@PathVariable Long playerId) {
         managementService.deletePlayer(playerId);
         return ResponseEntity.noContent().build();

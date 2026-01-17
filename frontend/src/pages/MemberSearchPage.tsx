@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
-import { Eye, UserCheck, UserX, Search as SearchIcon, RotateCw } from 'lucide-react'
+import {Eye, UserCheck, UserX, Search as SearchIcon, RotateCw, ArrowLeft} from 'lucide-react'
 import { searchMembers, getMyProfile } from '@/lib/userApi'
 
 export function MemberSearchPage() {
@@ -74,10 +74,26 @@ export function MemberSearchPage() {
   if (checkedAccess && !memberAllowed) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="border-b bg-card">
-          <div className="container flex h-16 items-center px-4">
-            <h1 className="text-2xl font-bold">Członkowie</h1>
-          </div>
+        <header className="border-b bg-card bg-[#0f172a]">
+            <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                        <img
+                            src="/favicon.png"
+                            alt="Club Logo"
+                            className="h-full w-full object-contain"
+                        />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight text-foreground">Członkowie klubu</h1>
+                        <p className="text-xs text-muted-foreground hidden sm:block">Wyszukaj członka klubu</p>
+                    </div>
+                </div>
+                <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">Dashboard</span>
+                </Button>
+            </div>
         </header>
         <main className="container py-8 px-4 sm:px-6 lg:px-8">
           <div className="rounded-md border border-amber-500 bg-amber-50 text-amber-800 px-3 py-2 text-sm">

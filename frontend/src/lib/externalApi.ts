@@ -1,75 +1,140 @@
-// Mocked external data client; replace with real football-external-data-service endpoints when available
-export type Club = {
-  id: number
-  teamId?: number
-  name: string
-  teamName?: string
-  code?: string
-  country?: string
-  founded?: number
-  national?: boolean
-  logoUrl?: string
-  venue?: {
-    id?: number
-    name?: string
-    address?: string
-    city?: string
-    capacity?: number
-    surface?: string
-    logoUrl?: string
-  }
+import { authHeader } from './auth'
+
+// Konfiguracja URL na wzór matchesApi.ts / userApi.ts
+const GATEWAY = (import.meta.env.VITE_GATEWAY_URL || '').replace(/\/$/, '')
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX ?? '/api').replace(/\/$/, '')
+const BASE_URL = `${GATEWAY}${API_PREFIX}/external`.replace(/\/\/$/, '')
+
+// --- Typy DTO ---
+
+export type TeamSummary = {
+    id: number
+    name: string
+    code: string
+    country: string
+    founded: number
+    national: boolean
+    logo: string
+}
+
+export type Venue = {
+    id: number
+    name: string
+    address: string
+    city: string
+    capacity: number
+    surface: string
+    logoUrl: string
 }
 
 export type Player = {
-  id: number
-  name: string
-  age?: number
-  number?: number
-  position?: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Attacker'
-  photo?: string
+    id: number
+    name: string
+    age: number
+    number: number
+    position: string
+    photoUrl: string
 }
 
-const mockClubs: Club[] = [
-  { id: 1, name: 'FC Mock', code: 'FCM', country: 'Poland', founded: 1920, national: false, logoUrl: '', venue: { name: 'Stadion Mock', city: 'Warszawa', capacity: 15000, surface: 'grass' } },
-  { id: 2, name: 'Real Placeholder', code: 'RPH', country: 'Spain', founded: 1902, national: false, logoUrl: '', venue: { name: 'Mock Bernabeu', city: 'Madryt', capacity: 80000, surface: 'grass' } },
-]
-
-const mockSquads: Record<number, Player[]> = {
-  1: [
-    { id: 10, name: 'Jan Bramkarz', age: 28, number: 1, position: 'Goalkeeper' },
-    { id: 11, name: 'Adam Obrońca', age: 25, number: 4, position: 'Defender' },
-    { id: 12, name: 'Paweł Pomocnik', age: 27, number: 8, position: 'Midfielder' },
-    { id: 13, name: 'Marek Napastnik', age: 22, number: 9, position: 'Attacker' },
-  ],
-  2: [
-    { id: 20, name: 'Carlos GK', age: 30, number: 1, position: 'Goalkeeper' },
-    { id: 21, name: 'Jose DF', age: 24, number: 3, position: 'Defender' },
-  ],
+export type TeamDetails = {
+    teamInfo: {
+        id: number
+        name: string
+        code: string
+        country: string
+        founded: number
+        national: boolean
+        logoUrl: string
+    }
+    venue: Venue
+    squad: Player[]
 }
 
-const fallbackSquad: Player[] = [
-  { id: 9991, name: 'Przykładowy Bramkarz', age: 30, number: 1, position: 'Goalkeeper' },
-  { id: 9992, name: 'Przykładowy Obrońca', age: 27, number: 4, position: 'Defender' },
-  { id: 9993, name: 'Przykładowy Pomocnik', age: 25, number: 8, position: 'Midfielder' },
-  { id: 9994, name: 'Przykładowy Napastnik', age: 23, number: 9, position: 'Attacker' },
-]
-
-export async function getClubs(params?: { name?: string; country?: string; page?: number; size?: number }): Promise<{ items: Club[]; total: number }> {
-  // TODO: replace with fetch to gateway -> football-external-data-service
-  const page = params?.page ?? 0
-  const size = params?.size ?? 10
-  const nameQ = params?.name?.toLowerCase() || ''
-  const countryQ = params?.country?.toLowerCase() || ''
-  const filtered = mockClubs.filter((c) => {
-    const cName = (c.name || c.teamName || '').toLowerCase()
-    const cCountry = (c.country || '').toLowerCase()
-    return (!nameQ || cName.includes(nameQ)) && (!countryQ || cCountry.includes(countryQ))
-  })
-  const start = page * size
-  return { items: filtered.slice(start, start + size), total: filtered.length }
+export type Page<T> = {
+    content: T[]
+    totalPages: number
+    totalElements: number
+    size: number
+    number: number
 }
 
-export async function getClubSquad(teamId: number): Promise<Player[]> {
-  // TODO: replace with fetch to gateway -> football-external-data-service
-  return mockSquads[teamId] || fallbackSquad
+// --- Helper do fetchowania (prostsza wersja, spójna z resztą apki) ---
+
+async function fetchJson<T = any>(url: string, opts: RequestInit = {}): Promise<T> {
+    // Pobieramy nagłówki autoryzacyjne z lib/auth.ts (Bearer token)
+    const headers: Record<string, string> = {
+        ...(opts.headers as any || {}),
+        ...authHeader()
+    }
+
+    // Domyślnie Content-Type dla metod innych niż GET, jeśli mamy body
+    if (opts.body && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json'
+    }
+
+    const res = await fetch(url, { ...opts, headers, credentials: 'include' })
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        const err: any = new Error(text || res.statusText)
+        err.status = res.status
+        throw err
+    }
+
+    // Obsługa 204 No Content
+    if (res.status === 204) return null as any
+
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) return null as any
+
+    return res.json()
+}
+
+// --- Funkcje API (TeamsController) ---
+
+export async function getTeams(params?: { query?: string; page?: number; size?: number }): Promise<Page<TeamSummary>> {
+    const queryParams = new URLSearchParams()
+    if (params?.query) queryParams.append('query', params.query)
+    if (params?.page !== undefined) queryParams.append('page', params.page.toString())
+    if (params?.size !== undefined) queryParams.append('size', params.size.toString())
+
+    const url = `${BASE_URL}/teams?${queryParams.toString()}`
+    return fetchJson<Page<TeamSummary>>(url, { method: 'GET' })
+}
+
+export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
+    const url = `${BASE_URL}/teams/${teamId}`
+    return fetchJson<TeamDetails>(url, { method: 'GET' })
+}
+
+// --- Funkcje Zarządzające (ManagingController) ---
+
+// UWAGA: X-User-Id jest ustawiany przez Gateway na podstawie tokena. 
+// My wysyłamy tylko token w nagłówku Authorization (via authHeader).
+
+export async function refreshTeamsForCountry(country: string): Promise<void> {
+    const queryParams = new URLSearchParams({ country })
+
+
+
+    const url = `${BASE_URL}/manage/refresh/teams?${queryParams.toString()}`
+
+    await fetchJson(url, { method: 'POST' })
+}
+
+export async function refreshSquad(teamId: number): Promise<void> {
+    const queryParams = new URLSearchParams({ teamId: teamId.toString() })
+    const url = `${BASE_URL}/manage/squads/refresh?${queryParams.toString()}`
+
+    await fetchJson(url, { method: 'POST' })
+}
+
+export async function deleteTeam(teamId: number): Promise<void> {
+    const url = `${BASE_URL}/manage/teams/${teamId}`
+    await fetchJson(url, { method: 'DELETE' })
+}
+
+export async function deletePlayer(playerId: number): Promise<void> {
+    const url = `${BASE_URL}/manage/players/${playerId}`
+    await fetchJson(url, { method: 'DELETE' })
 }

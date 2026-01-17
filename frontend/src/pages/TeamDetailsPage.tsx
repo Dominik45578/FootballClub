@@ -17,7 +17,7 @@ import {
     User, Search, Filter, Tag, Hash, Shirt, Eye, Edit, Trash2,
     Crown, Megaphone, Stethoscope, AlertTriangle, X, AlertCircle,
     Save, PlusCircle, XCircle, Settings, CheckCircle2, Shield,
-    Check, ListFilter, ChevronDown, ChevronUp
+    Check, ListFilter, ChevronDown, ChevronUp, Clock, Ban
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -229,6 +229,22 @@ export function TeamDetailsPage() {
         return false;
     }, [teamDetails, currentUserProfile]);
 
+    // --- WYSZUKIWANIE DANYCH MOJEGO CZŁONKOSTWA W TYM ZESPOLE ---
+    const myMembershipData = useMemo(() => {
+        if (!teamDetails || !currentUserProfile) return null;
+        return teamDetails.members?.find((m: any) => m.memberId === currentUserProfile.id);
+    }, [teamDetails, currentUserProfile]);
+
+    // Czy jestem kapitanem?
+    const isCaptain = useMemo(() => {
+        return myMembershipData?.roles?.includes('ROLE_TEAM_CAPTAIN');
+    }, [myMembershipData]);
+
+    const isMemberActive = useMemo(() => {
+        return myMembershipData?.status === 'ACTIVE';
+    }, [myMembershipData]);
+
+
     // --- AKCJE ---
     const handleToggleEditMode = () => setIsGlobalEditMode(!isGlobalEditMode)
 
@@ -354,7 +370,6 @@ export function TeamDetailsPage() {
         return name.substring(0, 2).toUpperCase()
     }
 
-    // Logika skracania opisu
     const renderDescription = () => {
         const text = teamOverview?.description || '';
         const limit = 300;
@@ -388,7 +403,7 @@ export function TeamDetailsPage() {
     return (
         <div className="min-h-screen bg-background pb-12 relative">
 
-            {/* --- MODALE --- */}
+            {/* --- MODALE (bez zmian) --- */}
             {isDeleteTeamModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-background border border-destructive/30 rounded-lg shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
@@ -471,12 +486,21 @@ export function TeamDetailsPage() {
             )}
 
             {/* --- HEADER --- */}
-            <header className="border-b bg-card sticky top-0 z-20 shadow-sm">
-                <div className="container mx-auto flex h-16 items-center justify-between px-4 max-w-[1800px]">
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <img src="/favicon.png" alt="Logo" className="h-6 w-6" />
-                        Szczegóły Zespołu
-                    </h1>
+            <header className="border-b bg-card sticky top-0 z-20 shadow-sm bg-[#0f172a]">
+                <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                            <img
+                                src="/favicon.png"
+                                alt="Club Logo"
+                                className="h-full w-full object-contain"
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight text-foreground">Profil zespołu</h1>
+                            <p className="text-xs text-muted-foreground hidden sm:block">Zobacz szczegóły zespołu</p>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-2">
                         {canManage && (
                             <Button
@@ -496,8 +520,8 @@ export function TeamDetailsPage() {
                 </div>
             </header>
 
-            {/* --- MAIN --- */}
-            <main className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 max-w-[1800px]">
+            {/* --- MAIN (POPRAWIONY UKŁAD) --- */}
+            <main className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 max-w-7xl">
 
                 {/* BANNER */}
                 {pendingCount > 0 && canManage && !isBannerDismissed && (
@@ -512,17 +536,17 @@ export function TeamDetailsPage() {
                 )}
 
                 {/* --- GRID UKŁAD --- */}
-                {/* 4/8 KOLUMN dla lewego/prawego panelu */}
-                <div className="grid gap-8 lg:grid-cols-12 items-start">
+                {/* Używamy flex-row, lewy panel stały 380px */}
+                <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
 
-                    {/* --- LEWA KOLUMNA: TEAM INFO / EDIT FORM (4 kolumny) --- */}
-                    <aside className="lg:col-span-4 sticky top-24 self-start space-y-6">
+                    {/* --- LEWA KOLUMNA: TEAM INFO / EDIT FORM (Stała szerokość 380px) --- */}
+                    <aside className="w-full lg:w-[380px] shrink-0 sticky top-24 space-y-6">
                         {loadingOverview ? (
                             <Card><CardContent className="p-8"><Skeleton className="h-64 w-full" /></CardContent></Card>
                         ) : teamOverview ? (
                             <Card className={cn("overflow-hidden shadow-sm transition-all", isGlobalEditMode && "ring-2 ring-amber-500/50 shadow-lg")}>
                                 <CardHeader className="text-center pb-2 bg-muted/20 border-b relative">
-                                    {/* KOSZ - TYLKO W TRYBIE EDYCJI */}
+                                    {/* KOSZ */}
                                     {canManage && isGlobalEditMode && (
                                         <div className="absolute top-4 right-4">
                                             <Button
@@ -538,7 +562,8 @@ export function TeamDetailsPage() {
                                     )}
 
                                     <div className="mx-auto mb-4 relative">
-                                        <Avatar className="h-40 w-40 border-4 border-background shadow-xl mx-auto">
+                                        {/* Avatar Kapitana (złota obwódka) */}
+                                        <Avatar className={cn("h-40 w-40 border-4 border-background shadow-xl mx-auto", isCaptain && "border-amber-400 ring-4 ring-amber-400/30")}>
                                             <AvatarFallback className="text-5xl bg-[#F05526] text-white font-normal tracking-wide">
                                                 {getInitials(teamOverview.teamName)}
                                             </AvatarFallback>
@@ -558,7 +583,34 @@ export function TeamDetailsPage() {
                                             />
                                         </div>
                                     ) : (
-                                        <CardTitle className="text-2xl font-bold">{teamOverview.teamName}</CardTitle>
+                                        <div className="space-y-2">
+                                            <CardTitle className="text-2xl font-bold">{teamOverview.teamName}</CardTitle>
+
+                                            {/* PLAKIETKI RÓL DLA ZALOGOWANEGO UŻYTKOWNIKA (TYLKO JEŚLI ACTIVE) */}
+                                            {myMembershipData && isMemberActive && myMembershipData.roles && myMembershipData.roles.length > 0 && (
+                                                <div className="flex justify-center flex-wrap gap-2 mt-2">
+                                                    {myMembershipData.roles.map((role: string) => {
+                                                        const conf = ROLE_CONFIG[role]
+                                                        if (!conf) return null;
+                                                        const Icon = conf.icon
+                                                        return (
+                                                            <div key={role} className={cn("flex items-center justify-center w-8 h-8 rounded-full border shadow-sm", conf.className)} title={conf.label}>
+                                                                <Icon className="h-4 w-4" />
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* STATUS BADGE JEŚLI NIE JEST ACTIVE */}
+                                            {myMembershipData && !isMemberActive && (
+                                                <div className="flex justify-center mt-2">
+                                                    {myMembershipData.status === 'SUSPENDED' && <Badge className="bg-red-100 text-red-700 border-red-200"><Ban className="w-3 h-3 mr-1"/> Zawieszony</Badge>}
+                                                    {(myMembershipData.status === 'WAITING' || myMembershipData.status === 'PENDING') && <Badge className="bg-blue-100 text-blue-700 border-blue-200"><Clock className="w-3 h-3 mr-1"/> Oczekujący</Badge>}
+                                                    {myMembershipData.status === 'REJECTED' && <Badge className="bg-gray-100 text-gray-700 border-gray-200"><XCircle className="w-3 h-3 mr-1"/> Odrzucony</Badge>}
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
 
                                     <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5 mt-2">
@@ -567,9 +619,18 @@ export function TeamDetailsPage() {
                                     </p>
                                 </CardHeader>
 
+                                {/* NOWA SEKCJA: STATUS CZŁONKA (opcjonalnie, skoro mamy badge wyżej, można to usunąć lub zostawić jako info tekstowe) - Zostawiam dla jasności */}
+                                {myMembershipData && (
+                                    <div className="bg-primary/5 py-3 px-4 text-center border-b border-primary/10">
+                                        <div className="flex items-center justify-center gap-2 text-sm font-semibold text-primary">
+                                            {myMembershipData.status === 'ACTIVE' ? <CheckCircle2 className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                                            {myMembershipData.status === 'ACTIVE' ? 'JESTEŚ CZŁONKIEM' : 'TWOJE CZŁONKOSTWO JEST WERYFIKOWANE'}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <CardContent className="pt-6 space-y-4">
                                     {isGlobalEditMode ? (
-                                        // --- FORMULARZ EDYCJI ---
                                         <div className="space-y-4 animate-in fade-in">
                                             <div className="space-y-1">
                                                 <label className="text-xs font-semibold text-muted-foreground">Kategoria</label>
@@ -601,11 +662,11 @@ export function TeamDetailsPage() {
                                             <Button onClick={handleSaveTeam} className="w-full gap-2 mt-2"><Save className="h-4 w-4" /> Zapisz zmiany</Button>
                                         </div>
                                     ) : (
-                                        // --- WIDOK ZESPOŁU ---
                                         <>
                                             <div className="space-y-3">
                                                 <StatRow icon={Users} label="Członkowie" value={teamOverview.numberOfMembers ?? teamOverview.memberCount} unit="" />
-                                                <StatRow icon={Tag} label="Kategoria" value={getCategoryLabel(teamOverview.category || '')} unit="" />
+                                                {/* ZMIANA: Zawijanie tekstu dla kategorii */}
+                                                <StatRow icon={Tag} label="Kategoria" value={getCategoryLabel(teamOverview.category || '')} unit="" valueClass="whitespace-normal text-right break-words text-sm leading-tight" />
                                                 {teamOverview.code && <StatRow icon={Hash} label="Kod" value={teamOverview.code} unit="" />}
                                                 {teamOverview.status && <StatRow icon={Shield} label="Status" value={teamOverview.status} unit="" />}
                                             </div>
@@ -641,8 +702,8 @@ export function TeamDetailsPage() {
                         )}
                     </aside>
 
-                    {/* --- PRAWA STRONA: LISTA CZŁONKÓW (8 kolumn) --- */}
-                    <div className="lg:col-span-8 space-y-6">
+                    {/* --- PRAWA STRONA: LISTA CZŁONKÓW (Zajmuje resztę) --- */}
+                    <div className="flex-1 w-full min-w-0 space-y-6">
 
                         {/* Pasek Filtrów */}
                         <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center justify-between bg-card p-4 rounded-lg border shadow-sm">
@@ -699,7 +760,7 @@ export function TeamDetailsPage() {
                             <Badge variant="secondary" className="px-2">{filteredMembers.length}</Badge>
                         </div>
 
-                        {/* LISTA - 2 Kolumny */}
+                        {/* LISTA - 2 Kolumny (Szerokie karty) */}
                         <div className="space-y-4">
                             {loadingDetails && (
                                 <>
@@ -722,13 +783,14 @@ export function TeamDetailsPage() {
                                         <TeamMemberCard
                                             key={member.teamMemberId}
                                             member={member}
+                                            currentUserProfile={currentUserProfile} // PRZEKAZANIE PROFILU
                                             canManage={canManage}
                                             isGlobalEditMode={isGlobalEditMode}
                                             isEditing={editingMemberId === member.teamMemberId}
                                             onEditStart={() => setEditingMemberId(member.teamMemberId)}
                                             onEditCancel={() => setEditingMemberId(null)}
                                             onSave={(data) => handleSaveMember(data)}
-                                            onView={() => toast.info(`Podgląd ID: ${member.memberId}`)}
+                                            onView={() => navigate(`/member/${member.memberId}`)}
                                             onDelete={() => handleDeleteMemberClick(member.teamMemberId)}
                                         />
                                     ))}
@@ -744,14 +806,17 @@ export function TeamDetailsPage() {
 
 // --- HELPERS ---
 
-function StatRow({ icon: Icon, label, value, unit }: any) {
+function StatRow({ icon: Icon, label, value, unit, valueClass }: any) {
     return (
         <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
                 <div className="p-2 bg-background rounded-full shadow-sm"><Icon className="h-4 w-4 text-primary" /></div>
                 <span className="text-sm font-medium text-muted-foreground">{label}</span>
             </div>
-            <span className="text-lg font-bold truncate max-w-[120px] text-right">{value != null ? `${value} ${unit}` : '—'}</span>
+            {/* ZMIANA: Obsługa customowej klasy dla wartości (np. dla zawijania tekstu) */}
+            <span className={cn("text-lg font-bold text-right", valueClass ? valueClass : "truncate max-w-[140px]")}>
+                {value != null ? `${value} ${unit}` : '—'}
+            </span>
         </div>
     )
 }
@@ -759,6 +824,7 @@ function StatRow({ icon: Icon, label, value, unit }: any) {
 // --- KARTA CZŁONKA ---
 interface TeamMemberCardProps {
     member: any;
+    currentUserProfile: any; // Dodany prop
     canManage: boolean;
     isGlobalEditMode: boolean;
     isEditing: boolean;
@@ -769,7 +835,7 @@ interface TeamMemberCardProps {
     onDelete: () => void;
 }
 
-function TeamMemberCard({ member, canManage, isGlobalEditMode, isEditing, onEditStart, onEditCancel, onSave, onView, onDelete }: TeamMemberCardProps) {
+function TeamMemberCard({ member, currentUserProfile, canManage, isGlobalEditMode, isEditing, onEditStart, onEditCancel, onSave, onView, onDelete }: TeamMemberCardProps) {
 
     const [editNumber, setEditNumber] = useState(member.number || '')
     const [editPosition, setEditPosition] = useState(member.fieldPosition || 'UNKNOWN')
@@ -825,11 +891,62 @@ function TeamMemberCard({ member, canManage, isGlobalEditMode, isEditing, onEdit
         return POSITION_TRANSLATIONS[key] || pos
     }
 
+    // Nowa funkcja helper do odznaki specjalnej
+    const getSpecialRoleBadge = (roles: string[]) => {
+        if (!roles) return null;
+        if (roles.includes('ROLE_TEAM_CAPTAIN')) {
+            return <Badge className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/20 gap-1 pl-1.5 pr-2 h-5"><Crown className="h-3 w-3" /> Kapitan</Badge>
+        }
+        if (roles.includes('ROLE_TEAM_HEAD_COACH')) {
+            return <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hover:bg-red-500/20 gap-1 pl-1.5 pr-2 h-5"><Megaphone className="h-3 w-3" /> Trener</Badge>
+        }
+        if (roles.includes('ROLE_TEAM_ASSISTANT_COACH')) {
+            return <Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20 gap-1 pl-1.5 pr-2 h-5"><Megaphone className="h-3 w-3" /> Asystent</Badge>
+        }
+        if (roles.includes('ROLE_TEAM_MANAGER')) {
+            return <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 hover:bg-blue-500/20 gap-1 pl-1.5 pr-2 h-5"><Briefcase className="h-3 w-3" /> Manager</Badge>
+        }
+        if (roles.includes('ROLE_TEAM_PHYSIO')) {
+            return <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 gap-1 pl-1.5 pr-2 h-5"><Stethoscope className="h-3 w-3" /> Fizjo</Badge>
+        }
+        return null;
+    }
+
+    // --- NOWA FUNKCJA STYLIZACJI KARTY ---
+    const getCardStyle = () => {
+        // 1. Złota obramówka dla zalogowanego użytkownika
+        if (currentUserProfile && member.memberId === currentUserProfile.id) {
+            return 'border-amber-400 ring-2 ring-amber-400/20 shadow-amber-100 dark:shadow-none bg-amber-50/30 dark:bg-amber-950/10'
+        }
+
+        const roles = member.roles || [];
+
+        // 2. Trener Główny
+        if (roles.includes('ROLE_TEAM_HEAD_COACH')) {
+            return 'border-red-200 bg-red-50/30 dark:border-red-900/50 dark:bg-red-950/10'
+        }
+
+        // 3. Fizjo
+        if (roles.includes('ROLE_TEAM_PHYSIO')) {
+            return 'border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/50 dark:bg-emerald-950/10'
+        }
+
+        // Domyślny styl
+        return 'bg-card border-border hover:shadow-md'
+    }
+
     return (
         <Card className={cn(
-            "overflow-hidden transition-all duration-200 group bg-card border h-full flex flex-col",
-            isEditing ? "border-white bg-accent/5 shadow-lg ring-1 ring-white/20" : "hover:shadow-md"
+            "overflow-hidden transition-all duration-200 group h-full flex flex-col relative",
+            isEditing ? "border-white bg-accent/5 shadow-lg ring-1 ring-white/20" : getCardStyle() // Użycie nowej funkcji
         )}>
+            {/* BADGE "JA" (lub "TY") */}
+            {!isEditing && currentUserProfile && member.memberId === currentUserProfile.id && (
+                <div className="absolute top-3 right-28 z-10">
+                    <Badge variant="outline" className="bg-white text-[10px] font-bold text-slate-700 border-slate-300 shadow-sm px-1.5 py-0.5">JA</Badge>
+                </div>
+            )}
+
             <CardContent className="p-0 flex flex-col h-full">
                 <div className="flex h-full min-h-[140px]">
                     <div className={cn("w-2 shrink-0 transition-colors", isEditing ? getStatusColor(editStatus) : stripColorClass)} />
@@ -839,10 +956,15 @@ function TeamMemberCard({ member, canManage, isGlobalEditMode, isEditing, onEdit
 
                             <div className="flex justify-between items-start gap-2">
                                 <div className="min-w-0">
-                                    <h3 className="text-base font-bold text-foreground truncate">{member.firstName} {member.lastName}</h3>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <h3 className="text-base font-bold text-foreground truncate">{member.firstName} {member.lastName}</h3>
+                                        {/* Wyświetlanie specjalnej odznaki */}
+                                        {!isEditing && getSpecialRoleBadge(member.roles)}
+                                    </div>
                                     {!isEditing && (
                                         <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                                            <CalendarDays className="h-3 w-3" /> {member.joinDate ? new Date(member.joinDate).toLocaleDateString('pl-PL') : '—'}
+                                            <CalendarDays className="h-3 w-3" />
+                                            Dołączył: {member.sienceDate ? new Date(member.sienceDate).toLocaleDateString('pl-PL') : (member.joinDate ? new Date(member.joinDate).toLocaleDateString('pl-PL') : '—')}
                                         </p>
                                     )}
                                 </div>
@@ -862,11 +984,12 @@ function TeamMemberCard({ member, canManage, isGlobalEditMode, isEditing, onEdit
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2">
+                            {/* Grid dla pól numeru i pozycji */}
+                            <div className="grid grid-cols-2 gap-2 w-full">
                                 <div className={cn("rounded-md p-1.5 flex items-center gap-2 border", isEditing ? "bg-background border-primary/50" : "bg-secondary/10 border-transparent")}>
                                     <div className="bg-background p-1 rounded-md shadow-sm"><Shirt className="h-3 w-3 text-primary" /></div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[9px] uppercase font-bold text-muted-foreground leading-none mb-0.5">Nr</p>
+                                        <p className="text-[9px] uppercase font-bold text-muted-foreground leading-none mb-0.5">NUMER</p>
                                         {isEditing ? (
                                             <Input className="h-5 text-xs px-1 py-0 border-0 focus-visible:ring-0 bg-transparent p-0 font-mono font-bold w-full"
                                                    placeholder="#" value={editNumber} onChange={(e) => setEditNumber(e.target.value)} type="number" />
@@ -876,7 +999,7 @@ function TeamMemberCard({ member, canManage, isGlobalEditMode, isEditing, onEdit
                                 <div className={cn("rounded-md p-1.5 flex items-center gap-2 border", isEditing ? "bg-background border-primary/50" : "bg-secondary/10 border-transparent")}>
                                     <div className="bg-background p-1 rounded-md shadow-sm"><User className="h-3 w-3 text-primary" /></div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[9px] uppercase font-bold text-muted-foreground leading-none mb-0.5">Poz.</p>
+                                        <p className="text-[9px] uppercase font-bold text-muted-foreground leading-none mb-0.5">POZYCJA</p>
                                         {isEditing ? (
                                             <Select value={editPosition} onValueChange={setEditPosition}>
                                                 <SelectTrigger className="h-5 p-0 border-0 bg-transparent focus:ring-0 text-xs font-medium w-full"><SelectValue /></SelectTrigger>

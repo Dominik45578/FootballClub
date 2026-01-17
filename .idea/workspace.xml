@@ -5,28 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Upgraded team status and squad display">
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/TeamMembersSummaryResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/ui/scroll-area.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/ui/switch.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/AdminExternalDataPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamCategory.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/database/TeamCategory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/dto/UserResponseDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/com/polibuda/footballclub/common/dto/UserResponseDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/RoleAuthConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/RoleAuthConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/UserAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/config/UserAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/controller/ManagingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/controller/ManagingController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/controller/TeamsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/controller/TeamsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/repository/TeamRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/repository/TeamRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballDomainService.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballDomainService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballFacadeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/football-external-data-service/src/main/java/com/polibuda/footballclub/football_external_data/service/FootballFacadeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/externalApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/externalApi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/userApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminUsersPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminUsersPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ClubSquadPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ClubSquadPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberPublicProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberPublicProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberSearchPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SessionManagementPage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/StartPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/StartPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/UserRoleManageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/service/UserRoleManageService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/MatchMemberDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/dto/fromMatchService/MatchMemberDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/mappers/MatchMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/controller/TeamManagementController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/MemberProfileResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/restricted/MemberProfileResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/MemberSummaryResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/dto/response/summary/MemberSummaryResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamMemberRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/repository/TeamMemberRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/team/TeamServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/service/teamMember/TeamMemberServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/RoleAuthConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/identify/src/main/java/com/polibuda/footballclub/identify/config/RoleAuthConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/RoleAuthConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/match-service/src/main/java/com/polibuda/footballclub/match/config/RoleAuthConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/RoleAuthConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/polibuda/footballclub/user/config/RoleAuthConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,6 +137,7 @@
     "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
     "Maven.common [clean].executor": "Run",
     "Maven.common [install].executor": "Run",
+    "Maven.football-external-data-service [install].executor": "Run",
     "Maven.footballclub [clean].executor": "Run",
     "Maven.footballclub-parent [clean,package...].executor": "Run",
     "Maven.footballclub-parent [clean].executor": "Run",
@@ -482,6 +494,7 @@
       <workItem from="1768569435819" duration="3616000" />
       <workItem from="1768579194727" duration="26092000" />
       <workItem from="1768605983024" duration="7463000" />
+      <workItem from="1768660304561" duration="24980000" />
     </task>
     <task id="LOCAL-00001" summary="Edited login page. Partially added dashboard.">
       <option name="closed" value="true" />

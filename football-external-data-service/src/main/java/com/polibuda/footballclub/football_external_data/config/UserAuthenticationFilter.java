@@ -5,8 +5,11 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -15,15 +18,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class UserAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String ROLE_PREFIX = "ROLE_";
+
+    // 1. Wstrzykujemy beana z hierarchią (Spring znajdzie go z SecurityConfig)
+    private final RoleHierarchy roleHierarchy;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -35,9 +43,10 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
 
         if (userId != null) {
             try {
-                AuthenticationContextBuilder.setAuthentication(userId, rolesHeader);
+                // Logika przeniesiona bezpośrednio do metody instancyjnej
+                authenticateUser(userId, rolesHeader);
             } catch (Exception e) {
-                log.error("Failed to set user authentication based on gateway headers", e);
+                log.error("Failed to set user authentication based on gateway headers. UserID: {}", userId, e);
                 SecurityContextHolder.clearContext();
             }
         }
@@ -45,34 +54,40 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private static class AuthenticationContextBuilder {
+    private void authenticateUser(String userId, String rolesHeader) {
+        // 1. Pobieramy "surowe" role z nagłówka (np. tylko ADMIN)
+        Collection<GrantedAuthority> rawAuthorities = extractAuthorities(rolesHeader);
 
-        static void setAuthentication(String userId, String rolesHeader) {
-            List<SimpleGrantedAuthority> authorities = extractAuthorities(rolesHeader);
-            Long principalId = Long.valueOf(userId);
+        // 2. KLUCZOWE: Obliczamy wszystkie role wynikające z hierarchii
+        // (np. zamienia ADMIN na -> ADMIN, MANAGER, COACH, MEMBER...)
+        Collection<? extends GrantedAuthority> effectiveAuthorities =
+                roleHierarchy.getReachableGrantedAuthorities(rawAuthorities);
 
-            PreAuthenticatedAuthenticationToken authentication =
-                    new PreAuthenticatedAuthenticationToken(principalId, null, authorities);
+        Long principalId = Long.valueOf(userId);
 
-            authentication.setDetails("Gateway-Authenticated");
+        // 3. Tworzymy token z PEŁNĄ listą uprawnień
+        PreAuthenticatedAuthenticationToken authentication =
+                new PreAuthenticatedAuthenticationToken(principalId, null, effectiveAuthorities);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        authentication.setDetails("Gateway-Authenticated");
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private List<GrantedAuthority> extractAuthorities(String rolesHeader) {
+        if (rolesHeader == null || rolesHeader.isBlank()) {
+            return Collections.emptyList();
         }
 
-        private static List<SimpleGrantedAuthority> extractAuthorities(String rolesHeader) {
-            return Optional.ofNullable(rolesHeader)
-                    .filter(header -> !header.isBlank())
-                    .stream()
-                    .flatMap(header -> Arrays.stream(header.split(",")))
-                    .map(String::trim)
-                    .filter(role -> !role.isEmpty())
-                    .map(AuthenticationContextBuilder::addRolePrefixIfNeeded)
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-        }
+        return Arrays.stream(rolesHeader.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isEmpty())
+                .map(this::addRolePrefixIfNeeded)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
 
-        private static String addRolePrefixIfNeeded(String role) {
-            return role.startsWith(ROLE_PREFIX) ? role : ROLE_PREFIX + role;
-        }
+    private String addRolePrefixIfNeeded(String role) {
+        return role.startsWith(ROLE_PREFIX) ? role : ROLE_PREFIX + role;
     }
 }

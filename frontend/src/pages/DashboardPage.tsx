@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Users, Search, CalendarClock, Settings2, LogOut, Eye, ShieldAlert, User, Shield } from 'lucide-react'
+import { Users, Search, CalendarClock, Settings2, LogOut, Eye, ShieldAlert, User, Globe } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { OFFLINE, getUserRoles } from '@/lib/auth'
@@ -82,60 +82,50 @@ export function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <header className="border-b bg-card shadow-sm sticky top-0 z-20">
-                <div className="container flex h-16 items-center justify-between px-4">
+            <header className="border-b bg-background sticky top-0 z-30 shadow-sm h-16 flex items-center">
+                <div className="container px-4 max-w-7xl mx-auto flex justify-between items-center">
 
-                    {/* LEWA STRONA: LOGO KLUBU I TYTUŁ */}
+                    {/* LEWA STRONA: LOGO + TYTUŁ */}
                     <div className="flex items-center gap-3">
-                        {/* LOGO KLUBU - Zakładam, że plik jest w folderze public jako logo.png */}
-                        {/* Jeśli nie ma pliku, wyświetli się tarcza jako fallback */}
-                        <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
+                        <div className="relative h-10 w-10">
                             <img
                                 src="/favicon.png"
-                                alt="Logo Klubu"
-                                className="h-full w-full object-contain"
-                                onError={(e) => {
-                                    // Fallback jeśli obrazek nie istnieje
-                                    e.currentTarget.style.display = 'none';
-                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                }}
+                                alt="Logo"
+                                className="h-full w-full object-contain drop-shadow-sm"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                             />
-                            <Shield className="h-8 w-8 text-primary fill-primary/20 hidden" />
                         </div>
-                        <h1 className="text-xl md:text-2xl font-bold truncate tracking-tight">
-                            Panel Klubu
-                        </h1>
+                        <div>
+                            <h1 className="text-lg font-bold leading-tight">Panel Klubu</h1>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Strona Główna</p>
+                        </div>
                     </div>
 
-                    {/* PRAWA STRONA: DANE USERA I PRZYCISKI */}
+                    {/* PRAWA STRONA: USER INFO + AKCJE */}
                     <div className="flex items-center gap-4">
 
-                        {/* Wyświetlanie danych z obiektu currentUser */}
+                        {/* Dane usera */}
                         {currentUser && (
-                            <div className="hidden md:flex flex-col items-end text-sm animate-in fade-in">
-                                <span className="font-semibold text-lg text-foreground flex items-center gap-1">
-                                    Cześć, {currentUser.userName}!
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                    {currentUser.userEmail}
-                                </span>
+                            <div className="hidden md:flex flex-col items-end animate-in fade-in">
+                                <span className="text-sm font-semibold leading-none">{currentUser.userName}</span>
+                                <span className="text-[10px] text-muted-foreground">{currentUser.userEmail}</span>
                             </div>
                         )}
 
-                        <div className="flex gap-2">
-                            <Button variant="secondary" onClick={handleProfile} size="sm" className="hidden sm:flex">
+                        <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="sm" onClick={handleProfile} className="hidden sm:flex text-muted-foreground hover:text-foreground">
                                 <Eye className="mr-2 h-4 w-4" />
                                 Profil
                             </Button>
-                            <Button variant="ghost" onClick={handleProfile} size="icon" className="sm:hidden">
+                            <Button variant="ghost" size="icon" onClick={handleProfile} className="sm:hidden">
                                 <User className="h-5 w-5" />
                             </Button>
 
-                            <Button variant="outline" onClick={handleLogout} size="sm" className="hidden sm:flex">
+                            <Button variant="ghost" size="sm" onClick={handleLogout} className="hidden sm:flex text-muted-foreground hover:text-destructive">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 Wyloguj
                             </Button>
-                            <Button variant="ghost" onClick={handleLogout} size="icon" className="sm:hidden">
+                            <Button variant="ghost" size="icon" onClick={handleLogout} className="sm:hidden text-muted-foreground hover:text-destructive">
                                 <LogOut className="h-5 w-5" />
                             </Button>
                         </div>
@@ -241,6 +231,24 @@ export function DashboardPage() {
                                         <div className="text-left">
                                             <h4 className="text-lg font-bold">Zarządzanie zespołem</h4>
                                             <p className="text-sm text-muted-foreground mt-1">Edycja składu, taktyki i ustawień</p>
+                                        </div>
+                                    </div>
+                                </HoverableCTA>
+                            )}
+
+                            {/* NOWY PRZYCISK: Dane Zewnętrzne (Coach/Admin) */}
+                            {canManageTeam && (
+                                <HoverableCTA
+                                    onClick={() => navigate('/admin/external')}
+                                    className="bg-gradient-to-br from-background to-indigo-50/50 dark:to-indigo-950/20 border-indigo-200/50"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-indigo-500/10 rounded-full">
+                                            <Globe className="h-6 w-6 text-indigo-600 shrink-0" />
+                                        </div>
+                                        <div className="text-left">
+                                            <h4 className="text-lg font-bold">Dane Zewnętrzne</h4>
+                                            <p className="text-sm text-muted-foreground mt-1">Synchronizacja lig i zarządzanie API</p>
                                         </div>
                                     </div>
                                 </HoverableCTA>

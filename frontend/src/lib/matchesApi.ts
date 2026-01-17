@@ -58,6 +58,8 @@ export type UpdateMatchRequest = {
   matchDate?: string
   isHome?: boolean
   status?: MatchStatus
+    awayTeamScore? : number
+    homeTeamScore? : number
 }
 
 // proste fetch helpery (używamy authHeader z ./auth — gateway powinien ustawić X-User-Id)

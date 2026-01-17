@@ -1,8 +1,12 @@
 package com.polibuda.footballclub.football_external_data.repository;
 
 import com.polibuda.footballclub.football_external_data.entity.TeamEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,7 +39,14 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
     @EntityGraph(attributePaths = {"players"})
     Optional<TeamEntity> findWithPlayersById(Long id);
 
-    /* Przykład metody łączącej filtry (opcjonalnie):
-       List<TeamEntity> findAllByCountryAndNational(String country, boolean national);
-    */
+
+    @Query("""
+            SELECT t FROM TeamEntity t
+            WHERE (:query IS NULL OR :query = '' OR
+                LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%')) OR
+                LOWER(t.country) LIKE LOWER(CONCAT('%', :query, '%')) OR
+                LOWER(t.code) LIKE LOWER(CONCAT('%', :query, '%'))
+            )
+            """)
+    Page<TeamEntity> search(@Param("query") String query, Pageable pageable);
 }

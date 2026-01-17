@@ -10,6 +10,8 @@ import com.polibuda.footballclub.football_external_data.repository.TeamRepositor
 import com.polibuda.footballclub.football_external_data.repository.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +67,10 @@ public class FootballDomainService {
     public List<TeamEntity> getAllTeams() {
         return teamRepository.findAll();
     }
+    @Transactional(readOnly = true)
+    public Page<TeamEntity> getAllTeamsPaged(Pageable pageable) {
+        return teamRepository.findAll(pageable);
+    }
 
     @Transactional(readOnly = true)
     public PlayerEntity getPlayerById(Long id) {
@@ -103,5 +109,10 @@ public class FootballDomainService {
 
         playerRepository.delete(player);
         log.info("Deleted player {}", playerId);
+    }
+
+    @Transactional
+    public Page<TeamEntity> searchTeams(String query, Pageable pageable) {
+        return teamRepository.search(query, pageable);
     }
 }
