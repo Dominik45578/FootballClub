@@ -8,8 +8,10 @@ import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamMemberRequestDTO;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamDetailsResponse;
+import com.polibuda.footballclub.user.dto.response.summary.TeamMembersSummaryResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamSearchResponse;
 import com.polibuda.footballclub.user.service.team.TeamService;
+import com.polibuda.footballclub.user.service.teamMember.TeamMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,6 +29,7 @@ import java.util.Set;
 public class TeamController {
 
     private final TeamService teamService;
+    private final TeamMemberService teamMemberService;
 
     /**
      * Główna wyszukiwarka zespołów.
@@ -92,7 +95,14 @@ public class TeamController {
             @RequestBody ManageTeamMemberRequest request,
             @RequestHeader(MutationHeaderClaims.X_USER_ID) Long userId
     ){
-        return teamService.updateMembership(request, userId)?ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        return teamService.updateMembership(request, userId) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    }
+
+    @GetMapping("/membership/{memberId}")
+    public ResponseEntity<TeamMembersSummaryResponse> getTeamMemberships(
+            @PathVariable Long memberId,
+            @PageableDefault(size = 10) Pageable pageable){
+        return ResponseEntity.ok(teamMemberService.searchTeamMembers(memberId, pageable));
     }
 
 }

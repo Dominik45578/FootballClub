@@ -7,7 +7,11 @@ import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
+import com.polibuda.footballclub.user.dto.response.restricted.MemberProfileResponse;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
+import com.polibuda.footballclub.user.dto.response.summary.MemberSummaryResponse;
+import com.polibuda.footballclub.user.dto.response.summary.TeamMembersSummaryResponse;
+import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
 import com.polibuda.footballclub.user.entity.Member;
 import com.polibuda.footballclub.user.entity.Team;
@@ -23,6 +27,7 @@ import com.polibuda.footballclub.user.repository.TeamMemberRepository;
 import com.polibuda.footballclub.user.repository.TeamRepository;
 import com.polibuda.footballclub.user.service.IdentityGrpcClient;
 import com.polibuda.identify.grpc.RemoveRolesResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -198,6 +204,34 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public TeamMembersSummaryResponse searchTeamMembers(Long memberId, Pageable pageable) {
+        Page<TeamMember> members =
+                teamMemberRepository.findByMemberId(memberId, pageable);
+
+        List<TeamMemberListItemDto> mapped =
+                members.stream()
+                        .map(this::mapToTeamMemberDto)
+                        .toList();
+
+        MemberSummaryResponse summary = members.stream()
+                .findFirst()
+                .map(this::mapToMemberProfileResponse)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Member with id " + memberId + " has no team memberships"));
+
+        return TeamMembersSummaryResponse.builder()
+                .pageNumber(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPages(members.getTotalPages())
+                .totalElements(members.getTotalElements())
+                .content(mapped)
+                .member(summary)
+                .build();
+    }
+
+
 
     private TeamMember checkRequest(ManageTeamMemberRequest request, TeamMember member){
         if(request.getStatus()!=null){
@@ -260,9 +294,20 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .firstName(teamMember.getMember().getFirstName())
                 .lastName(teamMember.getMember().getLastName())
                 .status(teamMember.getStatus())
-                .roles(teamMember.getRoles())
+                .roles(Set.copyOf(teamMember.getRoles()))
                 .sienceDate(teamMember.getCreatedAt())
                 .fieldPosition(teamMember.getFieldPosition())
+                .build();
+    }
+
+    private MemberSummaryResponse mapToMemberProfileResponse(TeamMember member) {
+        return MemberSummaryResponse.builder()
+                .id(member.getId())
+                .firstName(member.getMember().getFirstName())
+                .lastName(member.getMember().getLastName())
+                .height(member.getMember().getHeight())
+                .weight(member.getMember().getWeight())
+                .joinDate(member.getCreatedAt())
                 .build();
     }
 }

@@ -15,4 +15,6 @@ public class UserResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Set<UserRoleDTO> userRole;
+    private boolean enabled;
+    private boolean accountNonLocked;
 }

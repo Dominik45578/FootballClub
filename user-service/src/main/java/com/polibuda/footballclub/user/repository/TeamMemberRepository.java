@@ -21,6 +21,9 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
     @EntityGraph(attributePaths = {"team"})
     List<TeamMember> findByMemberUserId(Long userId);
 
+    @EntityGraph(attributePaths = {"team", "roles", "member"})
+    Page<TeamMember> findByMemberId(Long userId,  Pageable pageable);
+
     @EntityGraph(attributePaths = {"member"})
     List<TeamMember> findByTeamIdAndStatus(Long teamId, TeamMemberStatus status);
 

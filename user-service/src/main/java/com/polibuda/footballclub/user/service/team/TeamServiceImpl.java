@@ -157,6 +157,7 @@ public class TeamServiceImpl implements TeamService {
        TeamMember target = teamMemberRepository.findById(request.getTeamMemberId()).orElseThrow(() -> new TeamMemberNotFoundException(request.getTeamMemberId()));
        validateCoachPermissions(target.getTeam().getId(),requesterUserId);
         teamMemberRepository.save(checkDtoAndSetChanges(request,target));
+        log.debug("Successf`ully updated team membership with id={}", requesterUserId);
         return true;
     }
 

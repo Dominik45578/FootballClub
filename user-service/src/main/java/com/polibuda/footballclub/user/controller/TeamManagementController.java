@@ -6,6 +6,8 @@ import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
 import com.polibuda.footballclub.user.dto.request.UpdateTeamRequestDTO;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
+import com.polibuda.footballclub.user.dto.response.summary.TeamMembersSummaryResponse;
+import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
 import com.polibuda.footballclub.user.service.teamMember.TeamMemberService;
 import jakarta.validation.Valid;
@@ -91,5 +93,8 @@ public class  TeamManagementController {
             @PathVariable Long teamMemberId){
         return ResponseEntity.ok(teamMemberService.getTeamMemberById(teamMemberId));
     }
+
+
+
 
 }
