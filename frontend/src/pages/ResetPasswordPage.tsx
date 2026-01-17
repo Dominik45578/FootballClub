@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { EyeIcon, EyeOffIcon } from '@/components/ui/icons'
+import { Eye, EyeOff } from 'lucide-react'
 import { requestPasswordReset, setNewPassword } from '@/lib/userApi'
 
 export function ResetPasswordPage() {
@@ -153,10 +153,11 @@ export function ResetPasswordPage() {
                   <button
                     type="button"
                     aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    aria-pressed={showPassword}
                     onClick={() => setShowPassword((s) => !s)}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 ${showPassword ? 'text-primary' : 'text-muted-foreground'} focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-1 transition-transform duration-150 ease-in-out`}
                   >
-                    {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>

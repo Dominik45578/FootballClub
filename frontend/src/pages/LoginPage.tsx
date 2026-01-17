@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
-import { EyeIcon, EyeOffIcon } from '@/components/ui/icons'
+import { Eye, EyeOff } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { login as apiLogin, setToken } from '@/lib/auth'
@@ -58,7 +58,7 @@ export function LoginPage() {
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-3xl text-center font-bold">Logowanie</CardTitle>
                     <CardDescription className="text-center text-base">
-                        Panel zarządzania klubem piłkarskim
+                        Zaloguj się, aby zarządzać klubem
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6">
@@ -92,8 +92,14 @@ export function LoginPage() {
                                         required
                                         disabled={loading}
                                       />
-                                      <button type="button" aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setShowPassword(s => !s)}>
-                                        {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                      <button
+                                        type="button"
+                                        aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                                        aria-pressed={showPassword}
+                                        onClick={() => setShowPassword(s => !s)}
+                                        className={`absolute right-2 top-1/2 -translate-y-1/2 ${showPassword ? 'text-primary' : 'text-muted-foreground'} focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-1 transition-transform duration-150 ease-in-out`}
+                                      >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                       </button>
                                     </>
                                   )}
@@ -113,13 +119,7 @@ export function LoginPage() {
                         </div>
                     </form>
                 </CardContent>
-                <CardFooter className="flex flex-col items-center text-sm text-muted-foreground">
-                    <p>Dane testowe:</p>
-                    <p className="font-medium">admin@klub.pl / haslo123</p>
-                </CardFooter>
             </Card>
         </div>
     )
 }
-
-export default LoginPage

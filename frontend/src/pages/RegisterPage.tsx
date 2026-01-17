@@ -5,17 +5,29 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
-import { EyeIcon, EyeOffIcon } from '@/components/ui/icons'
+import { Eye, EyeOff } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { register as registerUser } from '@/lib/userApi'
 
-function passwordStrength(pw: string) {
+/**
+ * Evaluates password strength and returns a score in the range 0..4.
+ *
+ * Scoring criteria (each gives +1 point):
+ *  - length >= 8 characters
+ *  - contains an uppercase letter (A-Z)
+ *  - contains a digit (0-9)
+ *  - contains a special character (non-alphanumeric)
+ *
+ * @param password - password to evaluate
+ * @returns number - strength score (0 = very weak, 4 = strong)
+ */
+function evaluatePasswordStrength(password: string) {
   let score = 0
-  if (pw.length >= 8) score += 1
-  if (/[A-Z]/.test(pw)) score += 1
-  if (/[0-9]/.test(pw)) score += 1
-  if (/[^A-Za-z0-9]/.test(pw)) score += 1
-  return score // 0..4
+  if (password.length >= 8) score += 1
+  if (/[A-Z]/.test(password)) score += 1
+  if (/[0-9]/.test(password)) score += 1
+  if (/[^A-Za-z0-9]/.test(password)) score += 1
+  return score
 }
 
 export function RegisterPage() {
@@ -28,9 +40,9 @@ export function RegisterPage() {
 
   // set tab title on this page
   useEffect(() => {
-    const prev = document.title
+    const previousTitle = document.title
     document.title = 'Rejestracja'
-    return () => { document.title = prev }
+    return () => { document.title = previousTitle }
   }, [])
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -88,15 +100,20 @@ export function RegisterPage() {
                   {loading ? <Skeleton className="h-9 w-full rounded-md" /> : (
                     <>
                       <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="hasło" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} minLength={8} />
-                      <button type="button" aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setShowPassword(s => !s)}>
-                        {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                      <button
+                        type="button"
+                        aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                        aria-pressed={showPassword}
+                        onClick={() => setShowPassword(s => !s)}
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 ${showPassword ? 'text-primary' : 'text-muted-foreground'} focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-1 transition-transform duration-150 ease-in-out`}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </>
                   )}
                 </div>
-                {/* strength meter */}
                 {(() => {
-                  const score = passwordStrength(password)
+                  const score = evaluatePasswordStrength(password)
                   const pct = (score / 4) * 100
                   const labels = ['Bardzo słabe','Słabe','Średnie','Dobre','Silne']
                   const colors = ['bg-red-500','bg-orange-400','bg-yellow-400','bg-lime-400','bg-green-500']

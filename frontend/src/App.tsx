@@ -10,6 +10,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import { getMemberStatus, type MemberStatus, ensureMemberStatus } from './lib/userApi'
 import { hasOnlyRoleUser } from './lib/auth'
 import { MemberProfilePage } from './pages/MemberProfilePage'
+import { NotFoundPage } from './pages/NotFound'
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
 const TeamSearchPage = lazy(() => import('./pages/TeamSearchPage').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
@@ -96,7 +97,7 @@ function App() {
                 <Route path="/activate-account" element={<ActivateAccountPage />} />
 
                 {/* Catch-all */}
-                <Route path="*" element={<StartPage />} />
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
             <Toaster richColors closeButton position="top-right" />
         </BrowserRouter>

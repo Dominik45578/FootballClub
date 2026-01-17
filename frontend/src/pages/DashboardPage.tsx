@@ -225,7 +225,7 @@ export function DashboardPage() {
 
                 {/* Sekcja Administracyjna i Zarządzania */}
                 {(canManageTeam || isAdmin) && (
-                    <div className="mt-10 pt-8 border-t">
+                    <div className="mt-9 pt-7 border-t">
                         <h3 className="text-xs font-bold text-muted-foreground mb-6 uppercase tracking-widest flex items-center gap-2">
                             <Settings2 className="h-4 w-4" /> Strefa Zarządzania
                         </h3>

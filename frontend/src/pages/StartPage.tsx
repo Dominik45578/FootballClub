@@ -8,13 +8,10 @@ export function StartPage() {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
 
-  // Overlay opacity: very light normally.
-  // Previous hover opacity was 0.25 reduced by 30% -> 0.175. Now reduce that by 10% more
-  // so the final hover opacity is 10% less faded than the previous version (0.175 * 0.9 = 0.1575).
   const DEFAULT_OPACITY = 0.05
   const PREVIOUS_HOVER_OPACITY = 0.25
-  const REDUCTION_FACTOR_30 = 0.3 // previous reduction (30%)
-  const REDUCTION_FACTOR_10 = 0.1 // new reduction (10%)
+  const REDUCTION_FACTOR_30 = 0.3
+  const REDUCTION_FACTOR_10 = 0.1
   const adjustedHoverOpacity = PREVIOUS_HOVER_OPACITY * (1 - REDUCTION_FACTOR_30) * (1 - REDUCTION_FACTOR_10) // 0.1575
   const overlayOpacity = hovered ? adjustedHoverOpacity : DEFAULT_OPACITY
 
@@ -26,17 +23,15 @@ export function StartPage() {
 
   // Set the browser tab title when on StartPage and restore previous on unmount
   useEffect(() => {
-    const previous = document.title
+    const previousTitle = document.title
     document.title = 'Zarządzanie klubem'
     return () => {
-      document.title = previous
+      document.title = previousTitle
     }
   }, [])
 
   return (
     <div className="min-h-screen relative flex items-center justify-center" style={backgroundStyle}>
-      {/* overlay to control 'fade' effect, transitions smoothly
-          Animate opacity (not background-color) so change is gradual */}
       <div
         className="absolute inset-0"
         style={{
@@ -47,14 +42,13 @@ export function StartPage() {
       />
 
       <div className="relative z-10 w-full max-w-lg">
-        <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl">
-          <CardContent className="p-8 text-center shadow-none md:shadow-lg rounded-lg">
+        <Card className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-background">
+          <CardContent className="p-8 text-center rounded-lg bg-background">
             <div className="mb-6">
-              {/* Replace with your actual logo file if available */}
-              <div className="mx-auto w-32 h-32 rounded-full bg-teal-600 flex items-center justify-center text-white text-4xl font-bold">FC</div>
+              <img src="/favicon.png" alt="Logo klubu" className="mx-auto w-32 h-32 object-contain" />
             </div>
             <h1 className="text-2xl font-bold mb-2">Panel zarządzania klubem</h1>
-            <p className="text-sm text-muted-foreground mb-6">Zarządzaj zawodnikami, meczami i powiadomieniami.</p>
+            <p className="text-sm text-muted-foreground mb-6">Zarządzaj zawodnikami, meczami i zespołami.</p>
 
             <div className="flex gap-4 justify-center">
               <Button
@@ -65,7 +59,7 @@ export function StartPage() {
                 onMouseLeave={() => setHovered(false)}
               >
                 <span className="relative flex items-center justify-center w-full">
-                  <LogIn className="absolute left-5 h-5 w-5 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
+                  <LogIn className="absolute left-4 h-5 w-5 opacity-0 -translate-x-3 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
                   <span className="transition-transform duration-200 group-hover:translate-x-2">Zaloguj</span>
                 </span>
               </Button>

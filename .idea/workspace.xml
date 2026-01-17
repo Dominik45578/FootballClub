@@ -5,23 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8fb8382-619d-46a1-8847-b1cbf41c3be3" name="Changes" comment="Add time selection support to DateInput and fix UI for match service">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/NotFound.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/matchesApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AccessDeniedPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AccessDeniedPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ActivateAccountPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ActivateAccountPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/button.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/DashboardPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesManagementPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MatchesPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberProfilePage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberPublicProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberPublicProfilePage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MemberSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MemberSearchPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamManagementPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TeamSearchPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ResetPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ResetPasswordPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/StartPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/StartPage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
