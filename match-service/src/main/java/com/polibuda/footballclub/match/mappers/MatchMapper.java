@@ -3,7 +3,6 @@ package com.polibuda.footballclub.match.mappers;
 import com.polibuda.footballclub.match.dto.fromMatchService.MatchMemberDto;
 import com.polibuda.footballclub.match.dto.fromMatchService.MatchTeamDto;
 import com.polibuda.footballclub.match.dto.response.PlayerResponseDTO;
-import com.polibuda.footballclub.match.dto.response.TeamBasicResponseDTO;
 import com.polibuda.footballclub.match.dto.response.TeamDetailsResponseDTO;
 import com.polibuda.footballclub.match.dto.response.wrappers.MatchResponseDTO;
 import com.polibuda.footballclub.match.dto.response.wrappers.MatchTeamDataDTO;
@@ -16,21 +15,17 @@ import java.util.stream.Collectors;
 @Component
 public class MatchMapper {
 
-    /**
-     * Główna metoda mapująca.
-     * Łączy dane z bazy (Match) + dane z User Service (internalTeam) + dane z Football Data (externalTeam).
-     */
     public MatchResponseDTO toDto(Match match, MatchTeamDto internalTeam, TeamDetailsResponseDTO externalTeam) {
-        
-        // 1. Przygotuj wrappery dla obu zespołów
+
+        // 1. Mapowanie wrapperów zespołów
         MatchTeamDataDTO internalTeamWrapper = mapInternalTeam(internalTeam);
         MatchTeamDataDTO externalTeamWrapper = mapExternalTeam(externalTeam);
 
-        // 2. Ustal kto jest gospodarzem na podstawie flagi w bazie
+        // 2. Logika gospodarza (Home/Away)
         MatchTeamDataDTO homeTeam;
         MatchTeamDataDTO awayTeam;
-        Long awayTeamScore;
         Long homeTeamScore;
+        Long awayTeamScore;
 
         if (Boolean.TRUE.equals(match.getIsInternalTeamHome())) {
             homeTeam = internalTeamWrapper;
@@ -44,7 +39,6 @@ public class MatchMapper {
             awayTeamScore = match.getInternalTeamScore();
         }
 
-        // 3. Zbuduj odpowiedź
         return MatchResponseDTO.builder()
                 .matchId(match.getId())
                 .matchDate(match.getMatchDate())
@@ -66,6 +60,9 @@ public class MatchMapper {
                     .isInternal(true)
                     .build();
         }
+        // UWAGA: MatchTeamDto aktualnie nie posiada pola logoUrl w swojej strukturze.
+        // Jeśli chcesz je mieć dla internal team, musisz dodać je do MatchTeamDto
+        // oraz uzupełnić MatchProtoMapper.
         return MatchTeamDataDTO.builder()
                 .id(source.getTeamId())
                 .name(source.getTeamName())
@@ -82,10 +79,15 @@ public class MatchMapper {
                     .isInternal(false)
                     .build();
         }
+
+        // FIX: Dodano mapowanie logoUrl
+        String logoUrl = source.getTeamInfo() != null ? source.getTeamInfo().getLogoUrl() : null;
+
         return MatchTeamDataDTO.builder()
                 .id(source.getTeamInfo().getId())
                 .name(source.getTeamInfo().getName())
                 .isInternal(false)
+                .logoUrl(logoUrl) // Tutaj następuje przypisanie brakującego pola
                 .squad(source.getSquad().stream().map(this::mapMatchTeam).collect(Collectors.toList()))
                 .build();
     }
@@ -96,6 +98,7 @@ public class MatchMapper {
                 .firstName(source.getName())
                 .fieldPosition(source.getPosition())
                 .number(source.getNumber())
+                .logoUrl(source.getPhotoUrl())
                 .build();
     }
 }

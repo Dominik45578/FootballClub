@@ -16,6 +16,7 @@ export type MatchMember = {
   roles?: string[]
   fieldPosition?: string
     number?: number
+    logoUrl?: string
 }
 
 export type MatchTeamData = {

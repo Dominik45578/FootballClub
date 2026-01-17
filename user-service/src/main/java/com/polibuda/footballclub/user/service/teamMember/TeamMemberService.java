@@ -5,9 +5,12 @@ import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
 import com.polibuda.footballclub.user.dto.request.ManageTeamMemberRequest;
 import com.polibuda.footballclub.user.dto.request.ManualAddMemberRequest;
 import com.polibuda.footballclub.user.dto.response.restricted.TeamMemberListItemDto;
+import com.polibuda.footballclub.user.dto.response.summary.TeamMembersSummaryResponse;
+import com.polibuda.footballclub.user.dto.response.summary.wrappers.MemberSearchResponse;
 import com.polibuda.footballclub.user.dto.response.summary.wrappers.TeamMemberSearchResponse;
 import com.polibuda.footballclub.user.entity.TeamMember;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Set;
 
@@ -52,4 +55,5 @@ public interface TeamMemberService {
      */
     void addMemberManually(Long requesterUserId, Long teamId, ManualAddMemberRequest request);
     void updateTeamMember(ManageTeamMemberRequest request, Long requesterUserId);
+    TeamMembersSummaryResponse searchTeamMembers(Long memberId, Pageable pageable);
 }

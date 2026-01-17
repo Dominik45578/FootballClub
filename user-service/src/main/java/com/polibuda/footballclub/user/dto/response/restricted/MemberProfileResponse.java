@@ -27,6 +27,5 @@ public class MemberProfileResponse {
     private String phoneNumber;
     private Double height;
     private Double weight;
-    private FieldPosition fieldPosition;
     private Integer age;
 }

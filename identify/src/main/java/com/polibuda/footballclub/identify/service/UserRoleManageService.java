@@ -55,6 +55,8 @@ public class UserRoleManageService {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime())
                 .userRole(roles)
+                .enabled(user.getEnabled())
+                .accountNonLocked(user.getAccountNonLocked())
                 .build();
     }
 

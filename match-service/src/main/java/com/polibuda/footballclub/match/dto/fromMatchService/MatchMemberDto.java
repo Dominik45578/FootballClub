@@ -17,5 +17,6 @@ public class MatchMemberDto {
     private String status;
     private Set<String> roles;
     private String fieldPosition;
+    private String logoUrl;
     private int number;
 }
