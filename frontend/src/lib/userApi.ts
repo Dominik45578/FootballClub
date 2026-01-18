@@ -32,6 +32,7 @@ export type MemberProfile = {
     lastName: string
     maskedPesel?: string
     birthDate?: string
+    joinDate?: string
     phoneNumber?: string
     height?: number
     weight?: number
@@ -54,7 +55,7 @@ export type TeamDetails = {
     category?: string
     createdAt?: string
     description?: string
-    members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string ;sienceDate?: string}>
+    members?: Array<{ teamMemberId: number; memberId: number; firstName: string; lastName: string; roles?: string[]; status?: string ;sienceDate?: string; number?: number}>
 }
 
 // --- NOWE DTO DO EDYCJI CZŁONKA ---
@@ -355,10 +356,12 @@ export async function addMember(payload: { firstName: string; lastName: string; 
     const init: RequestInit = {
         method: 'PUT',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',  ...authHeader() },
         credentials: 'include',
         redirect: 'manual' as RequestRedirect,
+
     }
+    console.log(init)
 
     const candidates: string[] = []
     candidates.push(url)
@@ -422,7 +425,6 @@ export async function addMember(payload: { firstName: string; lastName: string; 
 }
 
 export async function searchMembers(query: string, page = 0, size = 10, opts?: { allowUnauth?: boolean }) {
-    if (OFFLINE) return Promise.resolve({ items: [{ id: 11, firstName: 'Jan', lastName: 'Kowalski', age: 36 }], total: 1 })
     const qs = new URLSearchParams({ query, page: String(page), size: String(size) })
     const data = await fetchJson(`${USER_BASE}/members/search?${qs.toString()}`, { dontRedirectOnAuthError: opts?.allowUnauth })
     return { items: data?.content ?? data?.items ?? [], total: data?.totalElements ?? data?.total ?? data?.content?.length }
@@ -443,34 +445,28 @@ export async function getMemberProfile(id: number, opts?: { allowUnauth?: boolea
     try {
         return await fetchJson(fullUrl, { dontRedirectOnAuthError: opts?.allowUnauth })
     } catch (e2) {
-        if (opts?.allowUnauth) return { id, firstName: 'Jan', lastName: 'Kowalski', age: 36 }
         throw e2
     }
 }
 
 export async function activateAccount(code: string, email: string): Promise<{ success: boolean }> {
-    if (OFFLINE) return Promise.resolve({ success: true })
     return fetchJson(`${AUTH_BASE}/activate`, { method: 'POST', body: JSON.stringify({ code, email }), skipAuthHeader: true })
 }
 
 export async function resendActivation(email: string): Promise<{ sent: boolean }> {
-    if (OFFLINE) return Promise.resolve({ sent: true })
     const res = await fetchJson(`${AUTH_BASE}/activate/resend`, { method: 'POST', skipAuthHeader: true, body: JSON.stringify({ email }) })
     return { sent: !!(res?.sent ?? res?.success ?? res?.status ?? true) }
 }
 
 export async function addMemberManually(teamId: number, payload: { memberId: number; initialRoles?: string[] }) {
-    if (OFFLINE) return Promise.resolve({ ok: true })
     return fetchJson(`${USER_BASE}/team-management/${teamId}/add-member`, { method: 'POST', body: JSON.stringify(payload) })
 }
 
 export async function approveTeamMember(teamMemberId: number) {
-    if (OFFLINE) return Promise.resolve({ ok: true })
     return fetchJson(`${USER_BASE}/team-management/${teamMemberId}/approve`, { method: 'POST' })
 }
 
 export async function removeTeamMember(teamMemberId: number) {
-    if (OFFLINE) return Promise.resolve({ ok: true })
     const relUrl = `${API_PREFIX}/user/team-management/${teamMemberId}/del`
     const fullUrl = `${USER_BASE}/team-management/${teamMemberId}/del`
     try {
@@ -481,18 +477,12 @@ export async function removeTeamMember(teamMemberId: number) {
 }
 
 export async function removeTeam(teamId: number): Promise<boolean> {
-    if (OFFLINE) return Promise.resolve(true)
     const fullUrl = `${USER_BASE}/teams/del/${teamId}`
     await fetchJson(fullUrl, { method: 'DELETE' })
     return true
 }
 
 export async function getTeamMembers(status?: string, page?: number, size?: number, opts?: { allowUnauth?: boolean; skipAuthHeader?: boolean }): Promise<{ items: any[]; total?: number }> {
-    if (OFFLINE && ENABLE_MOCKS) {
-        const items = (mockTeamDetails && mockTeamDetails.members) ? mockTeamDetails.members : []
-        const filtered = typeof status === 'string' && status !== '' ? items.filter((it: any) => ((it.status || '').toString().toUpperCase() === status.toString().toUpperCase())) : items
-        return Promise.resolve({ items: filtered, total: filtered.length })
-    }
     const qs = new URLSearchParams()
     if (status) qs.set('status', String(status))
     if (page !== undefined) qs.set('page', String(page))
@@ -516,10 +506,6 @@ export async function getTeamMembers(status?: string, page?: number, size?: numb
 }
 
 export async function getTeamMember(teamMemberId: number) {
-    if (OFFLINE && ENABLE_MOCKS) {
-        const found = (mockTeamDetails && mockTeamDetails.members) ? mockTeamDetails.members.find((m: any) => (m.teamMemberId === teamMemberId || m.memberId === teamMemberId)) : null
-        return Promise.resolve(found)
-    }
     const relUrl = `${API_PREFIX}/user/team-management/get/${teamMemberId}`
     const fullUrl = `${USER_BASE}/team-management/get/${teamMemberId}`
     try {
@@ -530,12 +516,10 @@ export async function getTeamMember(teamMemberId: number) {
 }
 
 export async function register(payload: RegisterPayload): Promise<RegisterResponse> {
-    if (OFFLINE) return Promise.resolve({ success: true, message: 'Zarejestrowano lokalnie (mock)' })
     return fetchJson(`${AUTH_BASE}/register`, { method: 'POST', body: JSON.stringify(payload), skipAuthHeader: true }) as Promise<RegisterResponse>
 }
 
 export async function login(payload: { email: string; password: string }) {
-    if (OFFLINE) return Promise.resolve({ success: true, token: 'dev-token', message: 'Zalogowano (mock)' })
     const res = await fetchJson(`${AUTH_BASE}/login`, { method: 'POST', body: JSON.stringify(payload) })
     if (res?.token) setToken(res.token)
     if (res?.userId) setUserId(res.userId)
@@ -543,19 +527,16 @@ export async function login(payload: { email: string; password: string }) {
 }
 
 export async function refreshToken(payload: { refreshToken: string }) {
-    if (OFFLINE) return Promise.resolve({ token: 'dev-token' })
     const res = await fetchJson(`${AUTH_BASE}/refresh`, { method: 'POST', body: JSON.stringify(payload) })
     if (res?.token) setToken(res.token)
     return res
 }
 
 export async function requestPasswordReset(payload: PasswordResetRequestPayload): Promise<PasswordResetResponse> {
-    if (OFFLINE) return Promise.resolve({ status: true, message: 'Reset wysłany (mock)' })
     return fetchJson(`${PASSWORD_BASE}/reset-request`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<PasswordResetResponse>
 }
 
 export async function setNewPassword(payload: NewPasswordPayload): Promise<NewPasswordResponse> {
-    if (OFFLINE) return Promise.resolve({ status: true, message: 'Hasło zmienione (mock)' })
     return fetchJson(`${PASSWORD_BASE}/new-password`, { method: 'POST', body: JSON.stringify(payload) }) as Promise<NewPasswordResponse>
 }
 
@@ -589,7 +570,6 @@ export async function getMyAccount(opts?: { allowUnauth?: boolean }): Promise<Us
 }
 
 export async function updateMyAccount(payload: UpdateUserAccountPayload): Promise<boolean> {
-    if (OFFLINE) return Promise.resolve(true);
     const res = await fetchJson(`${AUTH_BASE}/me`, { method: 'POST', body: JSON.stringify(payload) });
     return !!res;
 }
@@ -616,25 +596,21 @@ export async function adminGetUser(userId: number): Promise<AdminUserResponse> {
 }
 
 export async function adminBlockUser(userId: number): Promise<boolean> {
-    if (OFFLINE) return Promise.resolve(true)
     const res = await fetchJson(`${AUTH_BASE}/admin/block?userId=${userId}`, { method: 'PATCH' })
     return !!res
 }
 
 export async function adminUnblockUser(userId: number): Promise<boolean> {
-    if (OFFLINE) return Promise.resolve(true)
     const res = await fetchJson(`${AUTH_BASE}/admin/unblock?userId=${userId}`, { method: 'PATCH' })
     return !!res
 }
 
 export async function adminGrantRoles(payload: AdminRoleRequest): Promise<boolean> {
-    if (OFFLINE) return Promise.resolve(true)
     const res = await fetchJson(`${AUTH_BASE}/admin/role/update`, { method: 'PATCH', body: JSON.stringify(payload) })
     return !!res
 }
 
 export async function adminRevokeRoles(payload: AdminRoleRequest): Promise<boolean> {
-    if (OFFLINE) return Promise.resolve(true)
     const res = await fetchJson(`${AUTH_BASE}/admin/role/del`, { method: 'DELETE', body: JSON.stringify(payload) })
     return !!res
 }
@@ -657,10 +633,11 @@ export type MemberProfileDTO = {
     id: number;
     firstName: string;
     lastName: string;
-    age: number | null;
+    age: number;
     joinDate: string;
     weight: number;
     height: number;
+    number: number;
 }
 
 export type MembershipResponse = {
@@ -670,8 +647,25 @@ export type MembershipResponse = {
     totalPages: number;
 }
 
+
+
+
 export async function getMemberMemberships(memberId: number): Promise<MembershipResponse> {
     return fetchJson(`${USER_BASE}/teams/membership/${memberId}`);
 }
 
+export type MemberSummaryResponse = {
+    id: number
+    firstName: string
+    lastName: string
+    age: number      // Backend teraz to wylicza
+    joinDate: string // Instant przychodzi jako ISO string
+    weight: number
+    height: number
+}
 
+
+export async function getMemberProfileById(memberId: number): Promise<MemberSummaryResponse> {
+    // URL: /user/members?memberId=123
+    return fetchJson(`${USER_BASE}/members/get/${memberId}`)
+}

@@ -3,7 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { CheckCircle, Loader2, UserCog, ArrowLeft, AlertCircle, Shield, User, Mail, Calendar, Lock, AlertTriangle } from 'lucide-react'
+import {
+    CheckCircle, Loader2, UserCog, ArrowLeft, AlertCircle,
+    Shield, User, Mail, Calendar, Lock, AlertTriangle,
+    Crown, Star
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import {
     getMyProfile,
@@ -37,8 +41,15 @@ export function MemberProfilePage() {
     const [confirmCountdown, setConfirmCountdown] = useState(5)
     const [confirmEmailMatch, setConfirmEmailMatch] = useState('')
 
-    // POPRAWKA: Używamy 'number | null' zamiast 'NodeJS.Timeout', ponieważ w przeglądarce setInterval zwraca ID jako liczbę.
     const countdownInterval = useRef<number | null>(null)
+
+    // --- LOGIKA BIZNESOWA: Wykrywanie Trenera ---
+    // Sprawdzamy, czy w rolach znajduje się uprawnienie trenera.
+    // Używamy .some() dla wydajności - przerywa pętlę po pierwszym trafieniu.
+    const isCoach = account?.userRole?.some(r =>
+        r.role.toUpperCase().includes('COACH') ||
+        r.role.toUpperCase().includes('TRENER')
+    ) ?? false
 
     useEffect(() => {
         const prev = document.title
@@ -51,7 +62,6 @@ export function MemberProfilePage() {
         if (isConfirmOpen) {
             setConfirmCountdown(5)
             setConfirmEmailMatch('')
-            // window.setInterval zwraca number
             countdownInterval.current = window.setInterval(() => {
                 setConfirmCountdown((prev) => {
                     if (prev <= 1) {
@@ -150,21 +160,17 @@ export function MemberProfilePage() {
         e.preventDefault()
         if (!account) return
 
-        // Walidacja podstawowa
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(accountForm.email)) {
             toast.error('Nieprawidłowy format adresu email')
             return
         }
 
-        // Sprawdzenie czy email uległ zmianie
         const emailChanged = accountForm.email.trim().toLowerCase() !== account.userEmail.trim().toLowerCase()
 
         if (emailChanged) {
-            // Jeśli email zmieniony -> Otwórz modal potwierdzenia
             setIsConfirmOpen(true)
         } else {
-            // Jeśli tylko username -> Zapisz od razu
             executeAccountUpdate()
         }
     }
@@ -172,7 +178,7 @@ export function MemberProfilePage() {
     const executeAccountUpdate = async () => {
         if (!account) return
         setAccountSaving(true)
-        setIsConfirmOpen(false) // Zamknij modal jeśli był otwarty
+        setIsConfirmOpen(false)
 
         try {
             const payload = { username: accountForm.username, email: accountForm.email }
@@ -188,21 +194,18 @@ export function MemberProfilePage() {
         }
     }
 
-    // Formatowanie daty
     const formatDate = (dateString?: string) => {
         if (!dateString) return '—'
         return new Date(dateString).toLocaleDateString('pl-PL', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
         })
     }
 
     return (
         <div className="min-h-screen bg-background pb-12 relative">
-            {/* Modal Potwierdzenia Zmiany Emaila */}
+            {/* Modal Potwierdzenia Zmiany Emaila - (bez zmian w logice) */}
             {isConfirmOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <Card className="w-full max-w-md shadow-2xl border-destructive/50 ring-1 ring-destructive/20 bg-background">
@@ -228,7 +231,6 @@ export function MemberProfilePage() {
                                     <div className="font-mono font-bold text-primary break-all">{accountForm.email}</div>
                                 </div>
                             </div>
-
                             <div className="space-y-2">
                                 <Label htmlFor="confirmEmail" className="text-xs uppercase text-muted-foreground">
                                     Przepisz nowy email aby potwierdzić
@@ -240,11 +242,7 @@ export function MemberProfilePage() {
                                     onChange={(e) => setConfirmEmailMatch(e.target.value)}
                                     className={confirmEmailMatch && confirmEmailMatch !== accountForm.email ? "border-destructive focus-visible:ring-destructive" : ""}
                                 />
-                                {confirmEmailMatch && confirmEmailMatch !== accountForm.email && (
-                                    <p className="text-xs text-destructive">Adresy email nie są identyczne.</p>
-                                )}
                             </div>
-
                             <div className="flex flex-col gap-2 pt-2">
                                 <Button
                                     onClick={executeAccountUpdate}
@@ -253,22 +251,12 @@ export function MemberProfilePage() {
                                     disabled={confirmCountdown > 0 || confirmEmailMatch !== accountForm.email}
                                 >
                                     {confirmCountdown > 0 ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Potwierdź za {confirmCountdown}s
-                                        </>
+                                        <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Potwierdź za {confirmCountdown}s </>
                                     ) : (
-                                        <>
-                                            <CheckCircle className="mr-2 h-4 w-4" />
-                                            Potwierdzam zmianę
-                                        </>
+                                        <> <CheckCircle className="mr-2 h-4 w-4" /> Potwierdzam zmianę </>
                                     )}
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => setIsConfirmOpen(false)}
-                                    className="w-full"
-                                >
+                                <Button variant="ghost" onClick={() => setIsConfirmOpen(false)} className="w-full">
                                     Anuluj
                                 </Button>
                             </div>
@@ -291,18 +279,43 @@ export function MemberProfilePage() {
 
             <main className="container py-8 px-4 sm:px-6 lg:px-8 space-y-8">
 
-                {/* --- GÓRNA SEKCJA: 2 KOLUMNY --- */}
                 <div className="grid gap-6 lg:grid-cols-2 items-start">
 
                     {/* --- LEWA KOLUMNA: Member Profile --- */}
+                    {/* WPROWADZONO: Logika styli dla Trenera (Border + Glow) */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground border-b pb-2">
                             <User className="w-5 h-5" /> Dane Fizyczne
                         </div>
-                        <Card className="shadow-sm h-full">
+                        <Card className={`
+                            shadow-sm h-full transition-all duration-300 relative overflow-hidden
+                            ${isCoach
+                            ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_20px_-5px_rgba(251,191,36,0.3)]'
+                            : ''
+                        }
+                        `}>
+                            {/* Ozdobny gradient dla trenera w tle */}
+                            {isCoach && (
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 animate-pulse" />
+                            )}
+
                             <CardHeader>
-                                <CardTitle>Profil Sportowy</CardTitle>
-                                <CardDescription>Twoje parametry fizyczne w klubie.</CardDescription>
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <CardTitle className="flex items-center gap-2">
+                                            Profil Sportowy
+                                            {/* WPROWADZONO: Ikona wyróżniająca trenera */}
+                                            {isCoach && (
+                                                <Badge variant="secondary" className="ml-2 bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 gap-1 px-2">
+                                                    <Crown className="w-3.5 h-3.5 fill-current" />
+                                                    Sztab
+                                                </Badge>
+                                            )}
+                                        </CardTitle>
+                                        <CardDescription>Twoje parametry fizyczne w klubie.</CardDescription>
+                                    </div>
+                                    {isCoach && <Star className="h-6 w-6 text-amber-400 fill-amber-400/20 animate-pulse" />}
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 {memberLoading && (
@@ -317,7 +330,7 @@ export function MemberProfilePage() {
                                         <div className="space-y-1">
                                             <h3 className="font-semibold">Brak profilu członkowskiego</h3>
                                             <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                                                Nie posiadasz jeszcze aktywnego profilu zawodnika. Dołącz do zespołu, aby uzupełnić dane fizyczne.
+                                                Nie posiadasz jeszcze aktywnego profilu.
                                             </p>
                                         </div>
                                     </div>
@@ -334,10 +347,6 @@ export function MemberProfilePage() {
                                                 <span className="text-xs text-muted-foreground uppercase font-bold">Wiek</span>
                                                 <p className="font-medium">{memberProfile.age != null ? `${memberProfile.age} lat` : '—'}</p>
                                             </div>
-                                            <div>
-                                                <span className="text-xs text-muted-foreground uppercase font-bold">PESEL</span>
-                                                <p className="font-mono text-sm">{memberProfile.maskedPesel ?? '—'}</p>
-                                            </div>
                                         </div>
 
                                         <form onSubmit={handleMemberSubmit} className="space-y-4">
@@ -348,7 +357,6 @@ export function MemberProfilePage() {
                                                         type="number"
                                                         value={memberForm.height}
                                                         onChange={(e) => handleMemberChange('height', e.target.value)}
-                                                        placeholder="np. 180"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
@@ -357,7 +365,6 @@ export function MemberProfilePage() {
                                                         type="number"
                                                         value={memberForm.weight}
                                                         onChange={(e) => handleMemberChange('weight', e.target.value)}
-                                                        placeholder="np. 75"
                                                     />
                                                 </div>
                                             </div>
@@ -366,7 +373,6 @@ export function MemberProfilePage() {
                                                 <Input
                                                     value={memberForm.phoneNumber}
                                                     onChange={(e) => handleMemberChange('phoneNumber', e.target.value)}
-                                                    placeholder="+48..."
                                                 />
                                             </div>
 
@@ -381,7 +387,7 @@ export function MemberProfilePage() {
                         </Card>
                     </div>
 
-                    {/* --- PRAWA KOLUMNA: User Account (BEZ RÓL) --- */}
+                    {/* --- PRAWA KOLUMNA: User Account --- */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground border-b pb-2">
                             <Shield className="w-5 h-5" /> Ustawienia Konta
@@ -392,36 +398,49 @@ export function MemberProfilePage() {
                                 <CardDescription>Informacje systemowe i dostępowe.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                {accountLoading && (
+                                {accountLoading ? (
                                     <div className="flex items-center justify-center py-8 text-muted-foreground">
                                         <Loader2 className="h-6 w-6 animate-spin mr-2" /> Ładowanie konta...
                                     </div>
-                                )}
-
-                                {!accountLoading && !account && (
+                                ) : !account ? (
                                     <div className="text-destructive text-sm text-center py-4">
-                                        Nie udało się załadować danych konta.
+                                        Błąd ładowania konta.
                                     </div>
-                                )}
-
-                                {!accountLoading && account && (
+                                ) : (
                                     <form onSubmit={handleAccountPreSubmit} className="space-y-6">
 
-                                        {/* ID i Data utworzenia */}
-                                        <div className="flex flex-wrap items-center justify-between gap-4 p-3 border rounded-lg bg-muted/10">
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant="outline" className="px-2 py-1">ID: {account.userId}</Badge>
+                                        {/* WPROWADZONO: Sekcja Info + Badge z Rolami pod datą */}
+                                        <div className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/10">
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="px-2 py-1 bg-background">ID: {account.userId}</Badge>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-sm text-muted-foreground" title="Data dołączenia">
+                                                    <Calendar className="w-4 h-4" />
+                                                    <span>Dołączono: {formatDate(account.createdAt)}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1 text-sm text-muted-foreground" title="Data dołączenia">
-                                                <Calendar className="w-4 h-4" />
-                                                <span>{formatDate(account.createdAt)}</span>
-                                            </div>
+
+                                            {/* Wyświetlanie ról w zespole pod datą */}
+                                            {account.userRole && account.userRole.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 pt-1 border-t border-dashed mt-1">
+                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground self-center">Role:</span>
+                                                    {account.userRole.map((roleObj, idx) => (
+                                                        <Badge
+                                                            key={idx}
+                                                            variant={roleObj.role.includes('ADMIN') ? 'destructive' : 'secondary'}
+                                                            className="text-xs px-2 py-0.5"
+                                                        >
+                                                            {roleObj.role.replace('ROLE_', '')}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Formularz */}
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="username">Nazwa użytkownika (Login)</Label>
+                                                <Label htmlFor="username">Nazwa użytkownika</Label>
                                                 <div className="relative">
                                                     <User className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                                     <Input
@@ -431,9 +450,6 @@ export function MemberProfilePage() {
                                                         onChange={(e) => handleAccountChange('username', e.target.value)}
                                                     />
                                                 </div>
-                                                <p className="text-[0.8rem] text-muted-foreground">
-                                                    Unikalna nazwa używana do logowania.
-                                                </p>
                                             </div>
 
                                             <div className="space-y-2">
@@ -454,7 +470,6 @@ export function MemberProfilePage() {
                                             {accountSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
                                             Aktualizuj konto
                                         </Button>
-
                                     </form>
                                 )}
                             </CardContent>
@@ -462,44 +477,37 @@ export function MemberProfilePage() {
                     </div>
                 </div>
 
-                {/* --- DOLNA SEKCJA: ROLE SYSTEMOWE (GRID 2) --- */}
+                {/* --- DOLNA SEKCJA: Pełna lista uprawnień (zostawiamy jako szczegóły) --- */}
                 {account && !accountLoading && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-lg font-semibold text-muted-foreground border-b pb-2">
-                            <Lock className="w-5 h-5" /> Uprawnienia Systemowe
+                            <Lock className="w-5 h-5" /> Szczegóły Uprawnień
                         </div>
                         <Card>
                             <CardHeader>
                                 <CardTitle>Role i Uprawnienia</CardTitle>
-                                <CardDescription>Lista ról przypisanych do Twojego konta w systemie.</CardDescription>
+                                <CardDescription>Szczegółowy opis przypisanych ról.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {account.userRole && account.userRole.length > 0 ? (
-                                        account.userRole.map((roleObj, idx) => (
-                                            <div key={idx} className="flex flex-col p-4 rounded-lg border bg-card hover:bg-muted/10 transition-colors">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <Badge variant="secondary" className="font-mono text-sm px-3 py-1">
-                                                        {roleObj.role.replace('ROLE_', '')}
-                                                    </Badge>
-                                                    <Shield className="w-4 h-4 text-muted-foreground/50" />
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    {roleObj.description ? roleObj.description : 'Brak dodatkowego opisu dla tej roli.'}
-                                                </div>
+                                    {account.userRole?.map((roleObj, idx) => (
+                                        <div key={idx} className="flex flex-col p-4 rounded-lg border bg-card hover:bg-muted/10 transition-colors">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <Badge variant="outline" className="font-mono text-sm px-3 py-1">
+                                                    {roleObj.role}
+                                                </Badge>
+                                                <Shield className="w-4 h-4 text-muted-foreground/50" />
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="col-span-2 text-center py-8 text-muted-foreground border border-dashed rounded-lg">
-                                            Brak przypisanych ról systemowych.
+                                            <div className="text-sm text-muted-foreground">
+                                                {roleObj.description || 'Standardowe uprawnienia użytkownika.'}
+                                            </div>
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
                 )}
-
             </main>
         </div>
     )

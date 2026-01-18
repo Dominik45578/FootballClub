@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { ScrollArea } from '@/components/ui/scroll-area.tsx'
+import { Switch } from '@/components/ui/switch.tsx'
+import { Label } from '@/components/ui/label.tsx'
 import {
     Search, ArrowLeft, Calendar, Shield,
-    CheckCircle2, Loader2, Save
+    CheckCircle2, Loader2, Save, House, Plane
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.ts'
 
 // API Imports
-import { getTeams as getInternalTeams } from '@/lib/userApi' // Internal teams
-import { getTeams as getExternalTeamsList, type TeamSummary } from '@/lib/externalApi' // External teams (zmieniona nazwa)
-import { createMatch } from '@/lib/matchesApi' // Match creation
+import { getTeams as getInternalTeams } from '@/lib/userApi.ts'
+import { getTeams as getExternalTeamsList, type TeamSummary } from '@/lib/externalApi.ts'
+import { createMatch } from '@/lib/matchesApi.ts'
 
 // --- TYPY POMOCNICZE ---
 
@@ -54,10 +54,8 @@ export function MatchesManagementPage() {
 
     useEffect(() => {
         document.title = 'Kreator Meczu'
-        // Na start ładujemy domyślne listy
         fetchInternalTeams()
         fetchExternalTeams()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     // --- LOGIKA WYSZUKIWANIA: INTERNAL ---
@@ -65,27 +63,21 @@ export function MatchesManagementPage() {
         setLoadingInternal(true)
         try {
             const isId = /^\d+$/.test(query.trim()) && query.trim().length > 0
-
-            const params: any = {
-                mode: 'ALL_TEAMS',
-                size: 20
-            }
+            const params: any = { mode: 'ALL_TEAMS', size: 20 }
 
             if (query.trim()) {
                 if (isId) params.teamId = Number(query)
                 else params.name = query
             }
 
-            // Pobranie z userApi
             const res = await getInternalTeams(params, { allowUnauth: true })
 
-            // Mapowanie + FILTRACJA STATUSU ACTIVE
             const mapped: TeamSelectable[] = (res.items || [])
                 .filter((t: any) => (t.status || 'CREATED') === 'ACTIVE')
                 .map((t: any) => ({
                     id: t.teamId ?? t.id,
                     name: t.teamName ?? t.name,
-                    logo: '/favicon.png', // Internal zawsze ma nasze logo
+                    logo: '/favicon.png',
                     origin: 'internal',
                     info: t.category || 'Zespół klubowy'
                 }))
@@ -103,12 +95,8 @@ export function MatchesManagementPage() {
     const fetchExternalTeams = async (query: string = '') => {
         setLoadingExternal(true)
         try {
-            // Używamy getTeams (zaimportowane jako getExternalTeamsList) z externalApi
-            // Przyjmuje parametr 'query' do wyszukiwania
             const res = await getExternalTeamsList({ query: query, size: 20 })
 
-            // Mapowanie wyników (TeamSummary -> TeamSelectable)
-            // Używamy pola 'logo' (zgodnie z nowym DTO), a nie 'logoUrl'
             let mapped: TeamSelectable[] = (res.content || []).map((c: TeamSummary) => ({
                 id: c.id,
                 name: c.name,
@@ -117,10 +105,8 @@ export function MatchesManagementPage() {
                 info: c.country ? `${c.country} (${c.code})` : c.code
             }))
 
-            // Logika filtrowania ID po stronie klienta (dla precyzji)
             if (/^\d+$/.test(query.trim())) {
                 const id = Number(query)
-                // Szukamy dokładnego dopasowania ID w wynikach
                 const exact = mapped.filter((m) => m.id === id)
                 if (exact.length > 0) mapped = exact
             }
@@ -134,16 +120,9 @@ export function MatchesManagementPage() {
         }
     }
 
-    // --- HANDLERY SZUKANIA ---
-    const handleInternalSearch = (e: React.FormEvent) => {
-        e.preventDefault()
-        fetchInternalTeams(internalQuery)
-    }
-
-    const handleExternalSearch = (e: React.FormEvent) => {
-        e.preventDefault()
-        fetchExternalTeams(externalQuery)
-    }
+    // --- HANDLERY ---
+    const handleInternalSearch = (e: React.FormEvent) => { e.preventDefault(); fetchInternalTeams(internalQuery) }
+    const handleExternalSearch = (e: React.FormEvent) => { e.preventDefault(); fetchExternalTeams(externalQuery) }
 
     // --- ZAPIS ---
     const handleCreate = async () => {
@@ -160,7 +139,7 @@ export function MatchesManagementPage() {
                 internalTeamId: selectedInternal.id,
                 externalTeamId: selectedExternal.id,
                 matchDate: finalDate,
-                isHome: isHome
+                isHome: isHome // Przekazujemy flagę isHome
             })
 
             toast.success('Mecz został utworzony pomyślnie!')
@@ -177,33 +156,28 @@ export function MatchesManagementPage() {
     return (
         <div className="min-h-screen bg-muted/20 pb-20 font-sans">
             {/* Header */}
-            <header className="border-b bg-[#0f172a] sticky top-0 z-30 shadow-sm h-16 flex items-center"><div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
-                        <img
-                            src="/favicon.png"
-                            alt="Club Logo"
-                            className="h-full w-full object-contain"
-                        />
+            <header className="border-b bg-[#0f172a] sticky top-0 z-30 shadow-sm h-16 flex items-center">
+                <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                            <img src="/favicon.png" alt="Club Logo" className="h-full w-full object-contain" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight text-foreground">Centrum Meczowe</h1>
+                            <p className="text-xs text-muted-foreground hidden sm:block">Dodaj nowy mecz</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-foreground">Centrum Meczowe</h1>
-                        <p className="text-xs text-muted-foreground hidden sm:block">Dodaj nowy mecz</p>
-                    </div>
-
+                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
+                        <ArrowLeft className="h-4 w-4" />
+                        <span className="hidden sm:inline">Dashboard</span>
+                    </Button>
                 </div>
-                <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
-                </Button>
-            </div>
             </header>
 
             <main className="container py-8 px-4 max-w-7xl mx-auto space-y-8">
 
                 {/* GRID WYBORU ZESPOŁÓW */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-
                     {/* LEWA STRONA: INTERNAL */}
                     <TeamSelectorPanel
                         title="Nasza Drużyna"
@@ -233,12 +207,12 @@ export function MatchesManagementPage() {
                     />
                 </div>
 
-                {/* PASEK OSOBNOŚCI: USTAWIENIA CZASU I GOSPODARZA */}
+                {/* PASEK USTAWIEŃ MECZU (DATA, CZAS, LOKALIZACJA) */}
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base">Szczegóły spotkania</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-wrap gap-6 items-end">
+                    <CardContent className="flex flex-wrap gap-8 items-end">
                         <div className="space-y-2">
                             <Label>Data meczu</Label>
                             <Input
@@ -257,13 +231,20 @@ export function MatchesManagementPage() {
                                 className="w-32"
                             />
                         </div>
-                        <div className="flex items-center space-x-3 pb-2 border-l pl-6 ml-2 h-12">
-                            <Switch id="home-mode" checked={isHome} onCheckedChange={setIsHome} />
-                            <div className="space-y-0.5">
-                                <Label htmlFor="home-mode">Gramy u siebie?</Label>
-                                <p className="text-xs text-muted-foreground">
-                                    {isHome ? 'Jesteśmy GOSPODARZEM' : 'Jesteśmy GOŚCIEM (Wyjazd)'}
-                                </p>
+
+                        {/* PRZEŁĄCZNIK DOM / WYJAZD */}
+                        <div className="flex items-center gap-4 pb-2 pl-4 border-l h-14">
+                            <div className="flex flex-col items-center gap-1">
+                                <Label htmlFor="home-mode" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Lokalizacja</Label>
+                                <div className="flex items-center gap-3 bg-muted/30 p-1.5 rounded-lg border">
+                                    <span className={cn("text-xs font-bold transition-colors flex items-center gap-1", !isHome && "text-muted-foreground opacity-50")}>
+                                        <Plane className="h-3.5 w-3.5" /> WYJAZD
+                                    </span>
+                                    <Switch id="home-mode" checked={isHome} onCheckedChange={setIsHome} />
+                                    <span className={cn("text-xs font-bold transition-colors flex items-center gap-1", isHome ? "text-emerald-600" : "text-muted-foreground opacity-50")}>
+                                        DOM <House className="h-3.5 w-3.5" />
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
@@ -282,8 +263,8 @@ export function MatchesManagementPage() {
 
                         <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-10 gap-8">
 
-                            {/* LEWA: GOSPODARZ */}
-                            <div className="flex-1 flex flex-col items-center md:items-end text-center md:text-right gap-4">
+                            {/* LEWA STRONA: GOSPODARZ (Zależnie od isHome) */}
+                            <div className="flex-1 flex flex-col items-center md:items-end text-center md:text-right gap-4 transition-all duration-300">
                                 <TeamLogoLarge
                                     url={isHome ? selectedInternal?.logo : selectedExternal?.logo}
                                     name={isHome ? selectedInternal?.name : selectedExternal?.name}
@@ -292,7 +273,9 @@ export function MatchesManagementPage() {
                                     <h2 className="text-2xl md:text-3xl font-bold leading-none tracking-tight">
                                         {(isHome ? selectedInternal?.name : selectedExternal?.name) || '???'}
                                     </h2>
-                                    <Badge className="mt-3 bg-emerald-900/40 text-emerald-200 border-emerald-700/50">GOSPODARZ</Badge>
+                                    <Badge className="mt-3 bg-emerald-900/40 text-emerald-200 border-emerald-700/50 hover:bg-emerald-900/60 flex w-fit ml-auto mr-auto md:mr-0 gap-1">
+                                        <House className="h-3 w-3" /> GOSPODARZ
+                                    </Badge>
                                 </div>
                             </div>
 
@@ -301,7 +284,7 @@ export function MatchesManagementPage() {
                                 <Badge variant="outline" className="border-blue-700/50 text-blue-200 bg-blue-900/20 uppercase tracking-widest px-3">
                                     ZAPLANOWANY
                                 </Badge>
-                                <div className="text-5xl md:text-6xl font-black text-slate-700 py-2">VS</div>
+                                <div className="text-5xl md:text-6xl font-black text-slate-700 py-2 tracking-tighter">VS</div>
                                 {matchDate && (
                                     <div className="flex items-center text-sm font-medium text-slate-300 bg-slate-800/80 px-4 py-1.5 rounded-full border border-slate-700">
                                         <Calendar className="h-4 w-4 mr-2 text-slate-400" />
@@ -310,8 +293,8 @@ export function MatchesManagementPage() {
                                 )}
                             </div>
 
-                            {/* PRAWA: GOŚĆ */}
-                            <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left gap-4">
+                            {/* PRAWA STRONA: GOŚĆ (Zależnie od isHome) */}
+                            <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left gap-4 transition-all duration-300">
                                 <TeamLogoLarge
                                     url={!isHome ? selectedInternal?.logo : selectedExternal?.logo}
                                     name={!isHome ? selectedInternal?.name : selectedExternal?.name}
@@ -320,7 +303,9 @@ export function MatchesManagementPage() {
                                     <h2 className="text-2xl md:text-3xl font-bold leading-none tracking-tight">
                                         {(!isHome ? selectedInternal?.name : selectedExternal?.name) || '???'}
                                     </h2>
-                                    <Badge className="mt-3 bg-amber-900/40 text-amber-200 border-amber-700/50">GOŚĆ</Badge>
+                                    <Badge className="mt-3 bg-amber-900/40 text-amber-200 border-amber-700/50 hover:bg-amber-900/60 flex w-fit ml-auto mr-auto md:ml-0 gap-1">
+                                        <Plane className="h-3 w-3" /> GOŚĆ
+                                    </Badge>
                                 </div>
                             </div>
 
@@ -331,7 +316,7 @@ export function MatchesManagementPage() {
                     <div className="flex justify-end pt-4">
                         <Button
                             size="lg"
-                            className="w-full md:w-auto text-base px-8 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-900/20"
+                            className="w-full md:w-auto text-base px-8 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-900/20 transition-all hover:scale-105"
                             disabled={!selectedInternal || !selectedExternal || !matchDate || isSaving}
                             onClick={handleCreate}
                         >
@@ -356,11 +341,11 @@ function TeamSelectorPanel({
     variant: 'internal' | 'external'
 }) {
     return (
-        <Card className={cn("flex flex-col h-[500px]", selected ? "border-primary/50 ring-1 ring-primary/10" : "")}>
+        <Card className={cn("flex flex-col h-[500px] transition-all", selected ? "border-primary/50 ring-2 ring-primary/10 shadow-md" : "")}>
             <CardHeader className="pb-3 border-b bg-muted/20">
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-lg">
                     <span>{title}</span>
-                    {selected && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+                    {selected && <CheckCircle2 className="h-6 w-6 text-emerald-500 animate-in zoom-in" />}
                 </CardTitle>
                 <CardDescription>{description}</CardDescription>
                 <form onSubmit={onSearch} className="flex gap-2 mt-2">
@@ -368,7 +353,7 @@ function TeamSelectorPanel({
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder={variant === 'internal' ? "Nazwa lub ID (np. 12)" : "Nazwa klubu..."}
-                            className="pl-9"
+                            className="pl-9 bg-background/50"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
@@ -378,40 +363,40 @@ function TeamSelectorPanel({
                     </Button>
                 </form>
             </CardHeader>
-            <CardContent className="p-0 flex-1 overflow-hidden relative">
+            <CardContent className="p-0 flex-1 overflow-hidden relative bg-card/50">
                 <ScrollArea className="h-full">
                     {list.length === 0 && !loading && (
-                        <div className="p-8 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
-                            <Search className="h-8 w-8 opacity-20" />
+                        <div className="p-12 text-center text-muted-foreground text-sm flex flex-col items-center gap-3 opacity-60">
+                            <Search className="h-10 w-10" />
                             <p>Brak wyników wyszukiwania.</p>
                         </div>
                     )}
                     {loading && (
-                        <div className="p-8 text-center text-muted-foreground flex justify-center">
+                        <div className="p-12 text-center text-muted-foreground flex justify-center">
                             <Loader2 className="h-8 w-8 animate-spin opacity-50" />
                         </div>
                     )}
-                    <div className="divide-y">
+                    <div className="divide-y divide-border/50">
                         {list.map((team) => (
                             <div
                                 key={team.id}
                                 onClick={() => onSelect(team)}
                                 className={cn(
-                                    "flex items-center gap-3 p-4 cursor-pointer transition-colors hover:bg-muted/50",
-                                    selected?.id === team.id ? "bg-primary/5 border-l-4 border-l-primary pl-[12px]" : "border-l-4 border-l-transparent"
+                                    "flex items-center gap-3 p-4 cursor-pointer transition-all hover:bg-muted/60",
+                                    selected?.id === team.id ? "bg-primary/5 border-l-4 border-l-primary pl-[12px]" : "border-l-4 border-l-transparent pl-4"
                                 )}
                             >
-                                <div className="h-10 w-10 shrink-0 rounded bg-white border flex items-center justify-center p-1">
+                                <div className="h-10 w-10 shrink-0 rounded-full bg-white border flex items-center justify-center p-1 shadow-sm">
                                     {team.logo ? <img src={team.logo} className="h-full w-full object-contain" /> : <Shield className="h-5 w-5 text-muted-foreground/30"/>}
                                 </div>
                                 <div className="flex-1 overflow-hidden">
-                                    <div className="font-semibold truncate">{team.name}</div>
-                                    <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                        <Badge variant="outline" className="text-[10px] px-1 h-4">{variant === 'internal' ? 'Nasza' : 'Zewn.'}</Badge>
-                                        <span className="truncate">{team.info}</span>
+                                    <div className="font-semibold truncate text-sm">{team.name}</div>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                                        <Badge variant="secondary" className="text-[9px] px-1 h-4 border-muted-foreground/20">{variant === 'internal' ? 'KLUB' : 'RYWAL'}</Badge>
+                                        <span className="truncate opacity-80">{team.info}</span>
                                     </div>
                                 </div>
-                                {selected?.id === team.id && <CheckCircle2 className="h-5 w-5 text-primary" />}
+                                {selected?.id === team.id && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
                             </div>
                         ))}
                     </div>
@@ -423,7 +408,7 @@ function TeamSelectorPanel({
 
 function TeamLogoLarge({ url, name }: { url?: string | null, name?: string }) {
     return (
-        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-slate-700 bg-white flex items-center justify-center shadow-2xl p-2 transition-transform hover:scale-105">
+        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-slate-700 bg-white flex items-center justify-center shadow-2xl p-3 transition-transform duration-500 hover:scale-105">
             {url ? (
                 <img src={url} alt={name} className="h-full w-full object-contain" />
             ) : (

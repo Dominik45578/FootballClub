@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button.tsx'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card.tsx'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, ArrowLeft } from 'lucide-react'
 

@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Separator } from '@/components/ui/separator.tsx'
 import {
     Search,
     LayoutList,
@@ -16,9 +16,9 @@ import {
     CalendarDays
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { getAllMatches, getMyMatches, getMatchById, type MatchResponse, statusToLabel } from '@/lib/matchesApi'
-import { cn } from '@/lib/utils'
-import { hasRole } from '@/lib/auth' // Importujemy helper do ról
+import { getAllMatches, getMyMatches, getMatchById, type MatchResponse, statusToLabel } from '@/lib/matchesApi.ts'
+import { cn } from '@/lib/utils.ts'
+import { hasRole } from '@/lib/auth.ts' // Importujemy helper do ról
 
 type ViewMode = 'all' | 'my' | 'archived'
 

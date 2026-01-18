@@ -58,6 +58,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberSummaryResponse getMemberProfileById(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberNotFoundException(memberId));
+        return mapToMemberSummaryResponse(member);
+    }
+
+    @Override
     @Transactional
     public MemberProfileResponse updateMyProfile(Long userId, UpdateMemberProfileRequest request) {
         Member member = getMemberByUserIdOrThrow(userId);
@@ -194,6 +200,8 @@ public class MemberServiceImpl implements MemberService {
                 .lastName(member.getLastName())
                 .age(calculateAge(member.getBirthDate()))
                .joinDate(member.getCreatedAt())
+               .weight(member.getWeight())
+               .height(member.getHeight())
                 .build();
     }
 }

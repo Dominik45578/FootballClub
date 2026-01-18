@@ -52,12 +52,12 @@ public class Member extends AbstractAuditableEntity {
     @Min(0)
     @Max(250)
     @Builder.Default
-    private Double height= 0d;
+    private double height= 0d;
 
     @Min(0)
     @Max(150)
     @Builder.Default
-    private Double weight = 0d;
+    private double weight = 0d;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

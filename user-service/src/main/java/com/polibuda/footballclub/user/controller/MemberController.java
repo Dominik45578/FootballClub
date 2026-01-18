@@ -51,6 +51,15 @@ public class MemberController {
         return ResponseEntity.ok(memberService.getMemberProfile(id));
     }
 
+    @PreAuthorize("hasAnyRole('MEMBER')")
+    @GetMapping("/get/{memberId}")
+    public ResponseEntity<MemberSummaryResponse> getMemberProfileById(
+            @PathVariable Long memberId
+    ){
+        return ResponseEntity.ok(memberService.getMemberProfileById(memberId));
+    }
+
+
     @PutMapping("/join")
     public ResponseEntity<Boolean> addNewMember(
            @Valid  @RequestBody(required = true) NewMemberRequestDTO request,

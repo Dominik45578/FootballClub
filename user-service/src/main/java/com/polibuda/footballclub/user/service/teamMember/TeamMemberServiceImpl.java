@@ -2,6 +2,7 @@ package com.polibuda.footballclub.user.service.teamMember;
 
 import com.polibuda.footballclub.common.UserRole;
 import com.polibuda.footballclub.common.actions.TeamMemberStatus;
+import com.polibuda.footballclub.common.claims.FieldPosition;
 import com.polibuda.footballclub.common.database.TeamRole;
 import com.polibuda.footballclub.common.database.TeamStatus;
 import com.polibuda.footballclub.user.dto.request.JoinTeamRequest;
@@ -115,6 +116,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
 
         target.setStatus(TeamMemberStatus.ACTIVE);
         target.addRole(Set.of(TeamRole.ROLE_TEAM_MEMBER));
+        target.setFieldPosition(FieldPosition.NO_POSITION);
         IdentityGrpcClient.RoleGrantResult response =  grpcService.grantRoles(target.getMember().getUserId(), UserRole.ROLE_PLAYER, UserRole.ROLE_MEMBER);
         if(response.status() != IdentityGrpcClient.RoleAssignmentStatusDTO.SUCCESS){
             throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + target.getMember().getUserId());
@@ -150,7 +152,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                     throw new RoleAssigmentExceptions("Problem was occurred while removing role from user : " + target.getMember().getUserId());
                 }
                 log.info("User lost ROLE_PLAYER because does not have active membership {}", target.getMember().getUserId());
-            }//bo 1 teraz usuniemy
+            }//bo 1 teraz usuniemy`
             log.info("COACH_EVENT: Application rejected for member {}", target.getId());
         } else {
             target.setStatus(TeamMemberStatus.ARCHIVED);
@@ -297,6 +299,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .roles(Set.copyOf(teamMember.getRoles()))
                 .sienceDate(teamMember.getCreatedAt())
                 .fieldPosition(teamMember.getFieldPosition())
+                .number(teamMember.getNumber())
                 .build();
     }
 

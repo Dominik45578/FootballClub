@@ -16,17 +16,17 @@ import {
     getMemberProfile,
     type TeamDetails,
     type MemberProfile
-} from '@/lib/userApi'
-import { getUserRoles, hasRole } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+} from '@/lib/userApi.ts'
+import { getUserRoles, hasRole } from '@/lib/auth.ts'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Textarea } from '@/components/ui/textarea.tsx'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form.tsx'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.tsx'
 import { toast } from 'sonner'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import {
     Eye,
     Wrench,
@@ -41,9 +41,9 @@ import {
     Edit3,
     User as UserIcon
 } from 'lucide-react'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { useNavigate } from 'react-router-dom'
-import TeamSearchModal from '@/components/TeamSearchModal'
+import TeamSearchModal from '@/components/TeamSearchModal.tsx'
 import {
     Dialog,
     DialogContent,
@@ -53,8 +53,8 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogClose
-} from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
+} from '@/components/ui/dialog.tsx'
+import { cn } from '@/lib/utils.ts'
 
 // --- SCHEMAS ---
 

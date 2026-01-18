@@ -1,37 +1,37 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { LoginPage } from './pages/LoginPage'
-import { StartPage } from './pages/StartPage'
-import { RegisterPage } from './pages/RegisterPage'
+import { LoginPage } from './pages/basic/LoginPage.tsx'
+import { StartPage } from './pages/basic/StartPage.tsx'
+import { RegisterPage } from './pages/basic/RegisterPage.tsx'
 import { Toaster } from '@/components/ui/sonner'
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner'
-import ActivateAccountPage from './pages/ActivateAccountPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
+import ActivateAccountPage from './pages/basic/ActivateAccountPage.tsx';
+import ResetPasswordPage from './pages/basic/ResetPasswordPage.tsx';
 import { getMemberStatus, type MemberStatus, ensureMemberStatus } from './lib/userApi'
 import { hasOnlyRoleUser } from './lib/auth'
 import { MemberProfilePage } from './pages/MemberProfilePage'
-import { NotFoundPage } from './pages/NotFound'
+import { NotFoundPage } from './pages/error/NotFound.tsx'
 
-const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
-const TeamSearchPage = lazy(() => import('./pages/TeamSearchPage').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
-const TeamDetailsPage = lazy(() => import('./pages/TeamDetailsPage').then(m => ({ default: (m as any).default || (m as any).TeamDetailsPage })));
+const DashboardPage = lazy(() => import('./pages/basic/DashboardPage.tsx').then(m => ({ default: (m as any).default || (m as any).DashboardPage })));
+const TeamSearchPage = lazy(() => import('./pages/team/TeamSearchPage.tsx').then(m => ({ default: (m as any).default || (m as any).TeamSearchPage })));
+const TeamDetailsPage = lazy(() => import('./pages/team/TeamDetailsPage.tsx').then(m => ({ default: (m as any).default || (m as any).TeamDetailsPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: (m as any).default || (m as any).ProfilePage })));
-const TeamsPage = lazy(() => import('./pages/TeamsPage').then(m => ({ default: (m as any).default || (m as any).TeamsPage })));
-const TeamManagementPage = lazy(() => import('./pages/TeamManagementPage').then(m => ({ default: (m as any).default || (m as any).TeamManagementPage })));
-const JoinTeamPage = lazy(() => import('./pages/JoinTeamPage').then(m => ({ default: (m as any).default || (m as any).JoinTeamPage })));
+const TeamsPage = lazy(() => import('./pages/team/TeamsPage.tsx').then(m => ({ default: (m as any).default || (m as any).TeamsPage })));
+const TeamManagementPage = lazy(() => import('./pages/team/TeamManagementPage.tsx').then(m => ({ default: (m as any).default || (m as any).TeamManagementPage })));
+const JoinTeamPage = lazy(() => import('./pages/team/JoinTeamPage.tsx').then(m => ({ default: (m as any).default || (m as any).JoinTeamPage })));
 const ClubSquadPage = lazy(() => import('./pages/ClubSquadPage').then(m => ({ default: (m as any).default || (m as any).ClubSquadPage })));
-const MemberApplyPage = lazy(() => import('./pages/MemberApplyPage').then(m => ({ default: (m as any).default || (m as any).MemberApplyPage })));
-const MatchesPage = lazy(() => import('./pages/MatchesPage').then(m => ({ default: (m as any).default || (m as any).MatchesPage })));
-const MatchDetailsPage = lazy(() => import('./pages/MatchDetailsPage').then(m => ({ default: (m as any).default || (m as any).MatchDetailsPage })));
-const MemberSearchPage = lazy(() => import('./pages/MemberSearchPage').then(m => ({ default: (m as any).default || (m as any).MemberSearchPage })));
-const MemberPublicProfilePage = lazy(() => import('./pages/MemberPublicProfilePage').then(m => ({ default: (m as any).default || (m as any).MemberPublicProfilePage })));
-const NewPasswordPage = lazy(() => import('./pages/NewPasswordPage').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
-const MatchesManagementPage = lazy(() => import('./pages/MatchesManagementPage').then(m => ({ default: (m as any).default || (m as any).MatchesManagementPage })));
+const MemberApplyPage = lazy(() => import('./pages/member/MemberApplyPage.tsx').then(m => ({ default: (m as any).default || (m as any).MemberApplyPage })));
+const MatchesPage = lazy(() => import('./pages/match/MatchesPage.tsx').then(m => ({ default: (m as any).default || (m as any).MatchesPage })));
+const MatchDetailsPage = lazy(() => import('./pages/match/MatchDetailsPage.tsx').then(m => ({ default: (m as any).default || (m as any).MatchDetailsPage })));
+const MemberSearchPage = lazy(() => import('./pages/member/MemberSearchPage.tsx').then(m => ({ default: (m as any).default || (m as any).MemberSearchPage })));
+const MemberPublicProfilePage = lazy(() => import('./pages/member/MemberPublicProfilePage.tsx').then(m => ({ default: (m as any).default || (m as any).MemberPublicProfilePage })));
+const NewPasswordPage = lazy(() => import('./pages/basic/NewPasswordPage.tsx').then(m => ({ default: (m as any).default || (m as any).NewPasswordPage })));
+const MatchesManagementPage = lazy(() => import('./pages/match/MatchesManagementPage.tsx').then(m => ({ default: (m as any).default || (m as any).MatchesManagementPage })));
 
 // --- NOWE STRONY ADMIN ---
-const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage').then(m => ({ default: (m as any).default || (m as any).AdminUsersPage })));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage.tsx').then(m => ({ default: (m as any).default || (m as any).AdminUsersPage })));
 // Dodano import dla External Data
-const AdminExternalDataPage = lazy(() => import('./pages/AdminExternalDataPage').then(m => ({ default: (m as any).default || (m as any).AdminExternalDataPage })));
+const AdminExternalDataPage = lazy(() => import('./pages/admin/AdminExternalDataPage.tsx').then(m => ({ default: (m as any).default || (m as any).AdminExternalDataPage })));
 
 
 const ProfileRoute = ({ children }: { children: React.ReactElement }) => {

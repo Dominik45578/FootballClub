@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { useNavigate } from 'react-router-dom'
 import {Eye, UserCheck, UserX, Search as SearchIcon, RotateCw, ArrowLeft} from 'lucide-react'
-import { searchMembers, getMyProfile } from '@/lib/userApi'
+import { searchMembers, getMyProfile } from '@/lib/userApi.ts'
 
 export function MemberSearchPage() {
   const [query, setQuery] = useState('')

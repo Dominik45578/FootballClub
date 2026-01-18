@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { addMember } from '@/lib/userApi'
+import { addMember } from '@/lib/userApi.ts'
 import { toast } from 'sonner'
 import { UserPlus, Info, Send } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import DateInput from '@/components/DateInput'
+import { Button } from '@/components/ui/button.tsx'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.tsx'
+import DateInput from '@/components/DateInput.tsx'
 
 export function MemberApplyPage() {
     useEffect(() => {

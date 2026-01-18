@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Label } from '@/components/ui/label.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Checkbox } from '@/components/ui/checkbox.tsx'
+import { Separator } from '@/components/ui/separator.tsx'
 import {
     ArrowLeft, Search, ShieldAlert, Lock, Unlock,
     UserX, ShieldPlus, ShieldMinus, Loader2, AlertTriangle,
@@ -19,9 +19,9 @@ import {
     adminUnblockUser,
     adminGrantRoles,
     adminRevokeRoles
-} from '@/lib/userApi'
-import type { AdminUserResponse } from '@/lib/userApi'
-import { cn } from '@/lib/utils'
+} from '@/lib/userApi.ts'
+import type { AdminUserResponse } from '@/lib/userApi.ts'
+import { cn } from '@/lib/utils.ts'
 
 // POPRAWIONY INTERFEJS
 interface ExtendedAdminUser extends AdminUserResponse {

@@ -55,11 +55,11 @@ export type CreateMatchRequest = {
 }
 
 export type UpdateMatchRequest = {
-  matchDate?: string
-  isHome?: boolean
-  status?: MatchStatus
-    awayTeamScore? : number
-    homeTeamScore? : number
+    matchDate?: string        // LocalDateTime -> ISO string
+    isHome?: boolean          // Czy drużyna wewnętrzna grała jako gospodarz?
+    status?: MatchStatus
+    internalTeamScore?: number // Punkty drużyny wewnętrznej
+    externalTeamScore?: number // Punkty drużyny zewnętrznej
 }
 
 // proste fetch helpery (używamy authHeader z ./auth — gateway powinien ustawić X-User-Id)
@@ -173,7 +173,6 @@ export async function createMatch(payload: CreateMatchRequest): Promise<MatchRes
 }
 
 export async function updateMatch(matchId: number, payload: UpdateMatchRequest): Promise<MatchResponse> {
-  if (OFFLINE) return Promise.resolve({ ...MOCK_MATCH, matchId })
   const url = `${BASE}/${matchId}`
   return fetchJson<MatchResponse>(url, { method: 'PATCH', body: JSON.stringify(payload) })
 }

@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog.tsx'
+import { ScrollArea } from '@/components/ui/scroll-area.tsx'
 import {
     ArrowLeft, Search, RefreshCw, Globe, Shield,
     Trash2, Loader2, MapPin, ChevronLeft, ChevronRight,
     ExternalLink, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.ts'
 
 // Importy API
 import {
@@ -21,9 +21,9 @@ import {
     refreshSquad,
     deleteTeam,
     type TeamSummary
-} from '@/lib/externalApi'
+} from '@/lib/externalApi.ts'
 
-import { hasRole } from '@/lib/auth'
+import { hasRole } from '@/lib/auth.ts'
 
 const SUPPORTED_COUNTRIES = [
     "England", "Spain", "Germany", "Italy", "France", "Poland",

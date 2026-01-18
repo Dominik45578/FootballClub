@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button.tsx'
 import { Users, Search, CalendarClock, Settings2, LogOut, Eye, ShieldAlert, User, Globe } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { OFFLINE, getUserRoles } from '@/lib/auth'
-import { apiLogout, getMemberStatus, getMyAccount, type MemberStatus, type UserAccount } from '@/lib/userApi'
+import { OFFLINE, getUserRoles } from '@/lib/auth.ts'
+import { apiLogout, getMemberStatus, getMyAccount, type MemberStatus, type UserAccount } from '@/lib/userApi.ts'
 import { useEffect, useState } from 'react'
 
 export function DashboardPage() {

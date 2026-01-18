@@ -19,7 +19,7 @@ public interface MemberService {
      */
     MemberProfileResponse getMyProfile(Long userId);
     MemberSummaryResponse getMemberProfile(Long userId);
-
+    MemberSummaryResponse getMemberProfileById(Long memberId);
     /**
      * Aktualizuje dane edytowalne przez użytkownika (waga, wzrost, telefon).
      *

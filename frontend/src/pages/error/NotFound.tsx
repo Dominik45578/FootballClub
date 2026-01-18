@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { Home, ChevronLeft, LayoutDashboard, FlagTriangleRight } from 'lucide-react'
-import { getToken } from '@/lib/auth'
+import { getToken } from '@/lib/auth.ts'
 
 export function NotFoundPage() {
     const navigate = useNavigate()

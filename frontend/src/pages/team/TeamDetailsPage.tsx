@@ -2,22 +2,23 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
     Card, CardContent, CardHeader, CardTitle
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+} from '@/components/ui/card.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+} from '@/components/ui/select.tsx'
+import { Separator } from '@/components/ui/separator.tsx'
+import { Skeleton } from '@/components/ui/skeleton.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx'
 import {
     ArrowLeft, CalendarDays, Users, Briefcase,
     User, Search, Filter, Tag, Hash, Shirt, Eye, Edit, Trash2,
     Crown, Megaphone, Stethoscope, AlertTriangle, X, AlertCircle,
     Save, PlusCircle, XCircle, Settings, CheckCircle2, Shield,
-    Check, ListFilter, ChevronDown, ChevronUp, Clock, Ban
+    Check, ListFilter, ChevronDown, ChevronUp, Clock, Ban,
+    Trophy, House, Plane, CalendarClock
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -31,9 +32,10 @@ import {
     type TeamDetails,
     type ManageTeamMemberRequest,
     type UpdateTeamRequestDTO
-} from '@/lib/userApi'
-import { hasRole } from '@/lib/auth'
-import { cn } from '@/lib/utils'
+} from '@/lib/userApi.ts'
+import { getMatchesByTeamId } from '@/lib/matchesApi.ts'
+import { hasRole } from '@/lib/auth.ts'
+import { cn } from '@/lib/utils.ts'
 
 // --- KONFIGURACJA RÓL ---
 const ROLE_CONFIG: Record<string, { label: string; icon: any; className: string }> = {
@@ -95,10 +97,15 @@ export function TeamDetailsPage() {
     // --- Stan Aplikacji ---
     const [teamOverview, setTeamOverview] = useState<any>(null)
     const [teamDetails, setTeamDetails] = useState<TeamDetails | null>(null)
+    const [teamMatches, setTeamMatches] = useState<any[]>([]) // Nowy stan dla meczów
     const [currentUserProfile, setCurrentUserProfile] = useState<any>(null)
 
     const [loadingOverview, setLoadingOverview] = useState(true)
     const [loadingDetails, setLoadingDetails] = useState(false)
+    const [loadingMatches, setLoadingMatches] = useState(false) // Loader dla meczów
+
+    // --- TABS (ZAKŁADKI) ---
+    const [activeTab, setActiveTab] = useState<'MEMBERS' | 'MATCHES'>('MEMBERS')
 
     // --- Global Edit Mode ---
     const [isGlobalEditMode, setIsGlobalEditMode] = useState(() => {
@@ -106,13 +113,8 @@ export function TeamDetailsPage() {
         return false
     })
 
-    // --- Opis Zespołu (Rozwiń/Zwiń) ---
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
-
-    // --- Member Edit State ---
     const [editingMemberId, setEditingMemberId] = useState<number | null>(null)
-
-    // --- Team Edit State ---
     const [teamForm, setTeamForm] = useState<UpdateTeamRequestDTO>({
         id: 0, name: '', description: '', category: '', status: ''
     })
@@ -127,13 +129,16 @@ export function TeamDetailsPage() {
     const [categorySearch, setCategorySearch] = useState('')
     const [activeCategoryFilter, setActiveCategoryFilter] = useState('ALL')
 
-    // --- Filtry ---
+    // --- Filtry Członków ---
     const [searchQuery, setSearchQuery] = useState('')
     const [positionFilter, setPositionFilter] = useState<string>('ALL')
     const [statusFilter, setStatusFilter] = useState<string>('ALL')
     const [roleFilter, setRoleFilter] = useState<string>('ALL')
 
-    // --- Banner Stan ---
+    // --- Filtry Meczów ---
+    const [matchSearchQuery, setMatchSearchQuery] = useState('')
+    const [matchTimeFilter, setMatchTimeFilter] = useState<string>('UPCOMING') // UPCOMING, PAST, ALL
+
     const [isBannerDismissed, setIsBannerDismissed] = useState(false)
 
     useEffect(() => {
@@ -198,6 +203,19 @@ export function TeamDetailsPage() {
                     setTeamDetails(null)
                     setLoadingDetails(false)
                 }
+
+                // POBIERANIE MECZÓW
+                setLoadingMatches(true)
+                try {
+                    const matchesRes = await getMatchesByTeamId(id)
+                    const matchesList = Array.isArray(matchesRes) ? matchesRes : (matchesRes.content || [])
+                    setTeamMatches(matchesList)
+                } catch (e) {
+                    console.error("Błąd pobierania meczów", e)
+                } finally {
+                    setLoadingMatches(false)
+                }
+
             } else {
                 toast.error('Nie znaleziono zespołu')
                 navigate('/dashboard')
@@ -360,6 +378,35 @@ export function TeamDetailsPage() {
         return members
     }, [teamDetails, positionFilter, statusFilter, roleFilter, searchQuery])
 
+    // --- FILTROWANIE MECZÓW ---
+    const filteredMatches = useMemo(() => {
+        let matches = [...teamMatches]
+        const now = new Date()
+
+        // Filtr czasu
+        if (matchTimeFilter === 'UPCOMING') {
+            matches = matches.filter(m => new Date(m.matchDate) >= now)
+            matches.sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()) // Rosnąco
+        } else if (matchTimeFilter === 'PAST') {
+            matches = matches.filter(m => new Date(m.matchDate) < now)
+            matches.sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime()) // Malejąco
+        } else {
+            // ALL
+            matches.sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime()) // Domyślnie malejąco
+        }
+
+        // Wyszukiwarka po nazwie
+        if (matchSearchQuery.trim()) {
+            const lowerQ = matchSearchQuery.toLowerCase()
+            matches = matches.filter(m =>
+                m.homeTeam.name.toLowerCase().includes(lowerQ) ||
+                m.awayTeam.name.toLowerCase().includes(lowerQ)
+            )
+        }
+
+        return matches
+    }, [teamMatches, matchTimeFilter, matchSearchQuery])
+
     const formatDate = (dateString?: string) => {
         if (!dateString) return '—'
         return new Date(dateString).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -520,7 +567,7 @@ export function TeamDetailsPage() {
                 </div>
             </header>
 
-            {/* --- MAIN (POPRAWIONY UKŁAD) --- */}
+            {/* --- MAIN --- */}
             <main className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 max-w-7xl">
 
                 {/* BANNER */}
@@ -702,101 +749,162 @@ export function TeamDetailsPage() {
                         )}
                     </aside>
 
-                    {/* --- PRAWA STRONA: LISTA CZŁONKÓW (Zajmuje resztę) --- */}
+                    {/* --- PRAWA STRONA: ZAKŁADKI I LISTA --- */}
                     <div className="flex-1 w-full min-w-0 space-y-6">
 
-                        {/* Pasek Filtrów */}
-                        <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center justify-between bg-card p-4 rounded-lg border shadow-sm">
-                            <div className="relative w-full sm:w-auto sm:flex-1 max-w-sm">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Szukaj (ID lub Nazwa)..."
-                                    className="pl-9"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    disabled={!teamDetails}
-                                />
-                            </div>
-
-                            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                                <Select value={roleFilter} onValueChange={setRoleFilter} disabled={!teamDetails}>
-                                    <SelectTrigger className="w-[140px]"><Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" /><SelectValue placeholder="Rola" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">Wszystkie Role</SelectItem>
-                                        {Object.entries(ROLE_CONFIG).map(([key, config]) => (
-                                            <SelectItem key={key} value={key}>{config.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={statusFilter} onValueChange={setStatusFilter} disabled={!teamDetails}>
-                                    <SelectTrigger className="w-[130px]"><SelectValue placeholder="Status" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">Status</SelectItem>
-                                        <SelectItem value="ACTIVE">Aktywne</SelectItem>
-                                        <SelectItem value="WAITING">Oczekujące</SelectItem>
-                                        <SelectItem value="SUSPENDED">Zawieszone</SelectItem>
-                                        <SelectItem value="ARCHIVED">Zarchiwizowane</SelectItem>
-                                        <SelectItem value="REJECTED">Odrzucone</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={positionFilter} onValueChange={setPositionFilter} disabled={!teamDetails}>
-                                    <SelectTrigger className="w-[130px]"><SelectValue placeholder="Pozycja" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">Pozycja</SelectItem>
-                                        <SelectItem value="GOALKEEPER">Bramkarz</SelectItem>
-                                        <SelectItem value="DEFENDER">Obrońca</SelectItem>
-                                        <SelectItem value="MIDFIELDER">Pomocnik</SelectItem>
-                                        <SelectItem value="ATTACKER">Napastnik</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        {/* ZAKŁADKI (TABS) */}
+                        <div className="flex items-center justify-end border-b pb-0 gap-4 mb-4">
+                            <button
+                                onClick={() => setActiveTab('MEMBERS')}
+                                className={cn("pb-2 px-1 text-sm font-medium transition-colors border-b-2", activeTab === 'MEMBERS' ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}
+                            >
+                                <Users className="w-4 h-4 inline-block mr-2" />
+                                Członkowie
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('MATCHES')}
+                                className={cn("pb-2 px-1 text-sm font-medium transition-colors border-b-2", activeTab === 'MATCHES' ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}
+                            >
+                                <Trophy className="w-4 h-4 inline-block mr-2" />
+                                Mecze
+                            </button>
                         </div>
 
-                        {/* Licznik */}
-                        <div className="flex items-center justify-between px-1">
-                            <h2 className="text-lg font-semibold tracking-tight">Wyniki wyszukiwania</h2>
-                            <Badge variant="secondary" className="px-2">{filteredMembers.length}</Badge>
-                        </div>
-
-                        {/* LISTA - 2 Kolumny (Szerokie karty) */}
-                        <div className="space-y-4">
-                            {loadingDetails && (
-                                <>
-                                    <Skeleton className="h-32 w-full rounded-xl" />
-                                    <Skeleton className="h-32 w-full rounded-xl" />
-                                </>
-                            )}
-
-                            {!loadingDetails && filteredMembers.length === 0 && (
-                                <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed rounded-xl bg-muted/5">
-                                    <Shirt className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                                    <h3 className="text-lg font-medium">Brak wyników</h3>
-                                    <p className="text-muted-foreground">Brak członków spełniających kryteria.</p>
-                                </div>
-                            )}
-
-                            {!loadingDetails && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {filteredMembers.map((member: any) => (
-                                        <TeamMemberCard
-                                            key={member.teamMemberId}
-                                            member={member}
-                                            currentUserProfile={currentUserProfile} // PRZEKAZANIE PROFILU
-                                            canManage={canManage}
-                                            isGlobalEditMode={isGlobalEditMode}
-                                            isEditing={editingMemberId === member.teamMemberId}
-                                            onEditStart={() => setEditingMemberId(member.teamMemberId)}
-                                            onEditCancel={() => setEditingMemberId(null)}
-                                            onSave={(data) => handleSaveMember(data)}
-                                            onView={() => navigate(`/member/${member.memberId}`)}
-                                            onDelete={() => handleDeleteMemberClick(member.teamMemberId)}
+                        {/* --- WIDOK: CZŁONKOWIE (Zostawiony BEZ ZMIAN w logice) --- */}
+                        {activeTab === 'MEMBERS' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                                {/* Pasek Filtrów */}
+                                <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center justify-between bg-card p-4 rounded-lg border shadow-sm">
+                                    <div className="relative w-full sm:w-auto sm:flex-1 max-w-sm">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Szukaj (ID lub Nazwa)..."
+                                            className="pl-9"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            disabled={!teamDetails}
                                         />
-                                    ))}
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                        <Select value={roleFilter} onValueChange={setRoleFilter} disabled={!teamDetails}>
+                                            <SelectTrigger className="w-[140px]"><Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" /><SelectValue placeholder="Rola" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ALL">Wszystkie Role</SelectItem>
+                                                {Object.entries(ROLE_CONFIG).map(([key, config]) => (
+                                                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select value={statusFilter} onValueChange={setStatusFilter} disabled={!teamDetails}>
+                                            <SelectTrigger className="w-[130px]"><SelectValue placeholder="Status" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ALL">Status</SelectItem>
+                                                <SelectItem value="ACTIVE">Aktywne</SelectItem>
+                                                <SelectItem value="WAITING">Oczekujące</SelectItem>
+                                                <SelectItem value="SUSPENDED">Zawieszone</SelectItem>
+                                                <SelectItem value="ARCHIVED">Zarchiwizowane</SelectItem>
+                                                <SelectItem value="REJECTED">Odrzucone</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select value={positionFilter} onValueChange={setPositionFilter} disabled={!teamDetails}>
+                                            <SelectTrigger className="w-[130px]"><SelectValue placeholder="Pozycja" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="ALL">Pozycja</SelectItem>
+                                                <SelectItem value="GOALKEEPER">Bramkarz</SelectItem>
+                                                <SelectItem value="DEFENDER">Obrońca</SelectItem>
+                                                <SelectItem value="MIDFIELDER">Pomocnik</SelectItem>
+                                                <SelectItem value="ATTACKER">Napastnik</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
+
+                                {/* Licznik */}
+                                <div className="flex items-center justify-between px-1">
+                                    <h2 className="text-lg font-semibold tracking-tight">Wyniki wyszukiwania</h2>
+                                    <Badge variant="secondary" className="px-2">{filteredMembers.length}</Badge>
+                                </div>
+
+                                {/* LISTA - 2 Kolumny (Szerokie karty) */}
+                                <div className="space-y-4">
+                                    {loadingDetails && (
+                                        <>
+                                            <Skeleton className="h-32 w-full rounded-xl" />
+                                            <Skeleton className="h-32 w-full rounded-xl" />
+                                        </>
+                                    )}
+
+                                    {!loadingDetails && filteredMembers.length === 0 && (
+                                        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed rounded-xl bg-muted/5">
+                                            <Shirt className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                            <h3 className="text-lg font-medium">Brak wyników</h3>
+                                            <p className="text-muted-foreground">Brak członków spełniających kryteria.</p>
+                                        </div>
+                                    )}
+
+                                    {!loadingDetails && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {filteredMembers.map((member: any) => (
+                                                <TeamMemberCard
+                                                    key={member.teamMemberId}
+                                                    member={member}
+                                                    currentUserProfile={currentUserProfile} // PRZEKAZANIE PROFILU
+                                                    canManage={canManage}
+                                                    isGlobalEditMode={isGlobalEditMode}
+                                                    isEditing={editingMemberId === member.teamMemberId}
+                                                    onEditStart={() => setEditingMemberId(member.teamMemberId)}
+                                                    onEditCancel={() => setEditingMemberId(null)}
+                                                    onSave={(data) => handleSaveMember(data)}
+                                                    onView={() => navigate(`/member/${member.memberId}`)}
+                                                    onDelete={() => handleDeleteMemberClick(member.teamMemberId)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- WIDOK: MECZE (NOWE) --- */}
+                        {activeTab === 'MATCHES' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                                {/* FILTRY MECZÓW */}
+                                <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center justify-between bg-card p-4 rounded-lg border shadow-sm">
+                                    <div className="relative w-full sm:w-auto sm:flex-1 max-w-sm">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input placeholder="Szukaj przeciwnika..." className="pl-9" value={matchSearchQuery} onChange={(e) => setMatchSearchQuery(e.target.value)} />
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                        <Select value={matchTimeFilter} onValueChange={setMatchTimeFilter}>
+                                            <SelectTrigger className="w-[160px]"><CalendarClock className="w-3.5 h-3.5 mr-2" /><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="UPCOMING">Nadchodzące</SelectItem>
+                                                <SelectItem value="PAST">Zakończone</SelectItem>
+                                                <SelectItem value="ALL">Wszystkie</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                {/* LISTA MECZÓW */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {loadingMatches ? <><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></> :
+                                        filteredMatches.length === 0 ? <div className="col-span-2 text-center py-10 text-muted-foreground">Brak meczów spełniających kryteria</div> :
+                                            filteredMatches.map((match: any) => (
+                                                <TeamMatchCard
+                                                    key={match.matchId}
+                                                    match={match}
+                                                    myTeamId={Number(teamId)}
+                                                    onView={() => navigate(`/matches/${match.matchId}`)}
+                                                />
+                                            ))}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </main>
@@ -804,8 +912,117 @@ export function TeamDetailsPage() {
     )
 }
 
-// --- HELPERS ---
+// --- KOMPONENT KARTY MECZU (NOWY) ---
+function TeamMatchCard({ match, myTeamId, onView }: { match: any, myTeamId: number, onView: () => void }) {
+    const isHome = match.homeTeam.id === myTeamId
 
+    // Logika Statusu
+    const isFinished = match.status === 'FINISHED'
+    const isLive = match.status === 'LIVE'
+    const isScheduled = ['SCHEDULED', 'POSTPONED', 'CANCELLED'].includes(match.status)
+
+    // Kolory paska statusu
+    let statusColor = 'bg-blue-500' // Domyślny (Zaplanowany)
+    let statusLabel = 'Nadchodzący'
+
+    if (isLive) {
+        statusColor = 'bg-blue-600 animate-pulse'
+        statusLabel = 'Trwa'
+    } else if (match.status === 'POSTPONED') {
+        statusColor = 'bg-yellow-500'
+        statusLabel = 'Przełożony'
+    } else if (match.status === 'CANCELLED') {
+        statusColor = 'bg-orange-500'
+        statusLabel = 'Odwołany'
+    } else if (isFinished) {
+        const myScore = isHome ? match.homeTeamScore : match.awayTeamScore
+        const oppScore = isHome ? match.awayTeamScore : match.homeTeamScore
+        if (myScore > oppScore) { statusColor = 'bg-emerald-500'; statusLabel = 'Wygrana' }
+        else if (myScore < oppScore) { statusColor = 'bg-red-500'; statusLabel = 'Porażka' }
+        else { statusColor = 'bg-slate-400'; statusLabel = 'Remis' }
+    }
+
+    const getLogo = (team: any) => team.internal ? '/favicon.png' : (team.logoUrl || null)
+    const getInitials = (n: string) => n.split(' ').map(x => x[0]).join('').substring(0, 2).toUpperCase()
+
+    return (
+        <Card className="group relative rounded-xl bg-[#0f172a] text-slate-100 shadow-md hover:shadow-xl transition-all duration-300 border border-slate-800 overflow-hidden h-full flex flex-col">
+            {/* PASEK STANU - 60% WYSOKOŚCI, WYŚRODKOWANY */}
+            <div className={cn("absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-[60%] rounded-r-sm z-10 transition-all", statusColor)} title={statusLabel} />
+
+            <CardContent className="p-0 flex flex-col h-full">
+                <div className="flex flex-row h-full pl-2"> {/* Padding left dla paska */}
+                    <div className="flex-1 p-4 space-y-4">
+
+                        {/* HEADER: DATA I LOKALIZACJA */}
+                        <div className="flex justify-between items-center text-xs text-slate-400">
+                            <div className="flex items-center gap-1.5 font-mono">
+                                <CalendarDays className="h-3.5 w-3.5" />
+                                {new Date(match.matchDate).toLocaleDateString()}
+                                <span className="mx-1 text-slate-600">|</span>
+                                <Clock className="h-3.5 w-3.5" />
+                                {new Date(match.matchDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </div>
+                            <div className={cn("flex items-center gap-1 uppercase font-bold text-[9px] px-2 py-0.5 rounded-full border", isHome ? "text-emerald-400 border-emerald-900/50 bg-emerald-950/20" : "text-orange-400 border-orange-900/50 bg-orange-950/20")}>
+                                {isHome ? <House className="h-3 w-3" /> : <Plane className="h-3 w-3" />}
+                                {isHome ? 'DOM' : 'WYJAZD'}
+                            </div>
+                        </div>
+
+                        {/* DRUŻYNY I WYNIK: GOSPODARZ - VS - GOŚĆ */}
+                        <div className="flex items-center justify-between gap-1">
+                            {/* GOSPODARZ */}
+                            <div className="flex flex-col items-center gap-2 w-[35%] text-center">
+                                <span className={cn("text-xs font-bold leading-tight line-clamp-2 uppercase", match.homeTeam.id === myTeamId && "text-emerald-400")}>{match.homeTeam.name}</span>
+                                <Avatar className="h-10 w-10 bg-transparent shrink-0 ring-1 ring-slate-700">
+                                    <AvatarImage src={getLogo(match.homeTeam)} className="object-contain" />
+                                    <AvatarFallback className="text-[9px] bg-slate-800 text-slate-400">{getInitials(match.homeTeam.name)}</AvatarFallback>
+                                </Avatar>
+                            </div>
+
+                            {/* VS / WYNIK */}
+                            <div className="flex flex-col items-center justify-center w-[30%] shrink-0">
+                                {isScheduled ? (
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-xl font-black text-slate-600 tracking-tighter">VS</span>
+                                        {match.status === 'POSTPONED' && <span className="text-[9px] text-yellow-500 font-bold mt-1">PRZEŁOŻONY</span>}
+                                        {match.status === 'CANCELLED' && <span className="text-[9px] text-orange-500 font-bold mt-1">ODWOŁANY</span>}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1 rounded border border-slate-700 font-mono">
+                                        <span className={cn("text-lg font-bold", match.homeTeamScore > match.awayTeamScore ? "text-white" : "text-slate-400")}>{match.homeTeamScore}</span>
+                                        <span className="text-slate-600">:</span>
+                                        <span className={cn("text-lg font-bold", match.awayTeamScore > match.homeTeamScore ? "text-white" : "text-slate-400")}>{match.awayTeamScore}</span>
+                                    </div>
+                                )}
+                                {isLive && <span className="text-[8px] text-blue-500 font-bold animate-pulse mt-1 tracking-widest">LIVE</span>}
+                            </div>
+
+                            {/* GOŚĆ */}
+                            <div className="flex flex-col items-center gap-2 w-[35%] text-center">
+                                <span className={cn("text-xs font-bold leading-tight line-clamp-2 uppercase", match.awayTeam.id === myTeamId && "text-emerald-400")}>{match.awayTeam.name}</span>
+                                <Avatar className="h-10 w-10 bg-transparent shrink-0 ring-1 ring-slate-700">
+                                    <AvatarImage src={getLogo(match.awayTeam)} className="object-contain" />
+                                    <AvatarFallback className="text-[9px] bg-slate-800 text-slate-400">{getInitials(match.awayTeam.name)}</AvatarFallback>
+                                </Avatar>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* AKCJA (OCZKO) */}
+                    <div className="bg-slate-900/20 border-l border-slate-800 w-[50px] flex flex-col items-center justify-center">
+                        <button onClick={onView} className="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all shadow-sm group/btn border border-slate-700">
+                            <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                        </button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+// --- HELPERY (StatRow, StatusBadge, TeamMemberCard) ---
 function StatRow({ icon: Icon, label, value, unit, valueClass }: any) {
     return (
         <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">

@@ -188,9 +188,10 @@ public class MatchManagementServiceImpl implements MatchManagementService {
     }
 
     private boolean handleDateChange(Match match, LocalDateTime newDate) {
-        if (newDate == null || newDate.isEqual(match.getMatchDate())) {
-            return false;
+        if (newDate == null) {
+            return true;
         }
+
         if (matchEntityService.isTermTaken(match.getInternalTeamId(), newDate)) {
             throw new MatchDateConflictException("The new date conflicts with another match within 2 hours.");
         }
