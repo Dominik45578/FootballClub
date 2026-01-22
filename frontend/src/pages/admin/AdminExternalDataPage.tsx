@@ -192,8 +192,8 @@ export function AdminExternalDataPage() {
         <div className="min-h-screen bg-muted/20 relative pb-12">
 
             {/* Header Sticky */}
-            <header className="border-b bg-background sticky top-0 z-30 shadow-sm h-16 flex items-center">
-                <div className="container px-4 max-w-7xl mx-auto flex justify-between items-center">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
+                <div className="container px-4 max-w-7xl mx-auto flex h-16 justify-between items-center">
 
                     {/* LEWA STRONA: LOGO + TYTUŁ */}
                     <div
@@ -206,17 +206,20 @@ export function AdminExternalDataPage() {
                                 src="/favicon.png"
                                 alt="Club Logo"
                                 className="h-full w-full object-contain drop-shadow-sm"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none'
+                                }}
                             />
                         </div>
                         <div>
                             <h1 className="text-lg font-bold leading-tight">Menedżer Danych</h1>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Panel Administratora</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Panel
+                                Administratora</p>
                         </div>
                     </div>
 
                     <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
+                        <ArrowLeft className="mr-2 h-4 w-4"/> Powrót
                     </Button>
                 </div>
             </header>

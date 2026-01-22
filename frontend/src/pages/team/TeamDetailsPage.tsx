@@ -533,10 +533,11 @@ export function TeamDetailsPage() {
             )}
 
             {/* --- HEADER --- */}
-            <header className="border-b bg-card sticky top-0 z-20 shadow-sm bg-[#0f172a]">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
                 <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                        <div
+                            className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
                             <img
                                 src="/favicon.png"
                                 alt="Club Logo"
@@ -555,12 +556,13 @@ export function TeamDetailsPage() {
                                 onClick={handleToggleEditMode}
                                 className={cn("gap-2", isGlobalEditMode && "bg-amber-600 hover:bg-amber-700")}
                             >
-                                {isGlobalEditMode ? <CheckCircle2 className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
+                                {isGlobalEditMode ? <CheckCircle2 className="h-4 w-4"/> :
+                                    <Settings className="h-4 w-4"/>}
                                 {isGlobalEditMode ? "Zakończ Edycję" : "Zarządzaj"}
                             </Button>
                         )}
                         <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            <ArrowLeft className="mr-2 h-4 w-4"/>
                             Dashboard
                         </Button>
                     </div>

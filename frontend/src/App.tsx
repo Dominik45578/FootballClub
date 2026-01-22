@@ -5,6 +5,7 @@ import { RegisterPage } from './pages/basic/RegisterPage.tsx'
 import { Toaster } from '@/components/ui/sonner'
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner'
+import ScrollToTop from '@/components/ScrollToTop.tsx'
 import ActivateAccountPage from './pages/basic/ActivateAccountPage.tsx';
 import ResetPasswordPage from './pages/basic/ResetPasswordPage.tsx';
 import { getMemberStatus, type MemberStatus, ensureMemberStatus } from './lib/userApi'
@@ -52,6 +53,7 @@ const ProfileRoute = ({ children }: { children: React.ReactElement }) => {
 function App() {
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Routes>
                 {/* Dedicated login route */}
                 <Route path="/login" element={<LoginPage />} />

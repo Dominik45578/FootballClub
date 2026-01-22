@@ -82,8 +82,8 @@ export function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <header className="border-b bg-background sticky top-0 z-30 shadow-sm h-16 flex items-center">
-                <div className="container px-4 max-w-7xl mx-auto flex justify-between items-center">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
+                <div className="container px-4 max-w-7xl mx-auto flex h-16 justify-between items-center">
 
                     {/* LEWA STRONA: LOGO + TYTUŁ */}
                     <div className="flex items-center gap-3">
@@ -92,7 +92,9 @@ export function DashboardPage() {
                                 src="/favicon.png"
                                 alt="Logo"
                                 className="h-full w-full object-contain drop-shadow-sm"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none'
+                                }}
                             />
                         </div>
                         <div>
@@ -113,20 +115,23 @@ export function DashboardPage() {
                         )}
 
                         <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={handleProfile} className="hidden sm:flex text-muted-foreground hover:text-foreground">
-                                <Eye className="mr-2 h-4 w-4" />
+                            <Button variant="ghost" size="sm" onClick={handleProfile}
+                                    className="hidden sm:flex text-muted-foreground hover:text-foreground">
+                                <Eye className="mr-2 h-4 w-4"/>
                                 Profil
                             </Button>
                             <Button variant="ghost" size="icon" onClick={handleProfile} className="sm:hidden">
-                                <User className="h-5 w-5" />
+                                <User className="h-5 w-5"/>
                             </Button>
 
-                            <Button variant="ghost" size="sm" onClick={handleLogout} className="hidden sm:flex text-muted-foreground hover:text-destructive">
-                                <LogOut className="mr-2 h-4 w-4" />
+                            <Button variant="ghost" size="sm" onClick={handleLogout}
+                                    className="hidden sm:flex text-muted-foreground hover:text-destructive">
+                                <LogOut className="mr-2 h-4 w-4"/>
                                 Wyloguj
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={handleLogout} className="sm:hidden text-muted-foreground hover:text-destructive">
-                                <LogOut className="h-5 w-5" />
+                            <Button variant="ghost" size="icon" onClick={handleLogout}
+                                    className="sm:hidden text-muted-foreground hover:text-destructive">
+                                <LogOut className="h-5 w-5"/>
                             </Button>
                         </div>
                     </div>

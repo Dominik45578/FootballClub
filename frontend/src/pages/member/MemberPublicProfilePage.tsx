@@ -22,7 +22,6 @@ import {
     removeTeamMember,
     approveTeamMember,
     type MembershipResponse,
-    type TeamMemberDTO,
     type MemberSummaryResponse,
     type ManageTeamMemberRequest
 } from '@/lib/userApi.ts'
@@ -49,6 +48,9 @@ const ROLE_CONFIG: Record<string, { label: string; icon: any; className: string 
     ROLE_TEAM_PLAYER: { label: 'Zawodnik', icon: User, className: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
 }
 const DEFAULT_ROLE_CONFIG = { label: 'Członek', icon: User, className: 'bg-slate-500/10 text-slate-400 border-slate-500/20' }
+
+// Dodajemy dostępną listę ról (używana w edycji) — wcześniej brakowało tej stałej
+const AVAILABLE_ROLES = Object.keys(ROLE_CONFIG);
 
 const STATUS_FILTER_OPTIONS = [
     { value: 'ALL', label: 'Wszystkie statusy' },
@@ -154,11 +156,11 @@ export function MemberPublicProfilePage() {
 
     return (
         <div className="min-h-screen bg-background pb-10">
-            <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur shadow-sm">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
                 <div className="container flex h-16 items-center justify-between px-4 max-w-7xl mx-auto">
                     <div className="flex items-center gap-2">
-                        <img src="/favicon.png" alt="Logo" className="h-8 w-8" />
-                        <h1 className="text-xl font-bold tracking-tight text-[#0f172a]">Szczegóły Członkostwa</h1>
+                        <img src="/favicon.png" alt="Logo" className="h-8 w-8"/>
+                        <h1 className="text-xl font-bold tracking-tight text-foreground">Szczegóły Członkostwa</h1>
                     </div>
                     <div className="flex gap-2 items-center">
                         {isPrivileged && (
@@ -168,11 +170,12 @@ export function MemberPublicProfilePage() {
                                 onClick={() => setIsManagementMode(!isManagementMode)}
                                 className={cn("transition-all", isManagementMode && "bg-blue-600 hover:bg-blue-700")}
                             >
-                                <Settings2 className="mr-2 h-4 w-4" />
+                                <Settings2 className="mr-2 h-4 w-4"/>
                                 {isManagementMode ? 'Zakończ Zarządzanie' : 'Zarządzaj'}
                             </Button>
                         )}
-                        <Button variant="ghost" size="sm" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" /> Wróć</Button>
+                        <Button variant="ghost" size="sm" onClick={() => navigate(-1)}><ArrowLeft
+                            className="h-4 w-4 mr-2"/> Wróć</Button>
                     </div>
                 </div>
             </header>
@@ -214,9 +217,10 @@ export function MemberPublicProfilePage() {
                                         <div className="flex flex-wrap justify-center gap-1.5 px-2">
                                             {allUniqueRoles.map(role => {
                                                 const cfg = ROLE_CONFIG[role] || DEFAULT_ROLE_CONFIG
+                                                const Icon = cfg.icon
                                                 return (
                                                     <Badge key={role} variant="outline" className={cn("gap-1 text-[10px] px-1.5 py-0.5", cfg.className)}>
-                                                        <cfg.icon className="h-3 w-3" />
+                                                        <Icon className="h-3 w-3" />
                                                         {cfg.label}
                                                     </Badge>
                                                 )
@@ -283,14 +287,12 @@ function MembershipCard({ item, isEditing, isManagementMode, onEditStart, onEdit
 
     const [editNumber, setEditNumber] = useState(item.number || '')
     const [editPosition, setEditPosition] = useState(item.fieldPosition || 'NO_POSITION')
-    const [editStatus, setEditStatus] = useState(item.status || 'ACTIVE')
     const [currentRoles, setCurrentRoles] = useState<string[]>(item.roles || [])
 
     useEffect(() => {
         if (isEditing) {
             setEditNumber(item.number || '')
             setEditPosition(item.fieldPosition || 'NO_POSITION')
-            setEditStatus(item.status || 'ACTIVE')
             setCurrentRoles(item.roles || [])
         }
     }, [isEditing, item])
@@ -409,13 +411,14 @@ function MembershipCard({ item, isEditing, isManagementMode, onEditStart, onEdit
                             <div className="flex flex-wrap gap-2">
                                 {(isEditing ? currentRoles : item.roles).map((r: string) => {
                                     const cfg = ROLE_CONFIG[r] || DEFAULT_ROLE_CONFIG;
+                                    const Icon = cfg.icon;
                                     return (
                                         <Badge
                                             key={r}
                                             onClick={isEditing ? () => toggleRole(r) : undefined}
                                             className={cn("gap-1.5 px-2 py-1 text-[10px] font-semibold border transition-all", cfg.className, isEditing && "cursor-pointer hover:opacity-75")}
                                         >
-                                            <cfg.icon className="h-3 w-3" /> {cfg.label} {isEditing && <XCircle className="h-3 w-3 ml-1" />}
+                                            <Icon className="h-3 w-3" /> {cfg.label} {isEditing && <XCircle className="h-3 w-3 ml-1" />}
                                         </Badge>
                                     )
                                 })}
@@ -582,3 +585,4 @@ function ErrorState({ navigate }: any) {
         </div>
     )
 }
+

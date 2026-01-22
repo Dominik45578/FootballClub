@@ -246,10 +246,11 @@ export function TeamSearchPage() {
         <div className="min-h-screen bg-muted/20 relative pb-12">
 
             {/* STICKY HEADER */}
-            <header className="border-b bg-[#0f172a] sticky top-0 z-30 shadow-sm h-16 flex items-center">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
                 <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                        <div
+                            className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
                             <img
                                 src="/favicon.png"
                                 alt="Club Logo"

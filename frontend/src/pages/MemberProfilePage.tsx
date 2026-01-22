@@ -265,13 +265,13 @@ export function MemberProfilePage() {
                 </div>
             )}
 
-            <header className="border-b bg-card sticky top-0 z-10">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
                 <div className="container flex h-16 items-center justify-between px-4">
                     <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <UserCog className="h-6 w-6" /> Profil użytkownika
+                        <UserCog className="h-6 w-6"/> Profil użytkownika
                     </h1>
                     <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        <ArrowLeft className="mr-2 h-4 w-4"/>
                         Dashboard
                     </Button>
                 </div>

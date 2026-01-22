@@ -100,10 +100,11 @@ export function MatchesPage() {
         <div className="min-h-screen bg-muted/20 flex flex-col font-sans">
 
             {/* --- HEADER --- */}
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur shadow-sm">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
                 <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                        <div
+                            className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
                             <img
                                 src="/favicon.png"
                                 alt="Club Logo"
@@ -116,7 +117,7 @@ export function MatchesPage() {
                         </div>
                     </div>
                     <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4"/>
                         <span className="hidden sm:inline">Dashboard</span>
                     </Button>
                 </div>

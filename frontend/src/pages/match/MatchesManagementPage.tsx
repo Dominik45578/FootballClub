@@ -156,11 +156,12 @@ export function MatchesManagementPage() {
     return (
         <div className="min-h-screen bg-muted/20 pb-20 font-sans">
             {/* Header */}
-            <header className="border-b bg-[#0f172a] sticky top-0 z-30 shadow-sm h-16 flex items-center">
+            <header className="border-b bg-[#091021] sticky top-0 z-50 shadow-sm">
                 <div className="container flex h-16 items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
-                            <img src="/favicon.png" alt="Club Logo" className="h-full w-full object-contain" />
+                        <div
+                            className="flex items-center justify-center h-10 w-10 overflow-hidden rounded-lg bg-white p-1 border shadow-sm">
+                            <img src="/favicon.png" alt="Club Logo" className="h-full w-full object-contain"/>
                         </div>
                         <div>
                             <h1 className="text-xl font-bold tracking-tight text-foreground">Centrum Meczowe</h1>
@@ -168,7 +169,7 @@ export function MatchesManagementPage() {
                         </div>
                     </div>
                     <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4"/>
                         <span className="hidden sm:inline">Dashboard</span>
                     </Button>
                 </div>
